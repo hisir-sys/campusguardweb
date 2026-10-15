@@ -144,7 +144,8 @@ function App() {
       <div className="header-inner"><Brand />
         <nav className={menuOpen ? 'nav-links nav-open' : 'nav-links'} aria-label="Main navigation">
           <a href="#product" onClick={event => navigateToSection(event, 'product')}>Product</a><a href="#pipeline" onClick={event => navigateToSection(event, 'pipeline')}>AI pipeline</a><a href="#principles" onClick={event => navigateToSection(event, 'principles')}>Our approach</a><a href="#platform" onClick={event => navigateToSection(event, 'platform')}>Platform</a><a href="#how-it-works" onClick={event => navigateToSection(event, 'how-it-works')}>How it works</a>
-          <button className="nav-login" onClick={() => setModal('product')}>Customer portal <ArrowUpRight size={14} /></button>
+          <a href="#pricing" onClick={event => navigateToSection(event, 'pricing')}>Pricing</a>
+          <button className="nav-login" onClick={() => { setModal('login'); setMenuOpen(false) }}>Log in <ArrowUpRight size={14} /></button>
           <button className="button button-lime nav-cta" onClick={openAccess}>Apply for access <ArrowUpRight size={15} /></button>
         </nav>
         <button className="mobile-menu" aria-label={menuOpen ? 'Close menu' : 'Open menu'} onClick={() => setMenuOpen(v => !v)}>{menuOpen ? <X /> : <Menu />}</button>
