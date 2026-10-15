@@ -867,3 +867,102 @@ html { scroll-behavior: smooth; }
   .pricing-card, .pricing-action { transition: none; }
   .pricing-card:hover, .pricing-action:hover { transform: none; }
 }
+
+
+/* Restore the intended alternating rhythm: dark platform, light pricing, dark workflow. */
+.pricing-section {
+  background: #f4f6ef;
+  background-image: radial-gradient(ellipse at 50% 0%, #c8ff5214, transparent 58%);
+  color: #151a12;
+  border-top: 1px solid #e1e6dc;
+  border-bottom: 1px solid #e1e6dc;
+}
+.pricing-section::before {
+  background: linear-gradient(90deg, transparent, #668b3540, transparent);
+}
+.pricing-heading .eyebrow { color: #65745a; }
+.pricing-heading h2 {
+  color: #151a12;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+}
+.pricing-heading h2 em { color: #668b35; }
+.pricing-heading > p { color: #596253; }
+.pricing-card {
+  background: linear-gradient(145deg, #ffffff, #edf1e8);
+  border-color: #d7dfcf;
+  box-shadow: 0 12px 34px #18200e0b;
+}
+.pricing-card.pricing-featured {
+  border-color: #a7c77d;
+  background: radial-gradient(ellipse at 50% 0%, #c8ff5222, transparent 65%), linear-gradient(145deg, #ffffff, #f0f5e8);
+}
+.pricing-kicker { color: #65745a; }
+.pricing-badge {
+  border-color: #668b3540;
+  color: #4e7428;
+  background: #c8ff5214;
+}
+.pricing-card h3 {
+  color: #151a12;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: inherit;
+}
+.pricing-summary { color: #596253; }
+.pricing-price {
+  color: #456d22;
+  font-family: inherit;
+  font-weight: 700;
+}
+.pricing-card ul { border-top-color: #151a1218; }
+.pricing-card li { color: #4e5947; }
+.pricing-card li svg { color: #668b35; }
+.pricing-disclaimer { color: #65745a; }
+.pricing-disclaimer svg { color: #668b35; }
+.pricing-card:hover {
+  border-color: #9ab873;
+  box-shadow: 0 24px 54px #18200e16;
+}
+.pricing-featured:hover {
+  border-color: #668b35;
+  box-shadow: 0 24px 58px #668b3518;
+}
+.pricing-section .button-outline {
+  border-color: #c4cfb9;
+  color: #263020;
+}
+.pricing-section .button-outline:hover {
+  border-color: #668b35;
+  background: #668b350d;
+}
+.workflow-section {
+  background: #090d0b;
+  color: #f4f6ef;
+  border-top: 1px solid #ffffff0d;
+  border-bottom: 1px solid #ffffff0d;
+}
+.workflow-section .eyebrow { color: #a0ad94; }
+.workflow-section h2 { color: #f4f6ef; }
+.workflow-section h2 em { color: #c8ff52; }
+.workflow-intro > p { color: #a8b0a5; }
+.workflow-list { border-top-color: #303c2c; }
+.workflow-item { border-bottom-color: #303c2c; }
+.workflow-number, .workflow-arrow { color: #c8ff52; }
+.workflow-item h3 { color: #f4f6ef; }
+.workflow-item p { color: #a8b0a5; }
+.workflow-item:hover .workflow-arrow { color: #d9ff8d; }
+.workflow-section .button-outline {
+  border-color: #3b4934;
+  color: #edf3e7;
+}
+.workflow-section .button-outline:hover {
+  border-color: #8da95d;
+  background: #c8ff5210;
+}
+@media (max-width: 760px) {
+  .pricing-section { padding: 72px 0 66px; }
+}
