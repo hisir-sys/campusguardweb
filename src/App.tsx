@@ -104,12 +104,23 @@ function App() {
   const [modal, setModal] = useState<ModalName>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const openAccess = () => { setModal('access'); setMenuOpen(false) }
+  const navigateToSection = (event: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    event.preventDefault()
+    setMenuOpen(false)
+    const target = document.getElementById(id)
+    if (!target) return
+    const header = document.querySelector('.site-header')
+    const offset = (header instanceof HTMLElement ? header.offsetHeight : 78) + 14
+    const top = target.getBoundingClientRect().top + window.scrollY - offset
+    window.history.replaceState(null, '', `#${id}`)
+    window.scrollTo({ top: Math.max(0, top), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+  }
   return <main id="top">
     <div className="reading-progress" aria-hidden="true"><span style={{ width: `${scrollProgress}%` }} /></div>
     <header className={headerLight ? "site-header header-light" : "site-header"}>
       <div className="header-inner"><Brand />
         <nav className={menuOpen ? 'nav-links nav-open' : 'nav-links'} aria-label="Main navigation">
-          <a href="#product" onClick={() => setMenuOpen(false)}>Product</a><a href="#pipeline" onClick={() => setMenuOpen(false)}>AI pipeline</a><a href="#principles" onClick={() => setMenuOpen(false)}>Our approach</a><a href="#platform" onClick={() => setMenuOpen(false)}>Platform</a><a href="#how-it-works" onClick={() => setMenuOpen(false)}>How it works</a>
+          <a href="#product" onClick={event => navigateToSection(event, 'product')}>Product</a><a href="#pipeline" onClick={event => navigateToSection(event, 'pipeline')}>AI pipeline</a><a href="#principles" onClick={event => navigateToSection(event, 'principles')}>Our approach</a><a href="#platform" onClick={event => navigateToSection(event, 'platform')}>Platform</a><a href="#how-it-works" onClick={event => navigateToSection(event, 'how-it-works')}>How it works</a>
           <button className="nav-login" onClick={() => setModal('product')}>Customer portal <ArrowUpRight size={14} /></button>
           <button className="button button-lime nav-cta" onClick={openAccess}>Apply for access <ArrowUpRight size={15} /></button>
         </nav>
