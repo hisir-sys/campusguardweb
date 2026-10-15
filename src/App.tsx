@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import {
   ArrowDownRight, ArrowRight, ArrowUpRight, Activity, BellRing, Check,
-  ChevronDown, CircleDot, Command, Eye, Fingerprint, LockKeyhole, Menu,
-  Monitor, Play, ScanEye, ShieldCheck, Sparkles, Video, X, Zap,
+  ChevronDown, CircleDot, Command, Fingerprint, LockKeyhole, Menu,
+  Monitor, Play, ScanEye, ShieldCheck, Sparkles, X,
 } from 'lucide-react'
 
 type ModalName = 'access' | 'product' | null
