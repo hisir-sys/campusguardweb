@@ -73,7 +73,7 @@ function App() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduceMotion || !('IntersectionObserver' in window)) return
     const targets = document.querySelectorAll(
-      '.section-heading, .feature-card, .workflow-intro, .workflow-item, .neural-heading, .neural-visual, .pipeline-node, .interface-copy, .interface-art, .dark-band-inner > *, .faq-layout > *, .final-cta-inner, .strip-inner > span:not(.strip-label)'
+      '.section-heading, .feature-card, .pricing-card, .pricing-disclaimer, .workflow-intro, .workflow-item, .neural-heading, .neural-visual, .pipeline-node, .interface-copy, .interface-art, .dark-band-inner > *, .faq-layout > *, .final-cta-inner, .strip-inner > span:not(.strip-label)'
     )
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
