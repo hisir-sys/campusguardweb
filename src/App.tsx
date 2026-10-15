@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ArrowDownRight, ArrowRight, ArrowUpRight, Activity, BellRing, Check,
   ChevronDown, CircleDot, Command, Fingerprint, LockKeyhole, Menu,
@@ -46,6 +46,28 @@ function AccessModal({ close }: { close: () => void }) {
 }
 
 function App() {
+  useEffect(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduceMotion || !('IntersectionObserver' in window)) return
+    const targets = document.querySelectorAll(
+      '.section-heading, .feature-card, .workflow-intro, .workflow-item, .interface-copy, .interface-art, .dark-band-inner > *, .faq-layout > *, .final-cta-inner, .strip-inner > span:not(.strip-label)'
+    )
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('cg-is-visible')
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { threshold: 0.14, rootMargin: '0px 0px -35px 0px' })
+    targets.forEach((target, index) => {
+      target.classList.add('cg-reveal')
+      target.style.setProperty('--cg-reveal-delay', `${Math.min(index % 3, 2) * 90}ms`)
+      observer.observe(target)
+    })
+    return () => observer.disconnect()
+  }, [])
+
   const [modal, setModal] = useState<ModalName>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [faqOpen, setFaqOpen] = useState<number | null>(0)
