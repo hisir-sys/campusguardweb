@@ -5,7 +5,7 @@ import {
   Monitor, Play, ScanEye, ShieldCheck, Sparkles, X,
 } from 'lucide-react'
 
-type ModalName = 'access' | 'product' | null
+type ModalName = 'access' | 'product' | 'login' | null
 
 const features = [
   { number: '01', icon: ScanEye, title: 'Context before noise', text: 'AI-assisted detection helps bring potentially important moments to the attention of the people responsible for reviewing them.' },
@@ -23,7 +23,7 @@ function Brand() {
   return <a className="brand" href="#top" aria-label="CampusGuard home"><span className="brand-mark"><ShieldCheck size={19} strokeWidth={1.8} /></span><span>campus<span className="brand-light">guard</span><i>®</i></span></a>
 }
 
-function AccessModal({ close }: { close: () => void }) {
+function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => void }) {
   const [submitted, setSubmitted] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', organisation: '', role: '', purpose: '' })
   const update = (key: keyof typeof form, value: string) => setForm(current => ({ ...current, [key]: value }))
@@ -40,7 +40,30 @@ function AccessModal({ close }: { close: () => void }) {
         <label>What are you hoping to evaluate?<textarea value={form.purpose} onChange={e => update('purpose', e.target.value)} placeholder="A short description (optional)" rows={3} /></label>
         <button className="button button-lime form-submit" type="submit">Review application <ArrowUpRight size={16} /></button>
         <p className="form-note"><LockKeyhole size={12} /> Prototype only. No information is transmitted or saved.</p>
-      </form></>}
+      </form><p className="account-prompt">Already have an account? <button type="button" onClick={onLogin}>Log in <ArrowUpRight size={13} /></button></p></>}
+    </section>
+  </div>
+}
+
+
+function LoginModal({ close, onApply }: { close: () => void; onApply: () => void }) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [attempted, setAttempted] = useState(false)
+  return <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) close() }}>
+    <section className="access-modal login-modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
+      <button className="modal-close" onClick={close} aria-label="Close login"><X size={18} /></button>
+      <span className="eyebrow">CUSTOMER SIGN IN</span>
+      <h2 id="login-title">Welcome back.</h2>
+      <p className="modal-intro">Sign in to your CampusGuard account to continue to your organisation workspace.</p>
+      {attempted && <div className="login-prototype-note" role="status"><LockKeyhole size={16} /><span><b>Sign-in is not connected yet.</b><small>This website preview does not verify passwords or access accounts. Secure authentication must be connected before customer sign-in goes live.</small></span></div>}
+      <form onSubmit={e => { e.preventDefault(); setAttempted(true) }}>
+        <label>Email address<input required type="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@institution.org" /></label>
+        <label>Password<input required type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" /></label>
+        <button className="button button-lime form-submit" type="submit">Log in <ArrowUpRight size={16} /></button>
+        <p className="form-note"><LockKeyhole size={12} /> Secure sign-in will be enabled when authentication is connected.</p>
+      </form>
+      <p className="account-prompt">New to CampusGuard? <button type="button" onClick={onApply}>Request early access <ArrowUpRight size={13} /></button></p>
     </section>
   </div>
 }
@@ -206,8 +229,21 @@ function App() {
     <section className="section platform-section" id="platform" data-theme="dark"><div className="section-shell">
       <div className="section-heading"><div><span className="eyebrow"><span className="eyebrow-line" /> THE PLATFORM</span><h2>From camera feeds to<br /><em>clearer decisions.</em></h2></div><p>Security teams already have a lot to watch. CampusGuard is being built to help make the important moments easier to find, review and document.</p></div>
       <div className="feature-grid">{features.map(({ number, icon: Icon, title, text }) => <article className="feature-card" key={number}><div className="feature-top"><span>{number}</span><Icon size={21} strokeWidth={1.5} /></div><h3>{title}</h3><p>{text}</p><span className="feature-arrow"><ArrowUpRight size={17} /></span></article>)}</div>
-      <div className="platform-note"><Sparkles size={17} /><p><b>Built around a desktop application.</b> CampusGuard’s Windows app remains the primary place for camera capture and local analysis. The web portal is a separate account and incident-review experience.</p></div>
+      <div className="platform-note"><Sparkles size={17} /><p><b>Built around a desktop application.</b> CampusGuard’s Windows app remains the primary place for camera capture and local analysis. A future web workspace may support account and incident-review experiences once secure authentication and data services are connected.</p></div>
     </div></section>
+
+
+    <section className="pricing-section" id="pricing" data-theme="dark">
+      <div className="section-shell">
+        <div className="section-heading pricing-heading"><div><span className="eyebrow"><span className="eyebrow-line" /> PRICING &amp; PILOTS</span><h2>A plan that fits<br /><em>your campus.</em></h2></div><p>Start with a focused evaluation, then shape a deployment around your cameras, team and operational needs. Final pricing will be confirmed with each institution.</p></div>
+        <div className="pricing-grid">
+          <article className="pricing-card"><span className="pricing-kicker">01 / EVALUATE</span><h3>Campus pilot</h3><p className="pricing-summary">For teams exploring the workflow before a wider rollout.</p><div className="pricing-price">Discuss your pilot</div><ul><li><Check size={15} /> Guided evaluation scope</li><li><Check size={15} /> Desktop-first workflow review</li><li><Check size={15} /> Feedback and setup discussion</li></ul><button className="button button-outline pricing-action" onClick={openAccess}>Request pilot details <ArrowUpRight size={15} /></button></article>
+          <article className="pricing-card pricing-featured"><span className="pricing-kicker">02 / DEPLOY</span><span className="pricing-badge">RECOMMENDED TO DISCUSS</span><h3>Single campus</h3><p className="pricing-summary">For an institution planning a day-to-day operational deployment.</p><div className="pricing-price">Custom quote</div><ul><li><Check size={15} /> Camera and team requirements review</li><li><Check size={15} /> Deployment planning conversation</li><li><Check size={15} /> Support needs scoped with your team</li></ul><button className="button button-lime pricing-action" onClick={openAccess}>Discuss your campus <ArrowUpRight size={15} /></button></article>
+          <article className="pricing-card"><span className="pricing-kicker">03 / EXPAND</span><h3>Multi-campus</h3><p className="pricing-summary">For groups coordinating needs across multiple locations.</p><div className="pricing-price">Custom quote</div><ul><li><Check size={15} /> Multi-site requirements review</li><li><Check size={15} /> Organisation-level planning</li><li><Check size={15} /> Rollout scope defined together</li></ul><button className="button button-outline pricing-action" onClick={openAccess}>Talk to our team <ArrowUpRight size={15} /></button></article>
+        </div>
+        <p className="pricing-disclaimer"><LockKeyhole size={13} /> Pricing is not published yet. These are planning options, not live subscriptions; final features, availability and fees will be confirmed before purchase.</p>
+      </div>
+    </section>
 
     <section className="workflow-section" id="how-it-works" data-theme="light"><div className="section-shell workflow-shell"><div className="workflow-intro"><span className="eyebrow"><span className="eyebrow-line" /> HOW IT WORKS</span><h2>A clear path from<br /><em>signal to response.</em></h2><p>AI can help surface a moment. People still provide the context, judgement and next step.</p><button className="button button-outline" onClick={() => setModal('product')}>Explore the product <ArrowUpRight size={15} /></button></div><div className="workflow-list">{workflow.map(({ n, title, text }) => <article className="workflow-item" key={n}><span className="workflow-number">{n}</span><div><h3>{title}</h3><p>{text}</p></div><ArrowUpRight className="workflow-arrow" size={19} /></article>)}</div></div></section>
 
@@ -215,7 +251,7 @@ function App() {
 
     <footer className="site-footer"><div className="footer-top"><Brand /><p>More context. Better review.<br />People at the centre.</p><div className="footer-links"><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><a href="#principles">Our approach</a><button onClick={openAccess}>Apply for access</button></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} CampusGuard. All rights reserved.</span><span>AI-ASSISTED · HUMAN-LED · PRIVACY-AWARE</span><a href="#top">BACK TO TOP ↑</a></div></footer>
 
-    {modal === 'access' && <AccessModal close={() => setModal(null)} />}
+    {modal === 'access' && <AccessModal close={() => setModal(null)} onLogin={() => setModal('login')} />}\n    {modal === 'login' && <LoginModal close={() => setModal(null)} onApply={() => setModal('access')} />}
     {modal === 'product' && <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setModal(null) }}><section className="access-modal info-modal" role="dialog" aria-modal="true" aria-labelledby="portal-title"><button className="modal-close" onClick={() => setModal(null)} aria-label="Close"><X size={18} /></button><span className="eyebrow">CUSTOMER ACCESS</span><h2 id="portal-title">A portal with purpose.</h2><p className="modal-intro">The customer portal is planned for approved institutions. Secure sign-in, organisation-scoped incident access and invitation-based account setup will be connected in a later phase.</p><div className="portal-status"><LockKeyhole size={18} /><span><b>Private access is not live yet</b><small>This preview does not authenticate users or display real incidents.</small></span></div><button className="button button-dark" onClick={() => { setModal(null); openAccess() }}>Apply for early access <ArrowUpRight size={15} /></button></section></div>}
   </main>
 }
