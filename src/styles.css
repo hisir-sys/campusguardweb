@@ -692,3 +692,103 @@ html { scroll-behavior: smooth; }
   .pipeline-flow { row-gap: 28px; }
   .access-modal { padding-top: 28px; padding-bottom: 30px; }
 }
+
+
+/* Pricing section: dark slide between the light principle strip and dark platform story. */
+.pricing-section {
+  background: #090d0b;
+  color: #f4f6ef;
+  padding: clamp(78px, 8vw, 112px) 0;
+  border-top: 1px solid #ffffff0d;
+  border-bottom: 1px solid #ffffff0d;
+}
+.pricing-heading { margin-bottom: 38px; }
+.pricing-heading h2 { color: #f4f6ef; }
+.pricing-heading h2 em { color: #c8ff52; }
+.pricing-heading > p { color: #a8b0a5; }
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+.pricing-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 27px 23px 23px;
+  border: 1px solid #303c2c;
+  background: linear-gradient(145deg, #121912, #0d120f);
+}
+.pricing-card.pricing-featured {
+  border-color: #789d4c;
+  background: radial-gradient(ellipse at 50% 0%, #c8ff5210, transparent 65%), linear-gradient(145deg, #182117, #101710);
+}
+.pricing-kicker { color: #a0ad94; font: 9px var(--mono); letter-spacing: 1px; }
+.pricing-badge {
+  align-self: flex-start;
+  margin-top: 13px;
+  padding: 6px 8px;
+  border: 1px solid #c8ff5240;
+  color: #c8ff52;
+  font: 8px var(--mono);
+  letter-spacing: .4px;
+}
+.pricing-card h3 { color: #f4f6ef; font: 700 23px var(--display); letter-spacing: -.7px; margin: 24px 0 9px; }
+.pricing-summary { min-height: 58px; color: #a8b0a5; font-size: 11px; line-height: 1.8; margin: 0; }
+.pricing-price { color: #c8ff52; font: 600 17px var(--display); margin: 22px 0 18px; }
+.pricing-card ul { list-style: none; display: grid; gap: 12px; padding: 17px 0 23px; margin: 0 0 22px; border-top: 1px solid #ffffff16; }
+.pricing-card li { display: flex; align-items: flex-start; gap: 8px; color: #c0cabb; font-size: 10px; line-height: 1.6; }
+.pricing-card li svg { color: #c8ff52; flex: 0 0 auto; margin-top: 1px; }
+.pricing-action { width: 100%; margin-top: auto; white-space: normal; text-align: center; }
+.pricing-disclaimer { display: flex; align-items: flex-start; justify-content: center; gap: 8px; max-width: 790px; margin: 25px auto 0; color: #899486; font-size: 10px; line-height: 1.8; text-align: center; }
+.pricing-disclaimer svg { flex: 0 0 auto; margin-top: 2px; color: #a0ad94; }
+.account-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 20px 0 0;
+  color: #747d6d;
+  font-size: 11px;
+  line-height: 1.7;
+  text-align: center;
+}
+.account-prompt button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #476c28;
+  font-weight: 700;
+}
+.account-prompt button:hover { color: #243d16; }
+.login-modal .login-prototype-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 13px;
+  border: 1px solid #dce4d3;
+  background: #e9eee3;
+  color: #50683c;
+}
+.login-prototype-note > svg { flex: 0 0 auto; margin-top: 2px; }
+.login-prototype-note b, .login-prototype-note small { display: block; }
+.login-prototype-note b { font-size: 11px; }
+.login-prototype-note small { margin-top: 5px; color: #64715b; font-size: 10px; line-height: 1.7; }
+@media (max-width: 760px) {
+  .pricing-section { padding: 72px 0 66px; }
+  .pricing-heading { margin-bottom: 28px; }
+  .pricing-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .pricing-card { padding: 24px 20px 20px; }
+  .pricing-summary { min-height: 0; }
+  .pricing-card h3 { margin-top: 19px; }
+  .pricing-card ul { padding-bottom: 18px; margin-bottom: 18px; }
+  .pricing-disclaimer { text-align: left; }
+  .account-prompt { margin-top: 18px; }
+}
