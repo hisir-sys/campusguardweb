@@ -1055,3 +1055,97 @@ html { scroll-behavior: smooth; }
   .pricing-modal { max-height: calc(100dvh - 24px); padding: 24px 16px; }
   .pricing-modal-close { margin: -8px -6px -28px 0; }
 }
+
+
+/* Final requested theme and no-scroll pricing overlay layout. */
+.workflow-section {
+  background: #f4f6ef !important;
+  color: #151a12 !important;
+  border-top: 1px solid #e1e6dc;
+  border-bottom: 1px solid #e1e6dc;
+}
+.workflow-section .eyebrow { color: #65745a; }
+.workflow-section h2, .workflow-section .workflow-item h3 { color: #151a12; }
+.workflow-section h2 em { color: #668b35; }
+.workflow-section .workflow-intro > p, .workflow-section .workflow-item p { color: #596253; }
+.workflow-section .workflow-list, .workflow-section .workflow-item { border-color: #d7dfcf; }
+.workflow-section .workflow-number, .workflow-section .workflow-arrow { color: #668b35; }
+.workflow-section .button-outline { border-color: #c4cfb9; color: #263020; }
+.workflow-section .button-outline:hover { border-color: #668b35; background: #668b350d; }
+
+.pricing-backdrop {
+  overflow: hidden;
+  padding: 18px;
+}
+.pricing-modal {
+  width: min(1160px, 100%);
+  max-height: calc(100dvh - 36px);
+  overflow: hidden;
+  padding: clamp(22px, 2.4vw, 34px);
+}
+.pricing-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  float: none;
+  margin: 0;
+}
+.pricing-modal-content { clear: none; }
+.pricing-modal .pricing-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, .8fr);
+  align-items: end;
+  gap: 26px;
+  margin: 0 42px 22px 0;
+}
+.pricing-modal .pricing-heading h2 {
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.04;
+}
+.pricing-modal .pricing-heading > p {
+  max-width: 390px;
+  margin: 0 0 3px;
+  font-size: 11px;
+  line-height: 1.65;
+}
+.pricing-modal .pricing-grid { gap: 12px; }
+.pricing-modal .pricing-card { padding: 20px 18px 17px; }
+.pricing-modal .pricing-badge { margin-top: 8px; padding: 5px 7px; }
+.pricing-modal .pricing-card h3 { margin: 14px 0 7px; font-size: 20px; }
+.pricing-modal .pricing-summary { min-height: 42px; font-size: 10px; line-height: 1.55; }
+.pricing-modal .pricing-price { margin: 13px 0 12px; font-size: 15px; }
+.pricing-modal .pricing-card ul { gap: 8px; padding: 12px 0 14px; margin-bottom: 14px; }
+.pricing-modal .pricing-card li { font-size: 9px; line-height: 1.45; }
+.pricing-modal .pricing-action { min-height: 40px; padding: 10px 12px; font-size: 10px; }
+.pricing-modal .pricing-disclaimer { margin: 14px auto 0; font-size: 9px; line-height: 1.5; }
+@media (max-width: 760px) {
+  .pricing-backdrop { padding: 10px; }
+  .pricing-modal {
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+    padding: 22px 14px 16px;
+  }
+  .pricing-modal-close { top: 12px; right: 12px; }
+  .pricing-modal .pricing-heading {
+    display: block;
+    margin: 0 34px 18px 0;
+  }
+  .pricing-modal .pricing-heading h2 { font-size: 29px; }
+  .pricing-modal .pricing-heading > p { margin-top: 10px; }
+  .pricing-modal .pricing-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .pricing-modal .pricing-card { padding: 16px; }
+  .pricing-modal .pricing-card h3 { margin-top: 10px; }
+  .pricing-modal .pricing-summary { min-height: 0; }
+  .pricing-modal .pricing-card ul { padding: 10px 0; margin-bottom: 10px; }
+  .pricing-modal .pricing-disclaimer { text-align: left; }
+}
+@media (max-height: 760px) and (min-width: 761px) {
+  .pricing-modal { padding: 18px 24px; }
+  .pricing-modal .pricing-heading { margin-bottom: 14px; }
+  .pricing-modal .pricing-heading h2 { font-size: 30px; }
+  .pricing-modal .pricing-card { padding: 14px 16px 12px; }
+  .pricing-modal .pricing-card h3 { margin-top: 10px; }
+  .pricing-modal .pricing-summary { min-height: 32px; }
+  .pricing-modal .pricing-card ul { gap: 6px; padding: 9px 0; margin-bottom: 9px; }
+  .pricing-modal .pricing-disclaimer { margin-top: 9px; }
+}
