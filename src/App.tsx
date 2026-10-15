@@ -90,7 +90,7 @@ function App() {
         const rect = item.getBoundingClientRect()
         return rect.top <= 78 && rect.bottom > 78
       })
-      setHeaderLight(Boolean(section?.classList.contains('hero') || section?.classList.contains('platform-section')))
+      setHeaderLight(Boolean(section?.classList.contains('interface-section') || section?.classList.contains('dark-band') || section?.classList.contains('principle-strip') || section?.classList.contains('platform-section')))
     }
     updateHeaderTheme()
     window.addEventListener('scroll', updateHeaderTheme, { passive: true })
