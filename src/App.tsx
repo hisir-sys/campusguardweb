@@ -69,6 +69,7 @@ function App() {
   }, [])
 
   const [scrollProgress, setScrollProgress] = useState(0)
+  const [headerLight, setHeaderLight] = useState(false)
   useEffect(() => {
     const updateProgress = () => {
       const scrollable = document.documentElement.scrollHeight - window.innerHeight
@@ -83,13 +84,31 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    const lightSections = document.querySelectorAll('.interface-section')
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) setHeaderLight(true)
+        else if (entry.boundingClientRect.top > 0 || entry.boundingClientRect.bottom < 78) {
+          const light = Array.from(document.querySelectorAll('.interface-section')).some(section => {
+            const rect = section.getBoundingClientRect()
+            return rect.top < 78 && rect.bottom > 78
+          })
+          setHeaderLight(light)
+        }
+      }
+    }, { threshold: 0, rootMargin: '-78px 0px 0px 0px' })
+    lightSections.forEach(section => observer.observe(section))
+    return () => observer.disconnect()
+  }, [])
+
   const [modal, setModal] = useState<ModalName>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [faqOpen, setFaqOpen] = useState<number | null>(0)
   const openAccess = () => { setModal('access'); setMenuOpen(false) }
   return <main id="top">
     <div className="reading-progress" aria-hidden="true"><span style={{ width: `${scrollProgress}%` }} /></div>
-    <header className="site-header">
+    <header className={headerLight ? "site-header header-light" : "site-header"}>
       <div className="header-inner"><Brand />
         <nav className={menuOpen ? 'nav-links nav-open' : 'nav-links'} aria-label="Main navigation">
           <a href="#platform" onClick={() => setMenuOpen(false)}>Platform</a><a href="#how-it-works" onClick={() => setMenuOpen(false)}>How it works</a><a href="#pipeline" onClick={() => setMenuOpen(false)}>AI pipeline</a><a href="#principles" onClick={() => setMenuOpen(false)}>Our approach</a>
