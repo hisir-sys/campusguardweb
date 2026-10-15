@@ -139,6 +139,46 @@ function App() {
 
     <section className="workflow-section" id="how-it-works"><div className="section-shell workflow-shell"><div className="workflow-intro"><span className="eyebrow"><span className="eyebrow-line" /> HOW IT WORKS</span><h2>A clear path from<br /><em>signal to response.</em></h2><p>AI can help surface a moment. People still provide the context, judgement and next step.</p><button className="button button-outline" onClick={() => setModal('product')}>Explore the product <ArrowUpRight size={15} /></button></div><div className="workflow-list">{workflow.map(({ n, title, text }) => <article className="workflow-item" key={n}><span className="workflow-number">{n}</span><div><h3>{title}</h3><p>{text}</p></div><ArrowUpRight className="workflow-arrow" size={19} /></article>)}</div></div></section>
 
+    <section className="neural-section" id="pipeline">
+      <div className="section-shell neural-shell">
+        <div className="neural-heading">
+          <span className="eyebrow"><span className="eyebrow-line" /> INSIDE THE PIPELINE</span>
+          <h2>From raw frames<br />to <em>useful signals.</em></h2>
+          <p>A conceptual view of how the desktop workflow can turn video into a reviewable event. The diagram is illustrative, not a live model telemetry feed.</p>
+        </div>
+        <div className="neural-visual" aria-label="Illustrative animated neural network connecting video input, temporal analysis, event signal and human review">
+          <div className="neural-visual-top"><span><i className="neural-live-dot" /> CONCEPTUAL AI PIPELINE</span><span>CG / MODEL FLOW 01</span></div>
+          <svg className="neural-network" viewBox="0 0 900 300" role="img" aria-label="Animated connected network nodes">
+            <defs><radialGradient id="nodeGlow"><stop offset="0%" stopColor="#d6ff78" stopOpacity=".95" /><stop offset="100%" stopColor="#c8ff52" stopOpacity=".12" /></radialGradient></defs>
+            <g className="network-links">
+              <path d="M70 150 L205 65 L340 115 L470 45 L610 100 L755 65 L835 150" />
+              <path d="M70 150 L205 145 L340 115 L470 150 L610 100 L755 150 L835 150" />
+              <path d="M70 150 L205 235 L340 195 L470 250 L610 200 L755 235 L835 150" />
+              <path d="M205 65 L205 145 L205 235 M340 115 L340 195 M470 45 L470 150 L470 250 M610 100 L610 200 M755 65 L755 150 L755 235" />
+              <path className="network-pulse" d="M70 150 L205 65 L340 115 L470 150 L610 100 L755 150 L835 150" />
+              <path className="network-pulse pulse-delay" d="M70 150 L205 235 L340 195 L470 250 L610 200 L755 235 L835 150" />
+            </g>
+            <g className="network-nodes">
+              <circle cx="70" cy="150" r="14" /><circle cx="205" cy="65" r="9" /><circle cx="205" cy="145" r="12" /><circle cx="205" cy="235" r="9" />
+              <circle cx="340" cy="115" r="13" /><circle cx="340" cy="195" r="10" /><circle cx="470" cy="45" r="8" /><circle cx="470" cy="150" r="16" /><circle cx="470" cy="250" r="8" />
+              <circle cx="610" cy="100" r="12" /><circle cx="610" cy="200" r="10" /><circle cx="755" cy="65" r="9" /><circle cx="755" cy="150" r="13" /><circle cx="755" cy="235" r="9" /><circle cx="835" cy="150" r="14" />
+            </g>
+          </svg>
+          <div className="neural-stage-labels"><span>01 / FRAME INPUT</span><span>02 / TEMPORAL ANALYSIS</span><span>03 / EVENT SIGNAL</span><span>04 / HUMAN REVIEW</span></div>
+          <div className="pipeline-flow">
+            <article className="pipeline-node"><span className="pipeline-icon">01</span><b>Capture</b><small>Camera frames</small></article>
+            <span className="pipeline-connector"><i /></span>
+            <article className="pipeline-node"><span className="pipeline-icon">02</span><b>Analyse</b><small>Local AI model</small></article>
+            <span className="pipeline-connector"><i /></span>
+            <article className="pipeline-node"><span className="pipeline-icon">03</span><b>Flag</b><small>Possible event</small></article>
+            <span className="pipeline-connector"><i /></span>
+            <article className="pipeline-node pipeline-human"><span className="pipeline-icon"><ShieldCheck size={17} /></span><b>Review</b><small>Staff decision</small></article>
+          </div>
+          <p className="neural-footnote"><Activity size={13} /> Illustrative flow only · Alerts support review and are not proof of an event.</p>
+        </div>
+      </div>
+    </section>
+
     <section className="section interface-section"><div className="section-shell interface-layout"><div className="interface-copy"><span className="eyebrow"><span className="eyebrow-line" /> PURPOSEFUL BY DESIGN</span><h2>Less hunting.<br /><em>More understanding.</em></h2><p>A focused workspace for viewing feeds, reviewing alerts and keeping incident records organised—without turning every signal into a conclusion.</p><ul className="check-list"><li><Check size={15} /> Review alerts with useful context</li><li><Check size={15} /> Keep incident status and follow-up visible</li><li><Check size={15} /> Keep a human in the decision loop</li></ul><button className="button button-dark" onClick={openAccess}>Apply to evaluate CampusGuard <ArrowRight size={15} /></button></div><div className="interface-art"><div className="art-backdrop" /><div className="art-window"><div className="art-window-head"><span>INCIDENT REVIEW</span><span className="art-window-dots">•••</span></div><div className="art-event"><span className="event-time">10:42:08</span><span className="event-type"><i /> REVIEW REQUIRED</span></div><div className="art-preview"><div className="art-scanline" /><div className="art-person person-one" /><div className="art-person person-two" /><div className="art-bbox" /><span className="art-camera-label">NORTH QUAD / CAM 01</span></div><div className="art-meta"><span>STATUS</span><b><i /> Open for review</b></div><div className="art-meta"><span>RECORD</span><b>CG-INC-0042</b></div><div className="art-actions"><span>View event</span><span>Mark reviewed <Check size={12} /></span></div></div><div className="art-stamp"><ShieldCheck size={15} /> HUMAN REVIEW FIRST</div></div></div></section>
 
     <section className="dark-band"><div className="section-shell dark-band-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> A MORE THOUGHTFUL APPROACH</span><h2>Technology should<br />support <em>people.</em></h2></div><p>CampusGuard is designed as an aid to awareness and review—not a substitute for trained staff, established safety procedures or human judgement.</p><div className="dark-band-mark"><ShieldCheck size={35} strokeWidth={1} /></div></div></section>
