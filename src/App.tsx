@@ -88,7 +88,7 @@ function App() {
     const updateHeaderTheme = () => {
       const section = Array.from(document.querySelectorAll('main > section')).find(item => {
         const rect = item.getBoundingClientRect()
-        return rect.top <= 78 && rect.bottom > 78
+        return rect.top <= 104 && rect.bottom > 104
       })
       setHeaderLight(section?.getAttribute('data-theme') === 'light')
     }
