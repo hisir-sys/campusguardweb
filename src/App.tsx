@@ -68,11 +68,27 @@ function App() {
     return () => observer.disconnect()
   }, [])
 
+  const [scrollProgress, setScrollProgress] = useState(0)
+  useEffect(() => {
+    const updateProgress = () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight
+      setScrollProgress(scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0)
+    }
+    updateProgress()
+    window.addEventListener('scroll', updateProgress, { passive: true })
+    window.addEventListener('resize', updateProgress)
+    return () => {
+      window.removeEventListener('scroll', updateProgress)
+      window.removeEventListener('resize', updateProgress)
+    }
+  }, [])
+
   const [modal, setModal] = useState<ModalName>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [faqOpen, setFaqOpen] = useState<number | null>(0)
   const openAccess = () => { setModal('access'); setMenuOpen(false) }
   return <main id="top">
+    <div className="reading-progress" aria-hidden="true"><span style={{ width: `${scrollProgress}%` }} /></div>
     <header className="site-header">
       <div className="header-inner"><Brand />
         <nav className={menuOpen ? 'nav-links nav-open' : 'nav-links'} aria-label="Main navigation">
