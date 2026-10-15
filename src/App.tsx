@@ -1,0 +1,124 @@
+import { useState } from 'react'
+import {
+  ArrowDownRight, ArrowRight, ArrowUpRight, Activity, BellRing, Check,
+  ChevronDown, CircleDot, Command, Eye, Fingerprint, LockKeyhole, Menu,
+  Monitor, Play, ScanEye, ShieldCheck, Sparkles, Video, X, Zap,
+} from 'lucide-react'
+
+type ModalName = 'access' | 'product' | null
+
+const features = [
+  { number: '01', icon: ScanEye, title: 'Context before noise', text: 'AI-assisted detection helps bring potentially important moments to the attention of the people responsible for reviewing them.' },
+  { number: '02', icon: BellRing, title: 'Alerts with a next step', text: 'A clear incident workflow helps staff inspect an alert, review the available footage and record what happened next.' },
+  { number: '03', icon: Fingerprint, title: 'Local-first by design', text: 'Video analysis is designed around the Windows desktop application. Website sync, where enabled, should be limited to explicitly selected data.' },
+]
+
+const workflow = [
+  { n: '01', title: 'Connect', text: 'Bring compatible camera feeds into the CampusGuard desktop application.' },
+  { n: '02', title: 'Understand', text: 'Local AI models analyse video and flag events that may need a human review.' },
+  { n: '03', title: 'Review', text: 'Staff inspect alerts and manage incident records from a single workflow.' },
+]
+
+function Brand() {
+  return <a className="brand" href="#top" aria-label="CampusGuard home"><span className="brand-mark"><ShieldCheck size={19} strokeWidth={1.8} /></span><span>campus<span className="brand-light">guard</span><i>®</i></span></a>
+}
+
+function AccessModal({ close }: { close: () => void }) {
+  const [submitted, setSubmitted] = useState(false)
+  const [form, setForm] = useState({ name: '', email: '', organisation: '', role: '', purpose: '' })
+  const update = (key: keyof typeof form, value: string) => setForm(current => ({ ...current, [key]: value }))
+  return <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) close() }}>
+    <section className="access-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button className="modal-close" onClick={close} aria-label="Close application"><X size={18} /></button>
+      {submitted ? <div className="success-state"><span className="success-icon"><Check size={25} /></span><span className="eyebrow">APPLICATION DRAFTED</span><h2 id="modal-title">You’re on our radar.</h2><p>This demo form has validated your details locally, but it has not sent or stored an application. A secure application service will be connected before launch.</p><button className="button button-dark" onClick={close}>Back to CampusGuard <ArrowRight size={16} /></button></div> :
+      <><span className="eyebrow">EARLY ACCESS</span><h2 id="modal-title">Let’s make your campus more aware.</h2><p className="modal-intro">Tell us a little about your institution. Applications are intended to be reviewed before access is granted.</p>
+      <form onSubmit={e => { e.preventDefault(); setSubmitted(true) }}>
+        <label>Your name<input required value={form.name} onChange={e => update('name', e.target.value)} placeholder="Full name" /></label>
+        <label>Work email<input required type="email" value={form.email} onChange={e => update('email', e.target.value)} placeholder="you@institution.org" /></label>
+        <label>Institution / organisation<input required value={form.organisation} onChange={e => update('organisation', e.target.value)} placeholder="Organisation name" /></label>
+        <label>Your role<select required value={form.role} onChange={e => update('role', e.target.value)}><option value="">Choose a role</option><option>School / campus leadership</option><option>IT / security team</option><option>Facilities / operations</option><option>Research / evaluation</option><option>Other</option></select></label>
+        <label>What are you hoping to evaluate?<textarea value={form.purpose} onChange={e => update('purpose', e.target.value)} placeholder="A short description (optional)" rows={3} /></label>
+        <button className="button button-lime form-submit" type="submit">Review application <ArrowUpRight size={16} /></button>
+        <p className="form-note"><LockKeyhole size={12} /> Prototype only. No information is transmitted or saved.</p>
+      </form></>}
+    </section>
+  </div>
+}
+
+function App() {
+  const [modal, setModal] = useState<ModalName>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [faqOpen, setFaqOpen] = useState<number | null>(0)
+  const openAccess = () => { setModal('access'); setMenuOpen(false) }
+  return <main id="top">
+    <header className="site-header">
+      <div className="header-inner"><Brand />
+        <nav className={menuOpen ? 'nav-links nav-open' : 'nav-links'} aria-label="Main navigation">
+          <a href="#platform" onClick={() => setMenuOpen(false)}>Platform</a><a href="#how-it-works" onClick={() => setMenuOpen(false)}>How it works</a><a href="#principles" onClick={() => setMenuOpen(false)}>Our approach</a>
+          <button className="nav-login" onClick={() => setModal('product')}>Customer portal <ArrowUpRight size={14} /></button>
+          <button className="button button-lime nav-cta" onClick={openAccess}>Apply for access <ArrowUpRight size={15} /></button>
+        </nav>
+        <button className="mobile-menu" aria-label={menuOpen ? 'Close menu' : 'Open menu'} onClick={() => setMenuOpen(v => !v)}>{menuOpen ? <X /> : <Menu />}</button>
+      </div>
+    </header>
+
+    <section className="hero">
+      <div className="hero-grid" aria-hidden="true" /><div className="hero-glow" aria-hidden="true" />
+      <div className="hero-inner">
+        <div className="hero-copy"><div className="status-pill"><span className="status-dot" /> CAMPUS SAFETY, WITH MORE CONTEXT</div>
+          <h1>See the moment.<br />Understand <em>what matters.</em></h1>
+          <p className="hero-lede">A more considered approach to campus monitoring. CampusGuard brings camera feeds, AI-assisted alerts and incident review into one focused desktop workflow.</p>
+          <div className="hero-actions"><button className="button button-lime" onClick={openAccess}>Request early access <ArrowUpRight size={16} /></button><a className="text-link" href="#how-it-works"><span className="play-circle"><Play size={12} fill="currentColor" /></span> Explore the approach</a></div>
+          <div className="hero-proof"><span><Check size={13} /> Windows desktop application</span><span><Check size={13} /> Local-first processing approach</span></div>
+        </div>
+        <div className="hero-visual">
+          <div className="visual-orbit orbit-one" /><div className="visual-orbit orbit-two" />
+          <div className="visual-topline"><span><span className="live-dot" /> CONCEPTUAL INTERFACE</span><span>CG / 001</span></div>
+          <div className="monitor-frame">
+            <div className="monitor-toolbar"><span className="window-dots"><i /><i /><i /></span><span className="monitor-title"><Command size={12} /> CAMPUSGUARD / LIVE VIEW</span><span className="monitor-status"><CircleDot size={9} /> LOCAL</span></div>
+            <div className="camera-grid">
+              <div className="camera-feed feed-a"><div className="feed-label">NORTH QUAD <span>CAM—01</span></div><div className="feed-scan" /><div className="detection-box box-a"><span>PERSON / TRACK 04</span></div><div className="feed-time">10:42:08</div><span className="corner-mark tl" /><span className="corner-mark br" /></div>
+              <div className="camera-feed feed-b"><div className="feed-label">MAIN HALL <span>CAM—02</span></div><div className="feed-scan" /><div className="detection-box box-b"><span>TRACK 02</span></div><div className="feed-time">10:42:09</div><span className="corner-mark tl" /><span className="corner-mark br" /></div>
+              <div className="camera-feed feed-c"><div className="feed-label">EAST WALKWAY <span>CAM—03</span></div><div className="feed-scan" /><div className="feed-time">10:42:10</div></div>
+              <div className="camera-feed feed-d"><div className="feed-label">LIBRARY ENTRY <span>CAM—04</span></div><div className="feed-scan" /><div className="feed-time">10:42:10</div></div>
+            </div>
+            <div className="monitor-bottom"><span><Activity size={12} /> AI ENGINE <b>READY</b></span><span>4 VIEWPORTS <i /> LOCAL SESSION</span></div>
+          </div>
+          <div className="floating-alert"><span className="alert-icon"><BellRing size={16} /></span><span><b>Incident for review</b><small>Human review recommended</small></span><span className="alert-chevron"><ArrowUpRight size={14} /></span></div>
+          <div className="visual-caption"><span>ILLUSTRATIVE PRODUCT VISUAL</span><span>DESIGNED FOR HUMAN REVIEW</span></div>
+        </div>
+        <div className="hero-index"><span>01 — AWARENESS</span><span>BUILT FOR THE PEOPLE WHO KEEP CAMPUSES MOVING <ArrowDownRight size={13} /></span></div>
+      </div>
+    </section>
+
+    <section className="principle-strip" id="principles"><div className="strip-inner"><span className="strip-label">A DIFFERENT KIND OF MONITORING</span><span><ShieldCheck size={17} /> Human-led decisions</span><span><Monitor size={17} /> Desktop-first workflow</span><span><LockKeyhole size={17} /> Privacy-aware by design</span></div></section>
+
+    <section className="section platform-section" id="platform"><div className="section-shell">
+      <div className="section-heading"><div><span className="eyebrow"><span className="eyebrow-line" /> THE PLATFORM</span><h2>From camera feeds to<br /><em>clearer decisions.</em></h2></div><p>Security teams already have a lot to watch. CampusGuard is being built to help make the important moments easier to find, review and document.</p></div>
+      <div className="feature-grid">{features.map(({ number, icon: Icon, title, text }) => <article className="feature-card" key={number}><div className="feature-top"><span>{number}</span><Icon size={21} strokeWidth={1.5} /></div><h3>{title}</h3><p>{text}</p><span className="feature-arrow"><ArrowUpRight size={17} /></span></article>)}</div>
+      <div className="platform-note"><Sparkles size={17} /><p><b>Built around a desktop application.</b> CampusGuard’s Windows app remains the primary place for camera capture and local analysis. The web portal is a separate account and incident-review experience.</p></div>
+    </div></section>
+
+    <section className="workflow-section" id="how-it-works"><div className="section-shell workflow-shell"><div className="workflow-intro"><span className="eyebrow"><span className="eyebrow-line" /> HOW IT WORKS</span><h2>A clear path from<br /><em>signal to response.</em></h2><p>AI can help surface a moment. People still provide the context, judgement and next step.</p><button className="button button-outline" onClick={() => setModal('product')}>Explore the product <ArrowUpRight size={15} /></button></div><div className="workflow-list">{workflow.map(({ n, title, text }) => <article className="workflow-item" key={n}><span className="workflow-number">{n}</span><div><h3>{title}</h3><p>{text}</p></div><ArrowUpRight className="workflow-arrow" size={19} /></article>)}</div></div></section>
+
+    <section className="section interface-section"><div className="section-shell interface-layout"><div className="interface-copy"><span className="eyebrow"><span className="eyebrow-line" /> PURPOSEFUL BY DESIGN</span><h2>Less hunting.<br /><em>More understanding.</em></h2><p>A focused workspace for viewing feeds, reviewing alerts and keeping incident records organised—without turning every signal into a conclusion.</p><ul className="check-list"><li><Check size={15} /> Review alerts with useful context</li><li><Check size={15} /> Keep incident status and follow-up visible</li><li><Check size={15} /> Keep a human in the decision loop</li></ul><button className="button button-dark" onClick={openAccess}>Apply to evaluate CampusGuard <ArrowRight size={15} /></button></div><div className="interface-art"><div className="art-backdrop" /><div className="art-window"><div className="art-window-head"><span>INCIDENT REVIEW</span><span className="art-window-dots">•••</span></div><div className="art-event"><span className="event-time">10:42:08</span><span className="event-type"><i /> REVIEW REQUIRED</span></div><div className="art-preview"><div className="art-scanline" /><div className="art-person person-one" /><div className="art-person person-two" /><div className="art-bbox" /><span className="art-camera-label">NORTH QUAD / CAM 01</span></div><div className="art-meta"><span>STATUS</span><b><i /> Open for review</b></div><div className="art-meta"><span>RECORD</span><b>CG-INC-0042</b></div><div className="art-actions"><span>View event</span><span>Mark reviewed <Check size={12} /></span></div></div><div className="art-stamp"><ShieldCheck size={15} /> HUMAN REVIEW FIRST</div></div></div></section>
+
+    <section className="dark-band"><div className="section-shell dark-band-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> A MORE THOUGHTFUL APPROACH</span><h2>Technology should<br />support <em>people.</em></h2></div><p>CampusGuard is designed as an aid to awareness and review—not a substitute for trained staff, established safety procedures or human judgement.</p><div className="dark-band-mark"><ShieldCheck size={35} strokeWidth={1} /></div></div></section>
+
+    <section className="section faq-section"><div className="section-shell faq-layout"><div><span className="eyebrow"><span className="eyebrow-line" /> GOOD QUESTIONS</span><h2>Before we<br /><em>get started.</em></h2><p>Clear answers about what CampusGuard is, and what it is not.</p></div><div className="faq-list">{[
+      ['Is CampusGuard a web-based CCTV system?', 'The core product is a Windows desktop application. The planned website adds access requests, organisation accounts and an incident-review portal; it does not replace the desktop application.'],
+      ['Does video have to be uploaded to the cloud?', 'The product is designed around local video processing. Any future portal sync must clearly specify what metadata is shared, and video should not be uploaded by default.'],
+      ['Does an alert automatically mean violence or wrongdoing occurred?', 'No. An AI alert is a prompt for review, not proof. Staff should consider context and follow their institution’s procedures before taking action.'],
+      ['How can an institution get access?', 'Submit an application with your institution and intended use. During the planned pilot, applications will be reviewed before account invitations are issued.'],
+    ].map(([q, a], i) => <article className={faqOpen === i ? 'faq-item faq-expanded' : 'faq-item'} key={q}><button onClick={() => setFaqOpen(faqOpen === i ? null : i)} aria-expanded={faqOpen === i}><span>{q}</span><ChevronDown size={18} /></button>{faqOpen === i && <p>{a}</p>}</article>)}</div></div></section>
+
+    <section className="final-cta"><div className="cta-grid" aria-hidden="true" /><div className="final-cta-inner"><span className="eyebrow"><span className="eyebrow-line" /> EARLY ACCESS PROGRAMME</span><h2>Make room for<br /><em>a clearer picture.</em></h2><p>We’re looking to work with institutions that want to evaluate a more considered, human-led approach to campus monitoring.</p><button className="button button-lime" onClick={openAccess}>Apply for early access <ArrowUpRight size={16} /></button><span className="cta-footnote">INSTITUTIONAL ENQUIRIES · APPLICATIONS REVIEWED INDIVIDUALLY</span></div></section>
+
+    <footer className="site-footer"><div className="footer-top"><Brand /><p>More context. Better review.<br />People at the centre.</p><div className="footer-links"><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><a href="#principles">Our approach</a><button onClick={openAccess}>Apply for access</button></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} CampusGuard. All rights reserved.</span><span>AI-ASSISTED · HUMAN-LED · PRIVACY-AWARE</span><a href="#top">BACK TO TOP ↑</a></div></footer>
+
+    {modal === 'access' && <AccessModal close={() => setModal(null)} />}
+    {modal === 'product' && <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setModal(null) }}><section className="access-modal info-modal" role="dialog" aria-modal="true" aria-labelledby="portal-title"><button className="modal-close" onClick={() => setModal(null)} aria-label="Close"><X size={18} /></button><span className="eyebrow">CUSTOMER ACCESS</span><h2 id="portal-title">A portal with purpose.</h2><p className="modal-intro">The customer portal is planned for approved institutions. Secure sign-in, organisation-scoped incident access and invitation-based account setup will be connected in a later phase.</p><div className="portal-status"><LockKeyhole size={18} /><span><b>Private access is not live yet</b><small>This preview does not authenticate users or display real incidents.</small></span></div><button className="button button-dark" onClick={() => { setModal(null); openAccess() }}>Apply for early access <ArrowUpRight size={15} /></button></section></div>}
+  </main>
+}
+
+export default App
