@@ -630,3 +630,65 @@ html { scroll-behavior: smooth; }
   .pipeline-node { padding: 11px 8px; }
   .access-modal { padding-bottom: 28px; }
 }
+
+
+/* Final narrow-screen corrections for the three reported mobile issues. */
+@media (max-width: 760px) {
+  /* Keep the hero copy and its primary action clear of the sticky header. */
+  .hero-inner {
+    padding-top: 82px;
+  }
+  .hero-copy,
+  .hero-actions {
+    scroll-margin-top: 88px;
+  }
+  .hero-actions .button {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Separate the diagram/labels from the 2×2 card layout. */
+  .neural-visual {
+    padding-bottom: 24px;
+  }
+  .neural-stage-labels {
+    margin-bottom: 18px;
+    line-height: 1.6;
+  }
+  .pipeline-flow {
+    margin-top: 8px;
+    padding-top: 28px;
+    row-gap: 26px;
+    column-gap: 8px;
+  }
+  .pipeline-flow .pipeline-node:nth-of-type(3),
+  .pipeline-flow .pipeline-node:nth-of-type(4) {
+    margin-top: 0;
+  }
+
+  /* Keep the modal title clear of the close control and preserve scroll padding. */
+  .access-modal {
+    padding-top: 30px;
+    padding-bottom: 32px;
+    scroll-padding-block: 26px 30px;
+  }
+  .modal-close {
+    top: 0;
+    margin-top: -2px;
+    margin-bottom: -28px;
+  }
+  .access-modal > .eyebrow {
+    padding-top: 3px;
+  }
+  .access-modal form {
+    padding-bottom: 14px;
+  }
+  .form-submit {
+    margin-bottom: 6px;
+  }
+}
+@media (max-width: 380px) {
+  .hero-inner { padding-top: 78px; }
+  .pipeline-flow { row-gap: 28px; }
+  .access-modal { padding-top: 28px; padding-bottom: 30px; }
+}
