@@ -313,3 +313,54 @@ section[id] { scroll-margin-top: 94px; }
   .neural-heading { margin-bottom: 28px; }
   section[id] { scroll-margin-top: 78px; }
 }
+
+
+/* Correct the visible section sequence: dark platform, light workflow. */
+.platform-section {
+  background: #090d0b;
+  color: #f4f6ef;
+  border-top: 1px solid #ffffff0d;
+  border-bottom: 1px solid #ffffff0d;
+}
+.platform-section .eyebrow { color: #a0ad94; }
+.platform-section .section-heading h2 { color: #f4f6ef; }
+.platform-section .section-heading h2 em { color: #c8ff52; }
+.platform-section .section-heading > p { color: #a8b0a5; }
+.platform-section .feature-card {
+  background: linear-gradient(145deg, #111811, #0d120f);
+  border-color: #303c2c;
+  color: #f4f6ef;
+}
+.platform-section .feature-top { color: #a0ad94; }
+.platform-section .feature-top svg,
+.platform-section .feature-arrow { color: #c8ff52; }
+.platform-section .feature-card h3 { color: #f0f3eb; }
+.platform-section .feature-card p { color: #a8b0a5; }
+.platform-section .platform-note {
+  border-color: #303c2c;
+  background: #101710;
+  color: #a8b0a5;
+}
+.platform-section .platform-note svg,
+.platform-section .platform-note b { color: #c8ff52; }
+
+/* The workflow is the light slide after the dark platform slide. */
+.workflow-section {
+  background: #f4f6ef;
+  color: #151a12;
+  border-top: 1px solid #e1e6dc;
+  border-bottom: 1px solid #e1e6dc;
+}
+.workflow-section .eyebrow { color: #65745a; }
+.workflow-section h2 { color: #151a12; }
+.workflow-section h2 em { color: #668b35; }
+.workflow-intro > p { color: #596253; }
+.workflow-list { border-top-color: #d7dfcf; }
+.workflow-item { border-bottom-color: #d7dfcf; }
+.workflow-number { color: #668b35; }
+.workflow-item h3 { color: #151a12; }
+.workflow-item p { color: #596253; }
+.workflow-arrow { color: #668b35; }
+.workflow-item:hover .workflow-arrow { color: #456d22; }
+.workflow-section .button-outline { border-color: #c4cfb9; color: #263020; }
+.workflow-section .button-outline:hover { border-color: #668b35; background: #668b350d; }
