@@ -792,3 +792,78 @@ html { scroll-behavior: smooth; }
   .pricing-disclaimer { text-align: left; }
   .account-prompt { margin-top: 18px; }
 }
+
+
+/* Match the platform -> pricing -> workflow visual rhythm and motion. */
+.platform-section,
+.pricing-section {
+  background-color: #090d0b;
+  color: #f4f6ef;
+}
+.pricing-section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, #c8ff520a, transparent 52%),
+    linear-gradient(180deg, #090d0b 0%, #0b100c 100%);
+}
+.pricing-section::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #c8ff5230, transparent);
+}
+.pricing-heading h2 {
+  font-family: var(--display);
+  letter-spacing: -.045em;
+  line-height: 1.08;
+}
+.pricing-heading > p {
+  max-width: 470px;
+  font-size: 12px;
+  line-height: 1.9;
+}
+.pricing-card {
+  box-shadow: 0 12px 34px #00000012;
+  transition:
+    transform .38s cubic-bezier(.2,.75,.25,1),
+    border-color .3s ease,
+    box-shadow .38s ease,
+    background .3s ease;
+}
+.pricing-card:hover {
+  transform: translateY(-6px);
+  border-color: #789d4c;
+  box-shadow: 0 24px 54px #00000038, inset 0 1px #ffffff0b;
+}
+.pricing-featured:hover {
+  border-color: #c8ff52;
+  box-shadow: 0 24px 58px #c8ff5210, inset 0 1px #ffffff0b;
+}
+.pricing-action {
+  transition: transform .25s ease, background-color .25s ease, border-color .25s ease, color .25s ease;
+}
+.pricing-action:hover { transform: translateY(-2px); }
+.workflow-section {
+  background-color: #f4f6ef;
+  color: #151a12;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pricing-card.cg-reveal {
+    transition:
+      opacity .65s ease,
+      transform .65s cubic-bezier(.2,.75,.25,1),
+      border-color .3s ease,
+      box-shadow .38s ease,
+      background .3s ease;
+  }
+  .pricing-card:nth-child(2) { --cg-reveal-delay: 100ms; }
+  .pricing-card:nth-child(3) { --cg-reveal-delay: 200ms; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pricing-card, .pricing-action { transition: none; }
+  .pricing-card:hover, .pricing-action:hover { transform: none; }
+}
