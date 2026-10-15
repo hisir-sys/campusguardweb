@@ -62,7 +62,7 @@ function App() {
     }, { threshold: 0.14, rootMargin: '0px 0px -35px 0px' })
     targets.forEach((target, index) => {
       target.classList.add('cg-reveal')
-      target.style.setProperty('--cg-reveal-delay', `${Math.min(index % 3, 2) * 90}ms`)
+      if (target instanceof HTMLElement) target.style.setProperty('--cg-reveal-delay', `${Math.min(index % 3, 2) * 90}ms`)
       observer.observe(target)
     })
     return () => observer.disconnect()
