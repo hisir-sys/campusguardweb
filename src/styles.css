@@ -161,3 +161,29 @@
   .neural-live-dot, .network-links .network-pulse, .network-nodes circle, .pipeline-connector i { animation: none !important; }
   .pipeline-node { transition: none; }
 }
+
+
+/* Contrast-aware sticky navigation over alternating dark and light sections */
+.site-header { transition: background-color .28s ease, border-color .28s ease, color .28s ease; }
+.site-header .brand, .site-header .brand-light, .site-header .brand i,
+.site-header .nav-links, .site-header .nav-login, .site-header .mobile-menu {
+  transition: color .28s ease, border-color .28s ease;
+}
+.site-header.header-light {
+  background: rgba(247, 248, 244, .94);
+  border-bottom-color: #20291a18;
+  box-shadow: 0 8px 24px #17200e08;
+}
+.site-header.header-light .brand { color: #151a12; }
+.site-header.header-light .brand-light,
+.site-header.header-light .brand i { color: #626b5d; }
+.site-header.header-light .brand-mark { border-color: #789d3e70; color: #557b26; }
+.site-header.header-light .nav-links { color: #4c5448; }
+.site-header.header-light .nav-links>a:hover,
+.site-header.header-light .nav-login:hover { color: #11170d; }
+.site-header.header-light .nav-login { color: #30382c; }
+.site-header.header-light .mobile-menu { color: #182016; }
+@media (prefers-reduced-motion: reduce) {
+  .site-header, .site-header .brand, .site-header .brand-light, .site-header .brand i,
+  .site-header .nav-links, .site-header .nav-login, .site-header .mobile-menu { transition: none; }
+}
