@@ -187,3 +187,23 @@
   .site-header, .site-header .brand, .site-header .brand-light, .site-header .brand i,
   .site-header .nav-links, .site-header .nav-login, .site-header .mobile-menu { transition: none; }
 }
+
+
+/* Alternate the narrative sections: light product story, dark workflow story */
+.workflow-section {
+  background: #090d0b;
+  color: #f4f6ef;
+  border-top: 1px solid #ffffff0d;
+  border-bottom: 1px solid #ffffff0d;
+}
+.workflow-section h2 em { color: #c8ff52; }
+.workflow-intro > p { color: #a8b0a5; }
+.workflow-list { border-top-color: #ffffff1c; }
+.workflow-item { border-bottom-color: #ffffff1c; }
+.workflow-number { color: #c8ff52; }
+.workflow-item h3 { color: #f0f3eb; }
+.workflow-item p { color: #9da79a; }
+.workflow-arrow { color: #9ab96b; }
+.workflow-item:hover .workflow-arrow { color: #c8ff52; }
+.workflow-section .button-outline { border-color: #495246; color: #e9eee4; }
+.workflow-section .button-outline:hover { border-color: #c8ff52; background: #c8ff520c; }
