@@ -966,3 +966,92 @@ html { scroll-behavior: smooth; }
 @media (max-width: 760px) {
   .pricing-section { padding: 72px 0 66px; }
 }
+
+
+/* Pricing lives in a focused overlay; keep the page's original section rhythm intact. */
+.pricing-backdrop {
+  z-index: 1200;
+  align-items: center;
+  padding: 24px;
+  overflow-y: auto;
+  background: rgba(3, 6, 4, .78);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.pricing-modal {
+  position: relative;
+  width: min(1120px, 100%);
+  max-height: min(88vh, 900px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: clamp(28px, 4vw, 54px);
+  color: #f4f6ef;
+  background: radial-gradient(ellipse at 50% 0%, #c8ff5210, transparent 55%), #090d0b;
+  border: 1px solid #303c2c;
+  box-shadow: 0 30px 100px #0008;
+}
+.pricing-modal-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  z-index: 5;
+  margin: -10px -10px -30px 0;
+  background: #151d14;
+  color: #f4f6ef;
+  border-color: #34412f;
+}
+.pricing-modal-content { clear: both; }
+.pricing-modal .pricing-heading { margin-bottom: 32px; }
+.pricing-modal .pricing-heading h2 {
+  color: #f4f6ef;
+  font-family: var(--display);
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 700;
+  letter-spacing: -.045em;
+  line-height: 1.08;
+}
+.pricing-modal .pricing-heading h2 em { color: #c8ff52; }
+.pricing-modal .pricing-heading .eyebrow { color: #a0ad94; }
+.pricing-modal .pricing-heading > p { color: #a8b0a5; }
+.pricing-modal .pricing-card {
+  background: linear-gradient(145deg, #121912, #0d120f);
+  border-color: #303c2c;
+  box-shadow: 0 12px 34px #00000012;
+}
+.pricing-modal .pricing-card.pricing-featured {
+  border-color: #789d4c;
+  background: radial-gradient(ellipse at 50% 0%, #c8ff5210, transparent 65%), linear-gradient(145deg, #182117, #101710);
+}
+.pricing-modal .pricing-kicker { color: #a0ad94; }
+.pricing-modal .pricing-badge {
+  border-color: #c8ff5240;
+  color: #c8ff52;
+  background: transparent;
+}
+.pricing-modal .pricing-card h3 { color: #f4f6ef; }
+.pricing-modal .pricing-summary { color: #a8b0a5; }
+.pricing-modal .pricing-price { color: #c8ff52; }
+.pricing-modal .pricing-card ul { border-top-color: #ffffff16; }
+.pricing-modal .pricing-card li { color: #c0cabb; }
+.pricing-modal .pricing-card li svg,
+.pricing-modal .pricing-disclaimer svg { color: #c8ff52; }
+.pricing-modal .pricing-disclaimer { color: #899486; }
+.pricing-modal .button-outline { border-color: #3b4934; color: #edf3e7; }
+.pricing-modal .button-outline:hover { border-color: #8da95d; background: #c8ff5210; }
+.workflow-section {
+  background: #090d0b !important;
+  color: #f4f6ef !important;
+  border-top: 1px solid #ffffff0d;
+  border-bottom: 1px solid #ffffff0d;
+}
+.workflow-section .eyebrow { color: #a0ad94; }
+.workflow-section h2, .workflow-section .workflow-item h3 { color: #f4f6ef; }
+.workflow-section h2 em, .workflow-section .workflow-number, .workflow-section .workflow-arrow { color: #c8ff52; }
+.workflow-section .workflow-intro > p, .workflow-section .workflow-item p { color: #a8b0a5; }
+.workflow-section .workflow-list, .workflow-section .workflow-item { border-color: #303c2c; }
+.workflow-section .button-outline { border-color: #3b4934; color: #edf3e7; }
+@media (max-width: 760px) {
+  .pricing-backdrop { align-items: flex-start; padding: 12px; }
+  .pricing-modal { max-height: calc(100dvh - 24px); padding: 24px 16px; }
+  .pricing-modal-close { margin: -8px -6px -28px 0; }
+}
