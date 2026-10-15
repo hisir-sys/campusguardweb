@@ -50,7 +50,7 @@ function App() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduceMotion || !('IntersectionObserver' in window)) return
     const targets = document.querySelectorAll(
-      '.section-heading, .feature-card, .workflow-intro, .workflow-item, .interface-copy, .interface-art, .dark-band-inner > *, .faq-layout > *, .final-cta-inner, .strip-inner > span:not(.strip-label)'
+      '.section-heading, .feature-card, .workflow-intro, .workflow-item, .neural-heading, .neural-visual, .pipeline-node, .interface-copy, .interface-art, .dark-band-inner > *, .faq-layout > *, .final-cta-inner, .strip-inner > span:not(.strip-label)'
     )
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -92,7 +92,7 @@ function App() {
     <header className="site-header">
       <div className="header-inner"><Brand />
         <nav className={menuOpen ? 'nav-links nav-open' : 'nav-links'} aria-label="Main navigation">
-          <a href="#platform" onClick={() => setMenuOpen(false)}>Platform</a><a href="#how-it-works" onClick={() => setMenuOpen(false)}>How it works</a><a href="#principles" onClick={() => setMenuOpen(false)}>Our approach</a>
+          <a href="#platform" onClick={() => setMenuOpen(false)}>Platform</a><a href="#how-it-works" onClick={() => setMenuOpen(false)}>How it works</a><a href="#pipeline" onClick={() => setMenuOpen(false)}>AI pipeline</a><a href="#principles" onClick={() => setMenuOpen(false)}>Our approach</a>
           <button className="nav-login" onClick={() => setModal('product')}>Customer portal <ArrowUpRight size={14} /></button>
           <button className="button button-lime nav-cta" onClick={openAccess}>Apply for access <ArrowUpRight size={15} /></button>
         </nav>
