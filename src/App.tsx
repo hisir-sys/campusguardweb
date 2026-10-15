@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   ArrowDownRight, ArrowRight, ArrowUpRight, Activity, BellRing, Check,
-  ChevronDown, CircleDot, Command, Fingerprint, LockKeyhole, Menu,
+  CircleDot, Command, Fingerprint, LockKeyhole, Menu,
   Monitor, Play, ScanEye, ShieldCheck, Sparkles, X,
 } from 'lucide-react'
 
@@ -103,7 +103,6 @@ function App() {
 
   const [modal, setModal] = useState<ModalName>(null)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [faqOpen, setFaqOpen] = useState<number | null>(0)
   const openAccess = () => { setModal('access'); setMenuOpen(false) }
   return <main id="top">
     <div className="reading-progress" aria-hidden="true"><span style={{ width: `${scrollProgress}%` }} /></div>
