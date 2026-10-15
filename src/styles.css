@@ -1149,3 +1149,210 @@ html { scroll-behavior: smooth; }
   .pricing-modal .pricing-card ul { gap: 6px; padding: 9px 0; margin-bottom: 9px; }
   .pricing-modal .pricing-disclaimer { margin-top: 9px; }
 }
+
+
+/* CampusGuard cinematic motion pass — restrained, layered, and accessible. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero {
+    background-image: radial-gradient(ellipse at 78% 28%, #c8ff5208 0%, transparent 42%);
+  }
+
+  .hero-grid {
+    will-change: background-position;
+    animation-duration: 34s;
+  }
+
+  .hero-glow {
+    filter: blur(2px);
+    will-change: transform, opacity;
+    animation-duration: 10s;
+  }
+
+  .monitor-frame {
+    transform-origin: 55% 45%;
+    animation: cg-monitor-settle 1.1s cubic-bezier(.2,.75,.25,1) .2s both;
+  }
+
+  .camera-feed {
+    transition: border-color .35s ease, filter .35s ease;
+  }
+
+  .hero-visual:hover .camera-feed {
+    border-color: #c8ff5240;
+  }
+
+  .hero-visual:hover .monitor-frame {
+    box-shadow: 0 34px 100px #0009, 0 0 80px #b4ec3b12;
+  }
+
+  .detection-box {
+    animation-duration: 4.2s;
+  }
+
+  .floating-alert {
+    animation-duration: .8s, 5.5s;
+  }
+
+  .neural-visual {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .neural-network {
+    filter: drop-shadow(0 0 12px #c8ff5208);
+  }
+
+  .network-links > path:not(.network-pulse) {
+    stroke: #c8ff5228;
+    stroke-width: 1;
+    transition: stroke .35s ease;
+  }
+
+  .neural-visual:hover .network-links > path:not(.network-pulse) {
+    stroke: #c8ff5252;
+  }
+
+  .network-links .network-pulse {
+    stroke-width: 2.4;
+    stroke-dasharray: 3 15;
+    animation-duration: 3.6s;
+  }
+
+  .network-links .pulse-delay {
+    animation-duration: 4.8s;
+  }
+
+  .network-nodes circle:nth-child(3n) { animation-delay: -.8s; }
+  .network-nodes circle:nth-child(3n + 1) { animation-delay: -1.6s; }
+
+  .pipeline-node {
+    position: relative;
+    overflow: hidden;
+    transition:
+      transform .42s cubic-bezier(.2,.75,.25,1),
+      border-color .35s ease,
+      background .35s ease,
+      box-shadow .42s ease;
+  }
+
+  .pipeline-node::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(115deg, transparent 15%, #c8ff520c 48%, transparent 78%);
+    transform: translateX(-110%);
+    transition: opacity .3s ease;
+  }
+
+  .pipeline-node:hover {
+    transform: translateY(-4px);
+    border-color: #c8ff525c;
+    background: linear-gradient(140deg, #c8ff520c, #ffffff02);
+    box-shadow: 0 14px 38px #0002, inset 0 1px #ffffff0a;
+  }
+
+  .pipeline-node:hover::after {
+    opacity: 1;
+    animation: cg-card-sheen .9s ease-out both;
+  }
+
+  .pipeline-connector i {
+    width: 42%;
+    animation-duration: 1.8s;
+  }
+
+  .feature-card,
+  .art-window,
+  .art-stamp,
+  .workflow-item,
+  .pricing-card {
+    will-change: transform;
+  }
+
+  .feature-card {
+    transition:
+      transform .42s cubic-bezier(.2,.75,.25,1),
+      border-color .32s ease,
+      box-shadow .42s ease;
+  }
+
+  .workflow-item:hover {
+    padding-left: 9px;
+  }
+
+  .workflow-item:hover .workflow-arrow {
+    transform: translate(5px, -2px);
+  }
+
+  .button {
+    transition:
+      transform .28s cubic-bezier(.2,.75,.25,1),
+      background-color .28s ease,
+      border-color .28s ease,
+      box-shadow .28s ease;
+  }
+
+  .button-lime:hover {
+    box-shadow: 0 8px 26px #c8ff521c;
+  }
+
+  .brand-mark:hover {
+    transform: rotate(-5deg) scale(1.06);
+    background: #c8ff5210;
+  }
+
+  .reading-progress span {
+    will-change: width;
+  }
+}
+
+@keyframes cg-monitor-settle {
+  from { opacity: .5; transform: perspective(1200px) rotateY(-5deg) translateY(14px) scale(.985); }
+  to { opacity: 1; transform: perspective(1200px) rotateY(-3deg) translateY(0) scale(1); }
+}
+
+@keyframes cg-card-sheen {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(110%); }
+}
+
+/* Reduced-motion preferences disable every newly enhanced continuous effect. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-grid,
+  .hero-glow,
+  .monitor-frame,
+  .detection-box,
+  .floating-alert,
+  .network-links .network-pulse,
+  .network-nodes circle,
+  .pipeline-connector i {
+    animation: none !important;
+  }
+
+  .monitor-frame {
+    opacity: 1;
+    transform: perspective(1200px) rotateY(-3deg);
+  }
+
+  .pipeline-node,
+  .feature-card,
+  .workflow-item,
+  .button,
+  .camera-feed,
+  .brand-mark {
+    transition: none !important;
+    will-change: auto;
+  }
+
+  .pipeline-node:hover,
+  .feature-card:hover,
+  .workflow-item:hover,
+  .button:hover,
+  .brand-mark:hover {
+    transform: none;
+  }
+
+  .pipeline-node:hover::after { animation: none; }
+}
