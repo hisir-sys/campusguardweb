@@ -65,3 +65,24 @@
   .cg-reveal { opacity: 0; transform: translateY(20px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.75,.25,1); transition-delay: var(--cg-reveal-delay, 0ms); }
   .cg-reveal.cg-is-visible { opacity: 1; transform: translateY(0); }
 }
+
+
+/* Quiet lime reading progress indicator */
+.reading-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 2px;
+  z-index: 120;
+  pointer-events: none;
+  background: transparent;
+}
+.reading-progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #a8db34, #d5ff6a);
+  box-shadow: 0 0 12px #c8ff5250;
+  transition: width .08s linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reading-progress span { transition: none; }
+}
