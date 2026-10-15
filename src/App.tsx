@@ -85,21 +85,20 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const lightSections = document.querySelectorAll('.interface-section')
-    const observer = new IntersectionObserver(entries => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) setHeaderLight(true)
-        else if (entry.boundingClientRect.top > 0 || entry.boundingClientRect.bottom < 78) {
-          const light = Array.from(document.querySelectorAll('.interface-section')).some(section => {
-            const rect = section.getBoundingClientRect()
-            return rect.top < 78 && rect.bottom > 78
-          })
-          setHeaderLight(light)
-        }
-      }
-    }, { threshold: 0, rootMargin: '-78px 0px 0px 0px' })
-    lightSections.forEach(section => observer.observe(section))
-    return () => observer.disconnect()
+    const updateHeaderTheme = () => {
+      const section = Array.from(document.querySelectorAll('main > section')).find(item => {
+        const rect = item.getBoundingClientRect()
+        return rect.top <= 78 && rect.bottom > 78
+      })
+      setHeaderLight(Boolean(section?.classList.contains('interface-section') || section?.classList.contains('platform-section')))
+    }
+    updateHeaderTheme()
+    window.addEventListener('scroll', updateHeaderTheme, { passive: true })
+    window.addEventListener('resize', updateHeaderTheme)
+    return () => {
+      window.removeEventListener('scroll', updateHeaderTheme)
+      window.removeEventListener('resize', updateHeaderTheme)
+    }
   }, [])
 
   const [modal, setModal] = useState<ModalName>(null)
