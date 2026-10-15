@@ -281,3 +281,35 @@
 .pipeline-connector i { background: linear-gradient(90deg, transparent, #c8ff52, transparent); }
 .neural-footnote { color: #9ba991; }
 
+
+
+/* Final layout correction: consistent section contrast, compact transitions, theme-aware header */
+.dark-band {
+  background: #f4f6ef;
+  color: #151a12;
+  border-top: 1px solid #e1e6dc;
+  border-bottom: 1px solid #e1e6dc;
+}
+.dark-band .eyebrow { color: #65745a; }
+.dark-band .dark-band-inner h2 { color: #151a12; }
+.dark-band .dark-band-inner h2 em { color: #668b35; }
+.dark-band .dark-band-inner > p { color: #596253; }
+.dark-band .dark-band-mark { color: #668b35; }
+.principle-strip {
+  background: #f4f6ef;
+  color: #4e5947;
+  border-top-color: #e1e6dc;
+  border-bottom-color: #e1e6dc;
+}
+.principle-strip .strip-label { color: #75816b; }
+.principle-strip .strip-inner > span:not(.strip-label) { color: #4e5947; }
+.principle-strip .strip-inner > span svg { color: #668b35; }
+.neural-section { padding-top: clamp(72px, 8vw, 112px); padding-bottom: clamp(64px, 7vw, 92px); }
+.neural-heading { margin-bottom: 34px; }
+html { scroll-padding-top: 94px; }
+section[id] { scroll-margin-top: 94px; }
+@media (max-width: 760px) {
+  .neural-section { padding-top: 72px; padding-bottom: 64px; }
+  .neural-heading { margin-bottom: 28px; }
+  section[id] { scroll-margin-top: 78px; }
+}
