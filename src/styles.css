@@ -364,3 +364,83 @@ section[id] { scroll-margin-top: 94px; }
 .workflow-item:hover .workflow-arrow { color: #456d22; }
 .workflow-section .button-outline { border-color: #c4cfb9; color: #263020; }
 .workflow-section .button-outline:hover { border-color: #668b35; background: #668b350d; }
+
+
+/* Polished section transitions and restrained kinetic interactions */
+html { scroll-behavior: smooth; }
+.site-header { will-change: background-color; }
+.site-header.header-light .nav-cta { box-shadow: 0 5px 18px #9ccf3420; }
+.hero, .interface-section, .neural-section, .dark-band, .platform-section, .workflow-section, .faq-section, .final-cta {
+  isolation: isolate;
+}
+.interface-section,
+.dark-band,
+.platform-section,
+.workflow-section {
+  position: relative;
+}
+.interface-section::before,
+.dark-band::before,
+.platform-section::before,
+.workflow-section::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, currentColor 50%, transparent);
+  opacity: .08;
+}
+.interface-section .interface-copy h2 em,
+.workflow-section h2 em,
+.platform-section .section-heading h2 em,
+.dark-band .dark-band-inner h2 em {
+  transition: color .35s ease, text-shadow .35s ease;
+}
+.feature-card {
+  transform: translateZ(0);
+  transition: transform .35s cubic-bezier(.2,.75,.25,1), border-color .3s ease, box-shadow .35s ease, background .3s ease;
+}
+.platform-section .feature-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 22px 48px #0003, inset 0 1px #ffffff0b;
+}
+.interface-section .art-window {
+  transition: box-shadow .35s ease, border-color .35s ease;
+}
+.interface-section .interface-art:hover .art-window {
+  box-shadow: 0 30px 70px #15200e20;
+}
+.workflow-item {
+  transition: padding-left .28s ease, background-color .28s ease, border-color .28s ease;
+}
+.workflow-item:hover {
+  background: color-mix(in srgb, currentColor 3%, transparent);
+}
+.button, .nav-links a, .nav-login {
+  -webkit-tap-highlight-color: transparent;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .section-heading .eyebrow-line,
+  .workflow-intro .eyebrow-line,
+  .interface-copy .eyebrow-line {
+    transform-origin: left center;
+    animation: cg-line-grow .8s cubic-bezier(.2,.75,.25,1) both;
+  }
+  .neural-visual { animation: cg-panel-arrive .8s cubic-bezier(.2,.75,.25,1) both; }
+  .pipeline-node { animation: cg-node-arrive .55s cubic-bezier(.2,.75,.25,1) both; }
+  .pipeline-node:nth-of-type(1) { animation-delay: .05s; }
+  .pipeline-node:nth-of-type(3) { animation-delay: .14s; }
+  .pipeline-node:nth-of-type(5) { animation-delay: .23s; }
+  .pipeline-node:nth-of-type(7) { animation-delay: .32s; }
+}
+@keyframes cg-line-grow { from { transform: scaleX(.15); opacity: .3; } to { transform: scaleX(1); opacity: 1; } }
+@keyframes cg-panel-arrive { from { opacity: .75; transform: translateY(12px) scale(.995); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes cg-node-arrive { from { opacity: .35; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .feature-card, .interface-section .art-window, .workflow-item,
+  .interface-copy h2 em, .workflow-section h2 em,
+  .platform-section .section-heading h2 em, .dark-band .dark-band-inner h2 em { transition: none; }
+}
