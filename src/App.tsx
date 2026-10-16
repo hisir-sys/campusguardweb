@@ -283,7 +283,7 @@ function App() {
       <div className="hero-grid" aria-hidden="true" /><div className="hero-glow" aria-hidden="true" />
       <div className="hero-inner">
         <div className="hero-copy"><div className="status-pill"><span className="status-dot" /> CAMPUS SAFETY, WITH MORE CONTEXT</div>
-          <h1>See the moment.<br />Understand <em>what matters.</em></h1>
+          
           <p className="hero-lede">A more considered approach to campus monitoring. CampusGuard brings camera feeds, AI-assisted alerts and incident review into one focused desktop workflow.</p>
           <div className="hero-actions"><button className="button button-lime" onClick={openAccess}>Request early access <ArrowUpRight size={16} /></button><a className="text-link" href="#how-it-works"><span className="play-circle"><Play size={12} fill="currentColor" /></span> Explore the approach</a></div>
           <div className="hero-proof"><span><Check size={13} /> Windows desktop application</span><span><Check size={13} /> Local-first processing approach</span></div>
@@ -345,7 +345,7 @@ function App() {
           </div>
           <p className="neural-footnote"><Activity size={13} /> Illustrative flow only · Alerts support review and are not proof of an event.</p>
 
-          <div className="pipeline-detail-heading"><span className="eyebrow"><span className="eyebrow-line" /> THE PROCESS, STEP BY STEP</span><p>Each stage has a defined role. A detected signal is a prompt for review, not an automatic conclusion.</p></div>
+          <div className="pipeline-detail-heading"><p>Each stage has a defined role. A detected signal is a prompt for review, not an automatic conclusion.</p></div>
           <div className="kinetic-flow" aria-label="Detailed conceptual flowchart from camera input to human-reviewed alert">
             <article className="kinetic-step"><span className="kinetic-step-number">01</span><div className="kinetic-step-icon"><Monitor size={19} /></div><b>Camera input</b><p>Compatible camera feed enters the Windows desktop app.</p><small>INPUT / VIDEO</small></article>
             <span className="kinetic-arrow"><ArrowRight size={17} /></span>
@@ -376,7 +376,7 @@ function App() {
 
 
 
-    <section className="workflow-section" id="how-it-works" data-theme="light"><div className="section-shell workflow-shell"><div className="workflow-intro"><span className="eyebrow"><span className="eyebrow-line" /> HOW IT WORKS</span><h2>A clear path from<br /><em>signal to response.</em></h2><p>AI can help surface a moment. People still provide the context, judgement and next step.</p><button className="button button-outline" onClick={() => setModal('product')}>Explore the product <ArrowUpRight size={15} /></button></div><div className="workflow-list">{workflow.map(({ n, title, text }) => <article className="workflow-item" key={n}><span className="workflow-number">{n}</span><div><h3>{title}</h3><p>{text}</p></div><ArrowUpRight className="workflow-arrow" size={19} /></article>)}</div></div></section>
+    <section className="workflow-section" id="how-it-works" data-theme="light"><div className="section-shell workflow-shell"><div className="workflow-intro"><span className="eyebrow"><span className="eyebrow-line" /> HOW IT WORKS</span><p>AI can help surface a moment. People still provide the context, judgement and next step.</p><button className="button button-outline" onClick={() => setModal('product')}>Explore the product <ArrowUpRight size={15} /></button></div><div className="workflow-list">{workflow.map(({ n, title, text }) => <article className="workflow-item" key={n}><span className="workflow-number">{n}</span><div><h3>{title}</h3><p>{text}</p></div><ArrowUpRight className="workflow-arrow" size={19} /></article>)}</div></div></section>
 
 
     <section className="faq-section" id="faqs" data-theme="light">
@@ -401,7 +401,7 @@ function App() {
       </div>
     </section>
 
-    <section className="final-cta" data-theme="dark"><div className="cta-grid" aria-hidden="true" /><div className="final-cta-inner"><span className="eyebrow"><span className="eyebrow-line" /> EARLY ACCESS PROGRAMME</span><h2>Make room for<br /><em>a clearer picture.</em></h2><p>We’re looking to work with institutions that want to evaluate a more considered, human-led approach to campus monitoring.</p><button className="button button-lime" onClick={openAccess}>Apply for early access <ArrowUpRight size={16} /></button><span className="cta-footnote">INSTITUTIONAL ENQUIRIES · APPLICATIONS REVIEWED INDIVIDUALLY</span></div></section>
+    <section className="final-cta" data-theme="dark"><div className="cta-grid" aria-hidden="true" /><div className="final-cta-inner"><span className="eyebrow"><span className="eyebrow-line" /> EARLY ACCESS PROGRAMME</span><p>We’re looking to work with institutions that want to evaluate a more considered, human-led approach to campus monitoring.</p><button className="button button-lime" onClick={openAccess}>Apply for early access <ArrowUpRight size={16} /></button><span className="cta-footnote">INSTITUTIONAL ENQUIRIES · APPLICATIONS REVIEWED INDIVIDUALLY</span></div></section>
 
     <footer className="site-footer"><div className="footer-top"><Brand /><p>More context. Better review.<br />People at the centre.</p><div className="footer-links"><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><a href="#principles">Our approach</a><a href="#faqs">FAQs</a><a href="#download">Download</a><button onClick={openAccess}>Apply for access</button></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} CampusGuard. All rights reserved.</span><span>AI-ASSISTED · HUMAN-LED · PRIVACY-AWARE</span><a href="#top">BACK TO TOP ↑</a></div></footer>
 
