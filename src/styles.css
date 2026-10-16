@@ -1399,3 +1399,72 @@ html { scroll-behavior: smooth; }
 
 .signed-in-content .footer-links button { display:none; }
 .signed-in-content .hero-actions .text-link { display:inline-flex; }
+
+/* Detailed kinetic pipeline, FAQ and desktop download — aligned to the existing DM Sans / Manrope system. */
+.pipeline-detail-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:40px 0 18px;padding-top:26px;border-top:1px solid #ffffff16}
+.pipeline-detail-heading p{max-width:400px;margin:0;color:#98a293;font-size:11px;line-height:1.8}
+.kinetic-flow{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr) 24px minmax(0,1fr) 24px minmax(0,1fr) 24px minmax(0,1fr);align-items:stretch;gap:7px}
+.kinetic-step{position:relative;min-width:0;overflow:hidden;padding:18px 13px 15px;border:1px solid #ffffff19;background:linear-gradient(145deg,#ffffff08,#ffffff02);animation:kinetic-rise .65s both;transition:border-color .25s,background .25s,transform .25s}
+.kinetic-step:nth-of-type(3){animation-delay:.08s}.kinetic-step:nth-of-type(5){animation-delay:.16s}.kinetic-step:nth-of-type(7){animation-delay:.24s}.kinetic-step:nth-of-type(9){animation-delay:.32s}
+.kinetic-step::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:2px;background:var(--lime);transition:right .35s ease}
+.kinetic-step:hover{transform:translateY(-3px);border-color:#c8ff5255;background:#c8ff5208}
+.kinetic-step:hover::after{right:0}
+.kinetic-step-number{position:absolute;top:12px;right:12px;color:#778273;font:9px var(--mono)}
+.kinetic-step-icon{display:grid;place-items:center;width:37px;height:37px;margin-bottom:19px;border:1px solid #c8ff5233;background:#c8ff520b;color:var(--lime)}
+.kinetic-step b{display:block;color:#eef2e9;font:600 12px var(--display)}
+.kinetic-step p{min-height:65px;margin:9px 0 15px;color:#9ca697;font-size:10px;line-height:1.7}
+.kinetic-step small{color:#778573;font:8px var(--mono);letter-spacing:.35px}
+.kinetic-step-human{border-color:#c8ff5240}
+.kinetic-arrow{display:grid;place-items:center;color:#a9c76b;animation:arrow-breathe 1.8s ease-in-out infinite}
+.kinetic-arrow svg{width:16px}
+.kinetic-disclaimer{display:flex;align-items:flex-start;gap:8px;margin:18px 0 0;color:#8c9885;font-size:10px;line-height:1.7}
+.kinetic-disclaimer svg{flex-shrink:0;margin-top:1px;color:var(--lime)}
+.faq-section{padding:100px 0;background:#f7f8f4;color:var(--ink)}
+.faq-shell{display:grid;grid-template-columns:.72fr 1.28fr;gap:75px;align-items:start}
+.faq-intro{position:sticky;top:115px}
+.faq-intro h2{margin:20px 0 18px;font:700 clamp(38px,4vw,54px)/1.08 var(--display);letter-spacing:-2.8px}
+.faq-intro h2 em{font-family:var(--serif);font-weight:400;color:#718d4d;letter-spacing:-1px}
+.faq-intro>p{max-width:310px;color:#6d746b;font-size:13px;line-height:1.9}
+.faq-list{border-top:1px solid #dfe4db}
+.faq-item{border-bottom:1px solid #dfe4db}
+.faq-item summary{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:21px 0;list-style:none;cursor:pointer;color:#20261d;font:600 13px var(--display)}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary span{display:grid;place-items:center;flex-shrink:0;width:25px;height:25px;border:1px solid #d8dfd1;color:#667e4d;font:16px var(--mono);transition:transform .2s,background .2s}
+.faq-item[open] summary span{transform:rotate(45deg);background:#eaf0e2}
+.faq-item p{max-width:610px;margin:-3px 38px 22px 0;color:#6d746b;font-size:12px;line-height:1.9;animation:faq-reveal .2s ease-out}
+.download-section{position:relative;isolation:isolate;overflow:hidden;padding:90px 0 86px;background:#090c0a;color:#f5f7f1}
+.download-grid{position:absolute;inset:0;z-index:-2;background-image:linear-gradient(#ffffff07 1px,transparent 1px),linear-gradient(90deg,#ffffff07 1px,transparent 1px);background-size:60px 60px;mask-image:linear-gradient(90deg,black,transparent 85%)}
+.download-inner{display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:55px}
+.download-copy h2{margin:22px 0 20px;font:700 clamp(38px,4.5vw,58px)/1.07 var(--display);letter-spacing:-3px}
+.download-copy h2 em{font-family:var(--serif);font-weight:400;color:var(--lime);letter-spacing:-1px}
+.download-copy>p{max-width:520px;color:#a8b0a5;font-size:13px;line-height:1.9}
+.download-actions{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-top:25px}
+.download-secondary{display:inline-flex;align-items:center;gap:8px;color:#d9e0d3;font-size:11px}
+.download-note{display:flex;align-items:flex-start;gap:7px;max-width:480px;margin-top:19px;color:#788474;font-size:9px;line-height:1.7}
+.download-note svg{flex-shrink:0;margin-top:1px}
+.download-visual{position:relative;display:grid;place-items:center;min-height:330px}
+.download-orbit{position:absolute;border:1px solid #c8ff5218;border-radius:50%;aspect-ratio:1}
+.download-orbit-a{width:310px;animation:orbit-turn 22s linear infinite}
+.download-orbit-b{width:235px;border-style:dashed;animation:orbit-turn 32s linear infinite reverse}
+.download-device{position:relative;width:min(100%,340px);padding:11px;border:1px solid #495443;border-radius:7px;background:#0d120e;box-shadow:0 25px 80px #0008,0 0 60px #c8ff520b;animation:device-float 5s ease-in-out infinite}
+.download-device-top,.download-device-bottom{display:flex;justify-content:space-between;gap:8px;color:#899582;font:8px var(--mono);letter-spacing:.5px}
+.download-device-top{padding:4px 4px 13px}
+.download-device-status{display:flex;align-items:center;gap:6px;color:var(--lime)}
+.download-device-status i{width:5px;height:5px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px #c8ff5270}
+.download-device-body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;border:1px solid #ffffff10;background:radial-gradient(ellipse at 50% 40%,#c8ff5212,transparent 65%),#0a0e0b}
+.download-device-mark{display:grid;place-items:center;width:68px;height:68px;margin-bottom:18px;border:1px solid #c8ff5250;border-radius:18px;color:var(--lime);background:#c8ff520b}
+.download-device-body>span{font:800 16px var(--display);letter-spacing:1.2px}
+.download-device-body>small{margin-top:7px;color:#8b9784;font:8px var(--mono);letter-spacing:1px}
+.download-progress{width:160px;height:2px;margin-top:25px;background:#303a2d;overflow:hidden}
+.download-progress i{display:block;width:40%;height:100%;background:var(--lime);animation:download-scan 2.5s ease-in-out infinite alternate}
+.download-device-bottom{padding:13px 4px 3px;font-size:7px}
+.download-visual-label{position:absolute;right:0;bottom:0;color:#71806b;font:8px var(--mono);letter-spacing:.7px}
+@keyframes kinetic-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes arrow-breathe{0%,100%{opacity:.45;transform:translateX(-2px)}50%{opacity:1;transform:translateX(2px)}}
+@keyframes faq-reveal{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+@keyframes orbit-turn{to{transform:rotate(360deg)}}
+@keyframes device-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes download-scan{from{transform:translateX(-10%)}to{transform:translateX(160%)}}
+@media(max-width:900px){.kinetic-flow{grid-template-columns:1fr 20px 1fr;gap:9px}.kinetic-arrow:nth-of-type(4n){display:none}.kinetic-step p{min-height:0}.faq-shell{grid-template-columns:1fr;gap:30px}.faq-intro{position:static}.faq-intro>p{max-width:520px}.download-inner{grid-template-columns:1fr;gap:30px}.download-visual{min-height:300px}.download-visual-label{right:10%;bottom:0}}
+@media(max-width:540px){.pipeline-detail-heading{align-items:flex-start;flex-direction:column;gap:10px}.kinetic-flow{grid-template-columns:1fr}.kinetic-arrow{height:16px;transform:rotate(90deg)}.kinetic-arrow:nth-of-type(4n){display:grid}.kinetic-step{padding:18px}.kinetic-step p{margin-bottom:12px}.faq-section{padding:65px 0}.faq-item summary{font-size:12px}.download-section{padding:65px 0}.download-actions{align-items:flex-start;flex-direction:column;gap:15px}.download-visual{min-height:275px}.download-orbit-a{width:270px}.download-orbit-b{width:205px}}
+@media(prefers-reduced-motion:reduce){.kinetic-step,.kinetic-arrow,.download-orbit,.download-device,.download-progress i,.faq-item p{animation:none!important}.kinetic-step,.download-device{transition:none}}
