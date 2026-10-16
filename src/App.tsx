@@ -27,7 +27,7 @@ function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => voi
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
-  const [form, setForm] = useState({ name: '', email: '', organisation: '', role: '', purpose: '' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', organisation: '', role: '', purpose: '' })
   const update = (key: keyof typeof form, value: string) => setForm(current => ({ ...current, [key]: value }))
   const submitApplication = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -57,6 +57,7 @@ function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => voi
       <form onSubmit={submitApplication}>
         <label>Your name<input required value={form.name} onChange={e => update('name', e.target.value)} placeholder="Full name" /></label>
         <label>Work email<input required type="email" value={form.email} onChange={e => update('email', e.target.value)} placeholder="you@institution.org" /></label>
+        <label>Create password<input required type="password" autoComplete="new-password" minLength={12} maxLength={128} value={form.password} onChange={e => update('password', e.target.value)} placeholder="At least 12 characters" /></label>
         <label>Institution / organisation<input required value={form.organisation} onChange={e => update('organisation', e.target.value)} placeholder="Organisation name" /></label>
         <label>Your role<select required value={form.role} onChange={e => update('role', e.target.value)}><option value="">Choose a role</option><option>School / campus leadership</option><option>IT / security team</option><option>Facilities / operations</option><option>Research / evaluation</option><option>Other</option></select></label>
         <label>What are you hoping to evaluate?<textarea value={form.purpose} onChange={e => update('purpose', e.target.value)} placeholder="A short description (optional)" rows={3} /></label>
