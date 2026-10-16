@@ -32,7 +32,7 @@ export default async function handler(req: any, res: any) {
   if (!name || !email || !organisation || !role) {
     return res.status(400).json({ error: 'Please complete all required fields.' })
   }
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Please enter a valid email address.' })
   }
   const allowedRoles = new Set([
