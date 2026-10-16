@@ -77,7 +77,7 @@ function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => voi
 }
 
 
-function LoginModal({ close, onApply }: { close: () => void; onApply: () => void }) {
+function LoginModal({ close, onApply, onApproved }: { close: () => void; onApply: () => void; onApproved: () => void }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [checking, setChecking] = useState(false)
@@ -117,8 +117,7 @@ function LoginModal({ close, onApply }: { close: () => void; onApply: () => void
             : 'This account does not have a linked access application. Please request early access.')
         return
       }
-      setMessageKind('success')
-      setMessage('Your account is approved and your credentials were verified. The customer workspace is not available on this website yet.')
+      onApproved()
     } catch (error) {
       setMessageKind('error')
       setMessage(error instanceof Error ? error.message : 'Sign-in failed. Please try again.')
@@ -143,6 +142,38 @@ function LoginModal({ close, onApply }: { close: () => void; onApply: () => void
       <p className="account-prompt">New to CampusGuard? <button type="button" onClick={onApply}>Request early access <ArrowUpRight size={13} /></button></p>
     </section>
   </div>
+}
+
+
+function CustomerWorkspace() {
+  const [activeTab, setActiveTab] = useState<'overview' | 'cameras' | 'notifications'>('overview')
+  return <section className="customer-workspace" aria-labelledby="workspace-title">
+    <div className="workspace-shell">
+      <div className="workspace-heading">
+        <div><span className="eyebrow"><span className="eyebrow-line" /> PRIVATE CUSTOMER AREA</span><h1 id="workspace-title">Campus overview<span>.</span></h1><p>A read-only view of camera availability and safety notifications. Camera controls and footage stay in the CampusGuard desktop application.</p></div>
+        <div className="workspace-session"><span className="workspace-session-dot" /> APPROVED ACCOUNT <small>Read-only access</small></div>
+      </div>
+      <nav className="workspace-tabs" aria-label="Customer workspace">
+        <button className={activeTab === 'overview' ? 'workspace-tab active' : 'workspace-tab'} onClick={() => setActiveTab('overview')}><Activity size={15} /> Overview</button>
+        <button className={activeTab === 'cameras' ? 'workspace-tab active' : 'workspace-tab'} onClick={() => setActiveTab('cameras')}><Monitor size={15} /> Cameras</button>
+        <button className={activeTab === 'notifications' ? 'workspace-tab active' : 'workspace-tab'} onClick={() => setActiveTab('notifications')}><BellRing size={15} /> Alerts &amp; notifications</button>
+      </nav>
+      {activeTab === 'overview' && <div className="workspace-content">
+        <div className="workspace-stat-grid">
+          <article className="workspace-stat"><span>CAMERAS REGISTERED</span><strong>—</strong><small>Waiting for desktop sync</small><Monitor size={18} /></article>
+          <article className="workspace-stat"><span>CAMERAS ACTIVE</span><strong>—</strong><small>Live status not connected yet</small><Activity size={18} /></article>
+          <article className="workspace-stat"><span>UNREAD NOTIFICATIONS</span><strong>0</strong><small>No notifications loaded</small><BellRing size={18} /></article>
+        </div>
+        <div className="workspace-panel-grid">
+          <article className="workspace-panel"><div className="workspace-panel-head"><div><span className="eyebrow">CAMERA INVENTORY</span><h2>Attached cameras</h2></div><button className="workspace-text-button" onClick={() => setActiveTab('cameras')}>View inventory <ArrowRight size={14} /></button></div><div className="workspace-empty"><span className="workspace-empty-icon"><Monitor size={20} /></span><b>Camera sync is not connected</b><p>Once the desktop app shares its camera inventory securely, this area will show each camera’s name, location and active/offline status. Cameras cannot be added or controlled from the website.</p></div></article>
+          <article className="workspace-panel"><div className="workspace-panel-head"><div><span className="eyebrow">RECENT UPDATES</span><h2>Alerts &amp; notifications</h2></div><button className="workspace-text-button" onClick={() => setActiveTab('notifications')}>View alerts <ArrowRight size={14} /></button></div><div className="workspace-empty"><span className="workspace-empty-icon"><BellRing size={20} /></span><b>No notifications to display</b><p>Alerts will appear here when the desktop app’s notification feed is securely connected. No live footage or incident playback is shown on the web.</p></div></article>
+        </div>
+        <p className="workspace-footnote"><LockKeyhole size={13} /> Read-only web access · No camera controls · No live video · No incident footage</p>
+      </div>}
+      {activeTab === 'cameras' && <div className="workspace-content"><article className="workspace-panel workspace-full-panel"><div className="workspace-panel-head"><div><span className="eyebrow">READ-ONLY INVENTORY</span><h2>Camera locations &amp; status</h2></div><span className="workspace-chip">Desktop sync pending</span></div><div className="workspace-empty workspace-empty-large"><span className="workspace-empty-icon"><Monitor size={22} /></span><b>No camera inventory has synced yet</b><p>This page will list only camera name, campus/building location and whether the desktop application reports it active or offline. It will not offer add-camera controls, stream previews or footage.</p></div></article></div>}
+      {activeTab === 'notifications' && <div className="workspace-content"><article className="workspace-panel workspace-full-panel"><div className="workspace-panel-head"><div><span className="eyebrow">NOTIFICATION CENTRE</span><h2>Alerts &amp; notifications</h2></div><span className="workspace-chip">Feed not connected</span></div><div className="workspace-empty workspace-empty-large"><span className="workspace-empty-icon"><BellRing size={22} /></span><b>Your notification feed is ready for connection</b><p>When the desktop app’s alert feed is connected, this page will show alert level, time, camera name/location and a short text summary only. It will never show fight footage or a view-footage action.</p></div></article></div>}
+    </div>
+  </section>
 }
 
 function App() {
@@ -203,6 +234,24 @@ function App() {
 
   const [modal, setModal] = useState<ModalName>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const signOut = async () => { await supabase.auth.signOut(); setIsAuthenticated(false); setModal(null); window.scrollTo({ top: 0, behavior: 'auto' }) }
+  useEffect(() => {
+    let cancelled = false
+    const restoreSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      const session = data.session
+      if (!session) return
+      try {
+        const response = await fetch('/api/access-status', { headers: { Authorization: 'Bearer ' + session.access_token }, cache: 'no-store' })
+        const result = await response.json().catch(() => ({}))
+        if (!cancelled && response.ok && result.status === 'approved') setIsAuthenticated(true)
+        else if (!cancelled) await supabase.auth.signOut()
+      } catch { if (!cancelled) await supabase.auth.signOut() }
+    }
+    void restoreSession()
+    return () => { cancelled = true }
+  }, [])
   const openAccess = () => { setModal('access'); setMenuOpen(false) }
   const navigateToSection = (event: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     event.preventDefault()
@@ -222,13 +271,14 @@ function App() {
         <nav className={menuOpen ? 'nav-links nav-open' : 'nav-links'} aria-label="Main navigation">
           <a href="#product" onClick={event => navigateToSection(event, 'product')}>Product</a><a href="#pipeline" onClick={event => navigateToSection(event, 'pipeline')}>AI pipeline</a><a href="#principles" onClick={event => navigateToSection(event, 'principles')}>Our approach</a><a href="#platform" onClick={event => navigateToSection(event, 'platform')}>Platform</a><a href="#how-it-works" onClick={event => navigateToSection(event, 'how-it-works')}>How it works</a>
           <a href="#pricing" onClick={event => { event.preventDefault(); setModal('pricing'); setMenuOpen(false) }}>Pricing</a>
-          <button className="nav-login" onClick={() => { setModal('login'); setMenuOpen(false) }}>Log in <ArrowUpRight size={14} /></button>
-          <button className="button button-lime nav-cta" onClick={openAccess}>Apply for access <ArrowUpRight size={15} /></button>
+          {isAuthenticated ? <button className="button button-lime nav-cta" onClick={() => { void signOut(); setMenuOpen(false) }}>Log out <ArrowUpRight size={15} /></button> : <><button className="nav-login" onClick={() => { setModal('login'); setMenuOpen(false) }}>Log in <ArrowUpRight size={14} /></button><button className="button button-lime nav-cta" onClick={openAccess}>Apply for access <ArrowUpRight size={15} /></button></>}
         </nav>
         <button className="mobile-menu" aria-label={menuOpen ? 'Close menu' : 'Open menu'} onClick={() => setMenuOpen(v => !v)}>{menuOpen ? <X /> : <Menu />}</button>
       </div>
     </header>
 
+    {isAuthenticated && <CustomerWorkspace />}
+    <div className={isAuthenticated ? 'public-site-content signed-in-content' : 'public-site-content'}>
     <section className="hero" data-theme="dark">
       <div className="hero-grid" aria-hidden="true" /><div className="hero-glow" aria-hidden="true" />
       <div className="hero-inner">
@@ -320,8 +370,9 @@ function App() {
     <footer className="site-footer"><div className="footer-top"><Brand /><p>More context. Better review.<br />People at the centre.</p><div className="footer-links"><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><a href="#principles">Our approach</a><button onClick={openAccess}>Apply for access</button></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} CampusGuard. All rights reserved.</span><span>AI-ASSISTED · HUMAN-LED · PRIVACY-AWARE</span><a href="#top">BACK TO TOP ↑</a></div></footer>
 
     {modal === 'access' && <AccessModal close={() => setModal(null)} onLogin={() => setModal('login')} />}\n    {modal === 'pricing' && <div className="modal-backdrop pricing-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setModal(null) }}><section className="pricing-modal" role="dialog" aria-modal="true" aria-labelledby="pricing-modal-title"><button className="modal-close pricing-modal-close" onClick={() => setModal(null)} aria-label="Close pricing"><X size={18} /></button><div className="pricing-modal-content"><div className="section-heading pricing-heading"><div><span className="eyebrow"><span className="eyebrow-line" /> PRICING &amp; PILOTS</span><h2 id="pricing-modal-title">A plan that fits<br /><em>your campus.</em></h2></div><p>Start with a focused evaluation, then shape a deployment around your cameras, team and operational needs. Final pricing will be confirmed with each institution.</p></div><div className="pricing-grid"><article className="pricing-card"><span className="pricing-kicker">01 / EVALUATE</span><h3>Campus pilot</h3><p className="pricing-summary">For teams exploring the workflow before a wider rollout.</p><div className="pricing-price">Discuss your pilot</div><ul><li><Check size={15} /> Guided evaluation scope</li><li><Check size={15} /> Desktop-first workflow review</li><li><Check size={15} /> Feedback and setup discussion</li></ul><button className="button button-outline pricing-action" onClick={openAccess}>Request pilot details <ArrowUpRight size={15} /></button></article><article className="pricing-card pricing-featured"><span className="pricing-kicker">02 / DEPLOY</span><span className="pricing-badge">RECOMMENDED TO DISCUSS</span><h3>Single campus</h3><p className="pricing-summary">For an institution planning a day-to-day operational deployment.</p><div className="pricing-price">Custom quote</div><ul><li><Check size={15} /> Camera and team requirements review</li><li><Check size={15} /> Deployment planning conversation</li><li><Check size={15} /> Support needs scoped with your team</li></ul><button className="button button-lime pricing-action" onClick={openAccess}>Discuss your campus <ArrowUpRight size={15} /></button></article><article className="pricing-card"><span className="pricing-kicker">03 / EXPAND</span><h3>Multi-campus</h3><p className="pricing-summary">For groups coordinating needs across multiple locations.</p><div className="pricing-price">Custom quote</div><ul><li><Check size={15} /> Multi-site requirements review</li><li><Check size={15} /> Organisation-level planning</li><li><Check size={15} /> Rollout scope defined together</li></ul><button className="button button-outline pricing-action" onClick={openAccess}>Talk to our team <ArrowUpRight size={15} /></button></article></div><p className="pricing-disclaimer"><LockKeyhole size={13} /> Pricing is not published yet. These are planning options, not live subscriptions; final features, availability and fees will be confirmed before purchase.</p></div></section></div>}
-    {modal === 'login' && <LoginModal close={() => setModal(null)} onApply={() => setModal('access')} />}
+    {modal === 'login' && <LoginModal close={() => setModal(null)} onApply={() => setModal('access')} onApproved={() => { setIsAuthenticated(true); setModal(null); window.scrollTo({ top: 0, behavior: 'auto' }) }} />}
     {modal === 'product' && <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setModal(null) }}><section className="access-modal info-modal" role="dialog" aria-modal="true" aria-labelledby="portal-title"><button className="modal-close" onClick={() => setModal(null)} aria-label="Close"><X size={18} /></button><span className="eyebrow">CUSTOMER ACCESS</span><h2 id="portal-title">A portal with purpose.</h2><p className="modal-intro">The customer portal is planned for approved institutions. Secure sign-in, organisation-scoped incident access and invitation-based account setup will be connected in a later phase.</p><div className="portal-status"><LockKeyhole size={18} /><span><b>Private access is not live yet</b><small>This preview does not authenticate users or display real incidents.</small></span></div><button className="button button-dark" onClick={() => { setModal(null); openAccess() }}>Apply for early access <ArrowUpRight size={15} /></button></section></div>}
+    </div>
   </main>
 }
 
