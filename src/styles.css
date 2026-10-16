@@ -1618,3 +1618,91 @@ html { scroll-behavior: smooth; }
 @media(max-width:850px){.public-hero-inner,.customer-download-inner{grid-template-columns:1fr;gap:30px}.public-hero{padding:75px 0}.public-hero-art{min-height:320px}.customer-flowchart{grid-template-columns:1fr 18px 1fr 18px 1fr}.customer-flowchart>span:nth-of-type(4n){display:none}.customer-pilot-grid{grid-template-columns:1fr}.customer-pilot-grid p{min-height:0}}
 @media(max-width:600px){.public-hero-copy h1{letter-spacing:-2.5px}.public-hero-inner{gap:20px}.public-hero-art{min-height:280px}.hero-orbit-one{width:270px}.hero-orbit-two{width:205px}.hero-float-tag{right:0;bottom:10px}.how-steps{grid-template-columns:1fr}.how-it-works-section,.customer-resource-section{padding:58px 0}.final-cta-inner{align-items:flex-start;flex-direction:column}.customer-flowchart{grid-template-columns:1fr}.customer-flowchart>span{transform:rotate(90deg);height:15px}.customer-flowchart>span:nth-of-type(4n){display:grid}.customer-pilot-grid article{padding:19px}}
 @media(prefers-reduced-motion:reduce){.hero-orbit,.hero-console,.hero-console-bars i{animation:none!important}}
+
+
+/* Visual polish pass: preserve the original Manrope + Instrument Serif pairing and the established obsidian / ivory / lime palette. */
+:root{--cg-obsidian:#090c0a;--cg-ivory:#f7f8f4;--cg-lime:#c8ff52;--cg-muted:#a8b0a5;--cg-serif:var(--serif);--cg-display:var(--display)}
+/* Clear black/white alternation across the public story. */
+.public-site-content>.public-hero{background:radial-gradient(ellipse at 77% 43%,#c8ff5212,transparent 39%),var(--cg-obsidian);color:#f5f7f1}
+.public-site-content>.neural-section{background:var(--cg-ivory);color:var(--ink)}
+.public-site-content>.neural-section .neural-heading h2,.public-site-content>.neural-section .pipeline-detail-heading p{color:var(--ink)}
+.public-site-content>.neural-section .neural-heading>p{color:#6d746b}
+.public-site-content>.neural-section .neural-visual{border-color:#d9e0d2;background:linear-gradient(145deg,#fff,#eef2e8);box-shadow:0 25px 80px #19210f0b}
+.public-site-content>.neural-section .neural-visual-top,.public-site-content>.neural-section .neural-stage-labels,.public-site-content>.neural-section .neural-footnote,.public-site-content>.neural-section .kinetic-disclaimer{color:#687361}
+.public-site-content>.neural-section .network-links path{stroke:#9aa98b}
+.public-site-content>.neural-section .network-nodes circle{fill:#c8ff52;stroke:#78984a}
+.public-site-content>.neural-section .pipeline-node{background:#fff;border-color:#dce3d5;color:#20271d;box-shadow:0 12px 30px #18200f08}
+.public-site-content>.neural-section .pipeline-node b{color:#20271d}
+.public-site-content>.neural-section .pipeline-node small{color:#737c6d}
+.public-site-content>.neural-section .kinetic-step{background:linear-gradient(145deg,#fff,#f0f4e9);border-color:#dce3d5;box-shadow:0 10px 28px #18200f08;transform-style:preserve-3d;transition:transform .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s,border-color .4s}
+.public-site-content>.neural-section .kinetic-step b{color:#20271d}
+.public-site-content>.neural-section .kinetic-step p{color:#6d746b}
+.public-site-content>.neural-section .kinetic-step small{color:#738466}
+.public-site-content>.neural-section .kinetic-arrow{color:#708a4c}
+.public-site-content>.dark-band{background:var(--cg-obsidian);color:#f5f7f1}
+.public-site-content>.dark-band .dark-band-inner h2{color:#f5f7f1}
+.public-site-content>.dark-band .dark-band-inner h2 em{color:var(--cg-lime)}
+.public-site-content>.dark-band .dark-band-inner>p{color:#a8b0a5}
+.public-site-content>.dark-band .eyebrow{color:#a8b0a5}
+.public-site-content>.principle-strip{background:#111611;color:#e4e9df}
+.public-site-content>.platform-section{background:var(--cg-ivory);color:var(--ink)}
+.public-site-content>.platform-section .section-heading h2{color:var(--ink)}
+.public-site-content>.platform-section .section-heading h2 em{color:#607b3c}
+.public-site-content>.platform-section .section-heading>p{color:#6d746b}
+.public-site-content>.platform-section .eyebrow{color:#68755e}
+.public-site-content>.platform-section .feature-card{background:#fff;border-color:#dfe4da;box-shadow:none}
+.public-site-content>.platform-section .feature-card h3{color:#20261d}
+.public-site-content>.platform-section .feature-card p{color:#747b70}
+.public-site-content>.platform-section .feature-top,.public-site-content>.platform-section .feature-top svg,.public-site-content>.platform-section .feature-arrow{color:#688642}
+.public-site-content>.platform-section .platform-note{background:#e9eee3;border-color:#dfe5d8}
+.public-site-content>.how-it-works-section{background:var(--cg-obsidian);color:#f5f7f1}
+.public-site-content>.how-it-works-section .section-heading h2{color:#f5f7f1}
+.public-site-content>.how-it-works-section .section-heading h2 em{color:var(--cg-lime)}
+.public-site-content>.how-it-works-section .section-heading>p{color:#a8b0a5}
+.public-site-content>.how-it-works-section .eyebrow{color:#a8b0a5}
+.public-site-content>.how-it-works-section .how-steps article{background:linear-gradient(145deg,#141a13,#0d110d);border-color:#ffffff1a;box-shadow:0 18px 50px #0003;transition:transform .35s, border-color .35s, box-shadow .35s}
+.public-site-content>.how-it-works-section .how-steps h3{color:#f5f7f1}
+.public-site-content>.how-it-works-section .how-steps p{color:#a8b0a5}
+.public-site-content>.how-it-works-section .how-steps article>span{border-color:#c8ff5240;color:var(--cg-lime)}
+.public-site-content>.faq-section{background:var(--cg-ivory);color:var(--ink)}
+.public-site-content>.download-section{background:var(--cg-obsidian);color:#f5f7f1}
+.public-site-content>.final-cta-section{background:var(--cg-ivory);color:var(--ink)}
+.public-site-content>.final-cta-section h2{color:var(--ink)}
+.public-site-content>.final-cta-section h2 em{color:#607b3c}
+.public-site-content>.final-cta-section .eyebrow{color:#68755e}
+.public-site-content>.final-cta-section p{color:#6d746b}
+.public-site-content>.final-cta-section .button-lime{box-shadow:0 8px 26px #88a84b20}
+/* Serif italic is the signature accent; bold display text stays Manrope throughout. */
+.public-hero-copy h1,.customer-resource-section h2,.final-cta-section h2,.neural-heading h2,.section-heading h2,.dark-band h2,.faq-intro h2{font-family:var(--display);font-weight:800;letter-spacing:-.055em}
+.public-hero-copy h1 em,.customer-resource-section h2 em,.final-cta-section h2 em,.neural-heading h2 em,.section-heading h2 em,.dark-band h2 em,.faq-intro h2 em{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.025em}
+.public-hero-copy h1 em{color:var(--cg-lime)}
+/* Layered 3D feel: restrained depth, animated orbital rings, perspective tilt and kinetic hover response. */
+.public-hero-art{perspective:1100px}
+.hero-console{transform:rotateY(-8deg) rotateX(3deg) translateZ(0);transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.8,.2,1),box-shadow .65s}
+.public-hero-art:hover .hero-console{transform:rotateY(-2deg) rotateX(0deg) translateY(-7px) translateZ(18px);box-shadow:0 38px 100px #0009,0 0 90px #b4ec3b12}
+.hero-orbit-one{animation:cg-orbit 32s linear infinite}
+.hero-orbit-two{animation:cg-orbit 43s linear infinite reverse}
+.hero-float-tag{animation:cg-float-tag 5s ease-in-out infinite}
+.neural-visual{perspective:1200px}
+.pipeline-node{transform:translateZ(0);transition:transform .35s,box-shadow .35s,border-color .35s}
+.pipeline-node:hover{transform:translateY(-5px) rotateX(4deg);box-shadow:0 16px 32px #18200f14}
+.kinetic-flow{perspective:1400px}
+.kinetic-step{transform:translateZ(0);transform-origin:center bottom}
+.kinetic-step:hover{transform:translateY(-7px) rotateX(2deg) rotateY(-2deg) translateZ(12px);box-shadow:0 22px 44px #18200f16;border-color:#a6bd82}
+.kinetic-step-icon{transition:transform .4s,background .4s,box-shadow .4s}
+.kinetic-step:hover .kinetic-step-icon{transform:translateZ(16px) rotate(-5deg);background:#c8ff5220;box-shadow:0 8px 25px #92b95120}
+.how-steps article{transform:translateY(0);transition:transform .35s,border-color .35s,box-shadow .35s}
+.how-steps article:hover{transform:translateY(-6px);border-color:#9bb779;box-shadow:0 20px 42px #11190b16}
+.customer-flowchart article{transform-style:preserve-3d;transition:transform .35s,border-color .35s,box-shadow .35s}
+.customer-flowchart article:hover{transform:translateY(-6px) rotateX(2deg);border-color:#c8ff5270;box-shadow:0 18px 40px #0004}
+.customer-download-card{position:relative;overflow:hidden;transform:perspective(900px) rotateY(-4deg);transition:transform .5s,box-shadow .5s}
+.customer-download-card::before{content:"";position:absolute;inset:-70% -30%;background:linear-gradient(110deg,transparent 42%,#ffffffa0 50%,transparent 58%);transform:translateX(-70%) rotate(8deg);animation:cg-sheen 7s ease-in-out infinite;pointer-events:none}
+.customer-download-card:hover{transform:perspective(900px) rotateY(0) translateY(-5px);box-shadow:0 24px 55px #18200f14}
+.customer-pilot-grid article{transition:transform .35s,border-color .35s,box-shadow .35s}
+.customer-pilot-grid article:hover{transform:translateY(-5px);border-color:#a9bd91;box-shadow:0 20px 42px #18200f0e}
+@keyframes cg-orbit{to{transform:rotate(360deg)}}
+@keyframes cg-float-tag{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes cg-sheen{0%,65%,100%{transform:translateX(-70%) rotate(8deg)}80%{transform:translateX(70%) rotate(8deg)}}
+@media(max-width:850px){.public-hero-inner{gap:30px}.public-hero-copy h1{letter-spacing:-.045em}.public-site-content>.neural-section .neural-visual{padding:18px}}
+@media(max-width:600px){.public-site-content>.final-cta-section .final-cta-inner{align-items:flex-start}.hero-console{transform:none}.customer-download-card{transform:none}}
+@media(prefers-reduced-motion:reduce){.hero-orbit-one,.hero-orbit-two,.hero-float-tag,.hero-console,.customer-download-card::before{animation:none!important}.hero-console,.customer-download-card,.kinetic-step,.how-steps article,.customer-pilot-grid article{transition:none!important;transform:none!important}}
