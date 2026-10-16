@@ -28,8 +28,9 @@ export default async function handler(req: any, res: any) {
   const organisation = textField(body.organisation, 180)
   const role = textField(body.role, 100)
   const purpose = typeof body.purpose === 'string' ? body.purpose.trim().slice(0, 2000) : ''
+  const password = typeof body.password === 'string' ? body.password : ''
 
-  if (!name || !email || !organisation || !role) {
+  if (!name || !email || !organisation || !role || !password) {
     return res.status(400).json({ error: 'Please complete all required fields.' })
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -47,11 +48,27 @@ export default async function handler(req: any, res: any) {
     const supabase = createClient(supabaseUrl, secretKey, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     })
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { name, organisation },
+    })
+    if (authError || !authData.user) {
+      console.error('Access application account creation failed:', authError?.message ?? 'No user returned')
+      return res.status(400).json({
+        error: 'We could not create an account for this email. It may already be registered; try logging in or use another email address.',
+      })
+    }
+
     const { error } = await supabase.from('access_applications').insert({
+      auth_user_id: authData.user.id,
       name, email, organisation, role, purpose, status: 'pending',
     })
     if (error) {
       console.error('Access application insert failed:', JSON.stringify({ code: error.code, message: error.message, hint: error.hint }))
+      const { error: cleanupError } = await supabase.auth.admin.deleteUser(authData.user.id)
+      if (cleanupError) console.error('Failed to clean up unlinked auth user:', cleanupError.message)
       return res.status(500).json({ error: 'We could not save your application right now. Please try again later.' })
     }
     return res.status(201).json({ ok: true })
