@@ -25,21 +25,44 @@ function Brand() {
 
 function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => void }) {
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [form, setForm] = useState({ name: '', email: '', organisation: '', role: '', purpose: '' })
   const update = (key: keyof typeof form, value: string) => setForm(current => ({ ...current, [key]: value }))
+  const submitApplication = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (submitting) return
+    setSubmitting(true)
+    setSubmitError('')
+    try {
+      const response = await fetch('/api/access-applications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'We could not submit your application. Please try again.')
+      setSubmitted(true)
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Network error. Please check your connection and try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
   return <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) close() }}>
     <section className="access-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <button className="modal-close" onClick={close} aria-label="Close application"><X size={18} /></button>
-      {submitted ? <div className="success-state"><span className="success-icon"><Check size={25} /></span><span className="eyebrow">APPLICATION DRAFTED</span><h2 id="modal-title">You’re on our radar.</h2><p>This demo form has validated your details locally, but it has not sent or stored an application. A secure application service will be connected before launch.</p><button className="button button-dark" onClick={close}>Back to CampusGuard <ArrowRight size={16} /></button></div> :
+      {submitted ? <div className="success-state"><span className="success-icon"><Check size={25} /></span><span className="eyebrow">APPLICATION RECEIVED</span><h2 id="modal-title">You’re on our radar.</h2><p>Your access application has been submitted successfully. The CampusGuard team can review it and follow up using the contact details you provided.</p><button className="button button-dark" onClick={close}>Back to CampusGuard <ArrowRight size={16} /></button></div> :
       <><span className="eyebrow">EARLY ACCESS</span><h2 id="modal-title">Let’s make your campus more aware.</h2><p className="modal-intro">Tell us a little about your institution. Applications are intended to be reviewed before access is granted.</p>
-      <form onSubmit={e => { e.preventDefault(); setSubmitted(true) }}>
+      <form onSubmit={submitApplication}>
         <label>Your name<input required value={form.name} onChange={e => update('name', e.target.value)} placeholder="Full name" /></label>
         <label>Work email<input required type="email" value={form.email} onChange={e => update('email', e.target.value)} placeholder="you@institution.org" /></label>
         <label>Institution / organisation<input required value={form.organisation} onChange={e => update('organisation', e.target.value)} placeholder="Organisation name" /></label>
         <label>Your role<select required value={form.role} onChange={e => update('role', e.target.value)}><option value="">Choose a role</option><option>School / campus leadership</option><option>IT / security team</option><option>Facilities / operations</option><option>Research / evaluation</option><option>Other</option></select></label>
         <label>What are you hoping to evaluate?<textarea value={form.purpose} onChange={e => update('purpose', e.target.value)} placeholder="A short description (optional)" rows={3} /></label>
-        <button className="button button-lime form-submit" type="submit">Review application <ArrowUpRight size={16} /></button>
-        <p className="form-note"><LockKeyhole size={12} /> Prototype only. No information is transmitted or saved.</p>
+        <button className="button button-lime form-submit" type="submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit application'} <ArrowUpRight size={16} /></button>
+        {submitError && <p className="form-note" role="alert">{submitError}</p>}
+        <p className="form-note"><LockKeyhole size={12} /> Your application is sent securely for review. Do not include sensitive personal information.</p>
       </form><p className="account-prompt">Already have an account? <button type="button" onClick={onLogin}>Log in <ArrowUpRight size={13} /></button></p></>}
     </section>
   </div>
