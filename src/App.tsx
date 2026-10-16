@@ -20,12 +20,6 @@ const features = [
   { number: '03', icon: Fingerprint, title: 'Local-first by design', text: 'Video analysis is designed around the Windows desktop application. Website sync, where enabled, should be limited to explicitly selected data.' },
 ]
 
-const workflow = [
-  { n: '01', title: 'Connect', text: 'Bring compatible camera feeds into the CampusGuard desktop application.' },
-  { n: '02', title: 'Understand', text: 'Local AI models analyse video and flag events that may need a human review.' },
-  { n: '03', title: 'Review', text: 'Staff inspect alerts and manage incident records from a single workflow.' },
-]
-
 function Brand() {
   return <a className="brand" href="#top" aria-label="CampusGuard home"><span className="brand-mark"><ShieldCheck size={19} strokeWidth={1.8} /></span><span>campus<span className="brand-light">guard</span><i>®</i></span></a>
 }
