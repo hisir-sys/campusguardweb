@@ -1706,3 +1706,99 @@ html { scroll-behavior: smooth; }
 @media(max-width:850px){.public-hero-inner{gap:30px}.public-hero-copy h1{letter-spacing:-.045em}.public-site-content>.neural-section .neural-visual{padding:18px}}
 @media(max-width:600px){.public-site-content>.final-cta-section .final-cta-inner{align-items:flex-start}.hero-console{transform:none}.customer-download-card{transform:none}}
 @media(prefers-reduced-motion:reduce){.hero-orbit-one,.hero-orbit-two,.hero-float-tag,.hero-console,.customer-download-card::before{animation:none!important}.hero-console,.customer-download-card,.kinetic-step,.how-steps article,.customer-pilot-grid article{transition:none!important;transform:none!important}}
+
+
+/* 2026 story order, contrast and kinetic finish. */
+.public-site-content{display:flex;flex-direction:column}
+.public-site-content>.public-hero{order:1}
+.public-site-content>.platform-section{order:2}
+.public-site-content>.neural-section{order:3;background:var(--cg-obsidian);color:#f5f7f1}
+.public-site-content>.neural-section .neural-heading h2,
+.public-site-content>.neural-section .pipeline-detail-heading p{color:#f5f7f1}
+.public-site-content>.neural-section .neural-heading>p{color:#a8b0a5}
+.public-site-content>.neural-section .neural-visual{border-color:#ffffff20;background:linear-gradient(145deg,#111711,#0b0f0b);box-shadow:0 25px 80px #0005}
+.public-site-content>.neural-section .neural-visual-top,
+.public-site-content>.neural-section .neural-stage-labels,
+.public-site-content>.neural-section .neural-footnote,
+.public-site-content>.neural-section .kinetic-disclaimer{color:#a8b0a5}
+.public-site-content>.neural-section .network-links path{stroke:#697d58}
+.public-site-content>.neural-section .network-nodes circle{fill:#c8ff52;stroke:#a2c66c}
+.public-site-content>.neural-section .pipeline-node{background:#111711;border-color:#ffffff20;color:#f5f7f1;box-shadow:0 12px 30px #0003}
+.public-site-content>.neural-section .pipeline-node b{color:#f5f7f1}
+.public-site-content>.neural-section .pipeline-node small{color:#a8b0a5}
+.public-site-content>.neural-section .kinetic-step{background:linear-gradient(145deg,#151b14,#0c100c);border-color:#ffffff20;box-shadow:0 10px 28px #0003}
+.public-site-content>.neural-section .kinetic-step b{color:#f5f7f1}
+.public-site-content>.neural-section .kinetic-step p{color:#a8b0a5}
+.public-site-content>.neural-section .kinetic-step small{color:#a4b394}
+.public-site-content>.neural-section .kinetic-arrow{color:#c8ff52}
+.public-site-content>.dark-band{order:4;background:var(--cg-ivory);color:var(--ink)}
+.public-site-content>.dark-band .dark-band-inner h2{color:var(--ink)}
+.public-site-content>.dark-band .dark-band-inner h2 em{color:#607b3c}
+.public-site-content>.dark-band .dark-band-inner>p{color:#6d746b}
+.public-site-content>.dark-band .eyebrow{color:#68755e}
+.public-site-content>.dark-band .dark-band-mark{color:#688642}
+.public-site-content>.principle-strip{order:4.5;background:#e9eee3;color:#303a2a}
+.public-site-content>.principle-strip .strip-label{color:#68755e}
+.public-site-content>.principle-strip .strip-inner>span:not(.strip-label){color:#48543e}
+.public-site-content>.how-it-works-section{order:5;background:var(--cg-obsidian);color:#f5f7f1}
+.public-site-content>.how-it-works-section .section-heading h2{color:#f5f7f1}
+.public-site-content>.how-it-works-section .section-heading h2 em{color:var(--cg-lime)}
+.public-site-content>.how-it-works-section .section-heading>p{color:#a8b0a5}
+.public-site-content>.how-it-works-section .eyebrow{color:#a8b0a5}
+.public-site-content>.how-it-works-section .how-steps article{background:linear-gradient(145deg,#141a13,#0d110d);border-color:#ffffff1a}
+.public-site-content>.how-it-works-section .how-steps h3{color:#f5f7f1}
+.public-site-content>.how-it-works-section .how-steps p{color:#a8b0a5}
+.public-site-content>.how-it-works-section .how-steps article>span{border-color:#c8ff5240;color:var(--cg-lime)}
+.public-site-content>.faq-section{order:6}
+.public-site-content>.download-section{order:7;display:none}
+.public-site-content>.final-cta-section{order:7;background:var(--cg-obsidian);color:#f5f7f1}
+.public-site-content>.final-cta-section h2{color:#f5f7f1}
+.public-site-content>.final-cta-section h2 em{color:var(--cg-lime)}
+.public-site-content>.final-cta-section .eyebrow{color:#a8b0a5}
+.public-site-content>.final-cta-section p{color:#a8b0a5}
+.public-site-content>.site-footer{order:8}
+.customer-resource-section#customer-how-it-works{background:var(--cg-obsidian);color:#f5f7f1}
+.customer-resource-section#customer-how-it-works h2{color:#f5f7f1}
+.customer-resource-section#customer-how-it-works .customer-resource-lead{color:#a8b0a5}
+.customer-resource-section#customer-how-it-works .eyebrow{color:#a8b0a5}
+.customer-resource-section#customer-how-it-works .how-steps article{background:linear-gradient(145deg,#141a13,#0d110d);border-color:#ffffff1a}
+.customer-resource-section#customer-how-it-works .how-steps h3{color:#f5f7f1}
+.customer-resource-section#customer-how-it-works .how-steps p{color:#a8b0a5}
+.customer-resource-section#customer-ai-pipeline{background:var(--cg-ivory);color:var(--ink)}
+.customer-resource-section#customer-ai-pipeline h2{color:var(--ink)}
+.customer-resource-section#customer-ai-pipeline .customer-resource-lead{color:#6d746b}
+.customer-resource-section#customer-ai-pipeline .eyebrow{color:#68755e}
+.customer-resource-section#customer-ai-pipeline .customer-flowchart article{background:linear-gradient(145deg,#fff,#eef3e7);border-color:#dce3d5;box-shadow:0 12px 30px #18200f08}
+.customer-resource-section#customer-ai-pipeline .customer-flowchart h3{color:#20261d}
+.customer-resource-section#customer-ai-pipeline .customer-flowchart p{color:#6d746b}
+.customer-resource-section#customer-ai-pipeline .customer-flowchart>span{color:#688642}
+.customer-resource-section#customer-ai-pipeline .customer-flow-human{border-color:#a8c481;background:#f4f8ed}
+.customer-resource-section#customer-ai-pipeline .customer-resource-note{color:#6d746b}
+.customer-resource-section#customer-pricing{background:var(--cg-obsidian);color:#f5f7f1}
+.customer-resource-section#customer-pricing h2{color:#f5f7f1}
+.customer-resource-section#customer-pricing .section-heading>p{color:#a8b0a5}
+.customer-resource-section#customer-pricing .eyebrow{color:#a8b0a5}
+.customer-resource-section#customer-pricing .customer-pilot-grid article{background:linear-gradient(145deg,#141a13,#0d110d);border-color:#ffffff1a}
+.customer-resource-section#customer-pricing .customer-pilot-grid h3{color:#f5f7f1}
+.customer-resource-section#customer-pricing .customer-pilot-grid p{color:#a8b0a5}
+.customer-resource-section#customer-pricing .customer-pilot-grid article>span{color:#a8b0a5}
+.customer-resource-section#customer-pricing .customer-pilot-grid article>b{color:var(--cg-lime)}
+.customer-resource-section#customer-pricing .customer-resource-note{color:#a8b0a5}
+.customer-resource-section h2{font-size:clamp(38px,4.5vw,58px);line-height:1.04;letter-spacing:-.055em}
+.customer-resource-section h2 em{font-family:var(--serif);font-style:italic;font-weight:400}
+.public-hero-copy h1{font-size:clamp(43px,5.5vw,70px)}
+.neural-section .neural-heading h2,.section-heading h2,.dark-band h2,.faq-intro h2{font-size:clamp(38px,4.5vw,58px);line-height:1.04;letter-spacing:-.055em}
+.neural-section .neural-heading h2 em,.section-heading h2 em,.dark-band h2 em,.faq-intro h2 em{font-family:var(--serif);font-style:italic;font-weight:400}
+@keyframes cg-section-reveal{from{opacity:0;transform:translateY(24px) scale(.99);filter:blur(3px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+.public-site-content>section,.customer-resources>.customer-resource-section{animation:cg-section-reveal .85s cubic-bezier(.2,.75,.25,1) both}
+.public-site-content>section:nth-of-type(2),.customer-resources>.customer-resource-section:nth-of-type(2){animation-delay:.08s}
+.public-site-content>section:nth-of-type(3),.customer-resources>.customer-resource-section:nth-of-type(3){animation-delay:.13s}
+.neural-visual,.hero-console,.customer-download-card{transform-style:preserve-3d}
+.network-nodes circle{transform-box:fill-box;transform-origin:center;animation:cg-node-breathe 3s ease-in-out infinite}
+.network-nodes circle:nth-child(3n){animation-delay:.45s}.network-nodes circle:nth-child(3n + 1){animation-delay:.9s}
+.network-pulse{stroke-dasharray:12 16;animation:cg-data-flow 5s linear infinite}
+.network-pulse.pulse-delay{animation-delay:-2.5s}
+@keyframes cg-node-breathe{0%,100%{opacity:.65}50%{opacity:1}}
+@keyframes cg-data-flow{to{stroke-dashoffset:-140}}
+@media(max-width:760px){.public-site-content>.download-section{display:none}.customer-resource-section h2,.neural-section .neural-heading h2,.section-heading h2,.dark-band h2,.faq-intro h2{font-size:clamp(36px,9vw,48px)}}
+@media(prefers-reduced-motion:reduce){.public-site-content>section,.customer-resources>.customer-resource-section,.network-nodes circle,.network-pulse{animation:none!important}}
