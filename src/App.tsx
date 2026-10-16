@@ -1,4 +1,11 @@
 import { useEffect, useState } from 'react'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL || '',
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
+  { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } },
+)
 import {
   ArrowDownRight, ArrowRight, ArrowUpRight, Activity, BellRing, Check,
   CircleDot, Command, Fingerprint, LockKeyhole, Menu,
@@ -73,19 +80,65 @@ function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => voi
 function LoginModal({ close, onApply }: { close: () => void; onApply: () => void }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [attempted, setAttempted] = useState(false)
+  const [checking, setChecking] = useState(false)
+  const [message, setMessage] = useState('')
+  const [messageKind, setMessageKind] = useState<'error' | 'info' | 'success'>('info')
+
+  const signIn = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (checking) return
+    setChecking(true)
+    setMessage('')
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
+      setMessageKind('error')
+      setMessage('Sign-in configuration is missing. Please contact the CampusGuard administrator.')
+      setChecking(false)
+      return
+    }
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+      if (error || !data.session) throw new Error('Email or password is incorrect. If you have not applied yet, request early access first.')
+      const response = await fetch('/api/access-status', {
+        headers: { Authorization: `Bearer ${data.session.access_token}` },
+        cache: 'no-store',
+      })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        await supabase.auth.signOut()
+        throw new Error(typeof result.error === 'string' ? result.error : 'We could not verify your access status.')
+      }
+      if (result.status !== 'approved') {
+        await supabase.auth.signOut()
+        setMessageKind('info')
+        setMessage(result.status === 'pending'
+          ? 'Your application is still pending review. You can sign in after the CampusGuard team approves it.'
+          : result.status === 'rejected'
+            ? 'Your application has not been approved. Please contact the CampusGuard team if you need help.'
+            : 'This account does not have a linked access application. Please request early access.')
+        return
+      }
+      setMessageKind('success')
+      setMessage('Your account is approved and your credentials were verified. The customer workspace is not available on this website yet.')
+    } catch (error) {
+      setMessageKind('error')
+      setMessage(error instanceof Error ? error.message : 'Sign-in failed. Please try again.')
+    } finally {
+      setChecking(false)
+    }
+  }
+
   return <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) close() }}>
     <section className="access-modal login-modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
       <button className="modal-close" onClick={close} aria-label="Close login"><X size={18} /></button>
       <span className="eyebrow">CUSTOMER SIGN IN</span>
       <h2 id="login-title">Welcome back.</h2>
-      <p className="modal-intro">Sign in to your CampusGuard account to continue to your organisation workspace.</p>
-      {attempted && <div className="login-prototype-note" role="status"><LockKeyhole size={16} /><span><b>Sign-in is not connected yet.</b><small>This website preview does not verify passwords or access accounts. Secure authentication must be connected before customer sign-in goes live.</small></span></div>}
-      <form onSubmit={e => { e.preventDefault(); setAttempted(true) }}>
+      <p className="modal-intro">Sign in with the email and password you used when requesting early access.</p>
+      {message && <div className="login-prototype-note" role={messageKind === 'error' ? 'alert' : 'status'}><LockKeyhole size={16} /><span><b>{messageKind === 'success' ? 'Access approved' : messageKind === 'error' ? 'Could not sign in' : 'Access status'}</b><small>{message}</small></span></div>}
+      <form onSubmit={signIn}>
         <label>Email address<input required type="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@institution.org" /></label>
         <label>Password<input required type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" /></label>
-        <button className="button button-lime form-submit" type="submit">Log in <ArrowUpRight size={16} /></button>
-        <p className="form-note"><LockKeyhole size={12} /> Secure sign-in will be enabled when authentication is connected.</p>
+        <button className="button button-lime form-submit" type="submit" disabled={checking}>{checking ? 'Checking…' : 'Log in'} <ArrowUpRight size={16} /></button>
+        <p className="form-note"><LockKeyhole size={12} /> Account approval is checked on the server before access is granted.</p>
       </form>
       <p className="account-prompt">New to CampusGuard? <button type="button" onClick={onApply}>Request early access <ArrowUpRight size={13} /></button></p>
     </section>
