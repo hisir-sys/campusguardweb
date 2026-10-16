@@ -1396,3 +1396,6 @@ html { scroll-behavior: smooth; }
 .signed-in-content .hero{border-top:1px solid #ffffff0c}
 @media(max-width:760px){.customer-workspace{padding:38px 0 40px}.workspace-heading{align-items:flex-start;flex-direction:column;gap:17px}.workspace-heading h1{font-size:36px}.workspace-stat-grid{grid-template-columns:1fr}.workspace-stat{min-height:104px}.workspace-panel-grid{grid-template-columns:1fr}.workspace-panel{padding:17px}.workspace-session{white-space:normal}.workspace-footnote{align-items:flex-start;line-height:1.7}}
 @media(prefers-reduced-motion:reduce){.workspace-content{animation:none}}
+
+.signed-in-content .footer-links button { display:none; }
+.signed-in-content .hero-actions .text-link { display:inline-flex; }
