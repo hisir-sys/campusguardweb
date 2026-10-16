@@ -1468,3 +1468,10 @@ html { scroll-behavior: smooth; }
 @media(max-width:900px){.kinetic-flow{grid-template-columns:1fr 20px 1fr;gap:9px}.kinetic-arrow:nth-of-type(4n){display:none}.kinetic-step p{min-height:0}.faq-shell{grid-template-columns:1fr;gap:30px}.faq-intro{position:static}.faq-intro>p{max-width:520px}.download-inner{grid-template-columns:1fr;gap:30px}.download-visual{min-height:300px}.download-visual-label{right:10%;bottom:0}}
 @media(max-width:540px){.pipeline-detail-heading{align-items:flex-start;flex-direction:column;gap:10px}.kinetic-flow{grid-template-columns:1fr}.kinetic-arrow{height:16px;transform:rotate(90deg)}.kinetic-arrow:nth-of-type(4n){display:grid}.kinetic-step{padding:18px}.kinetic-step p{margin-bottom:12px}.faq-section{padding:65px 0}.faq-item summary{font-size:12px}.download-section{padding:65px 0}.download-actions{align-items:flex-start;flex-direction:column;gap:15px}.download-visual{min-height:275px}.download-orbit-a{width:270px}.download-orbit-b{width:205px}}
 @media(prefers-reduced-motion:reduce){.kinetic-step,.kinetic-arrow,.download-orbit,.download-device,.download-progress i,.faq-item p{animation:none!important}.kinetic-step,.download-device{transition:none}}
+
+/* Keep the customer overview on the same typography scale as the public landing page. */
+.workspace-heading h1{font-family:var(--display);font-weight:700;line-height:1.06;letter-spacing:-3.2px}
+.workspace-heading h1 span{font-family:var(--serif);font-weight:400;letter-spacing:-1px;color:var(--lime)}
+.workspace-heading p,.workspace-empty p,.workspace-stat small{font-family:'DM Sans',sans-serif}
+.workspace-panel-head h2{font-family:var(--display);font-weight:700;letter-spacing:-.7px}
+.workspace-session,.workspace-stat>span,.workspace-chip{font-family:var(--mono)}
