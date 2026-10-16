@@ -7,9 +7,9 @@ const supabase = createClient(
   { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } },
 )
 import {
-  ArrowDownRight, ArrowRight, ArrowUpRight, Activity, BellRing, Check,
-  CircleDot, Command, Fingerprint, LockKeyhole, Menu,
-  Monitor, Play, ScanEye, ShieldCheck, Sparkles, X,
+  ArrowRight, ArrowUpRight, Activity, BellRing, Check,
+  Fingerprint, LockKeyhole, Menu,
+  Monitor, ScanEye, ShieldCheck, Sparkles, X,
 } from 'lucide-react'
 
 type ModalName = 'access' | 'product' | 'login' | 'pricing' | null
