@@ -394,6 +394,8 @@ function App() {
     {modal === 'login' && <LoginModal close={() => setModal(null)} onApply={() => setModal('access')} onApproved={() => { setIsAuthenticated(true); setModal(null); window.scrollTo({ top: 0, behavior: 'auto' }) }} />}
     {modal === 'product' && <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setModal(null) }}><section className="access-modal info-modal" role="dialog" aria-modal="true" aria-labelledby="portal-title"><button className="modal-close" onClick={() => setModal(null)} aria-label="Close"><X size={18} /></button><span className="eyebrow">CUSTOMER ACCESS</span><h2 id="portal-title">A portal with purpose.</h2><p className="modal-intro">The web portal is intentionally read-only: it will show camera names, locations, active/offline status and text notifications. Camera setup, live streams and incident footage remain in the Windows desktop application.</p><div className="portal-status"><LockKeyhole size={18} /><span><b>Read-only web access</b><small>Camera and notification data appear when desktop sync is connected.</small></span></div><button className="button button-dark" onClick={() => { setModal(null); openAccess() }}>Apply for early access <ArrowUpRight size={15} /></button></section></div>}
     </div>}
+    {isAuthenticated && modal === 'access' && <AccessModal close={() => setModal(null)} onLogin={() => setModal('login')} />}
+    {isAuthenticated && modal === 'login' && <LoginModal close={() => setModal(null)} onApply={() => setModal('access')} onApproved={() => { setIsAuthenticated(true); setModal(null) }} />}
   </main>
 }
 
