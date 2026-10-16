@@ -279,35 +279,6 @@ function App() {
 
     {isAuthenticated && <CustomerWorkspace />}
     <div className={isAuthenticated ? 'public-site-content signed-in-content' : 'public-site-content'}>
-    <section className="hero" data-theme="dark">
-      <div className="hero-grid" aria-hidden="true" /><div className="hero-glow" aria-hidden="true" />
-      <div className="hero-inner">
-        <div className="hero-copy"><div className="status-pill"><span className="status-dot" /> CAMPUS SAFETY, WITH MORE CONTEXT</div>
-          
-          <p className="hero-lede">A more considered approach to campus monitoring. CampusGuard brings camera feeds, AI-assisted alerts and incident review into one focused desktop workflow.</p>
-          <div className="hero-actions"><button className="button button-lime" onClick={openAccess}>Request early access <ArrowUpRight size={16} /></button><a className="text-link" href="#how-it-works"><span className="play-circle"><Play size={12} fill="currentColor" /></span> Explore the approach</a></div>
-          <div className="hero-proof"><span><Check size={13} /> Windows desktop application</span><span><Check size={13} /> Local-first processing approach</span></div>
-        </div>
-        <div className="hero-visual">
-          <div className="visual-orbit orbit-one" /><div className="visual-orbit orbit-two" />
-          <div className="visual-topline"><span><span className="live-dot" /> CONCEPTUAL INTERFACE</span><span>CG / 001</span></div>
-          <div className="monitor-frame">
-            <div className="monitor-toolbar"><span className="window-dots"><i /><i /><i /></span><span className="monitor-title"><Command size={12} /> CAMPUSGUARD / LIVE VIEW</span><span className="monitor-status"><CircleDot size={9} /> LOCAL</span></div>
-            <div className="camera-grid">
-              <div className="camera-feed feed-a"><div className="feed-label">NORTH QUAD <span>CAM—01</span></div><div className="feed-scan" /><div className="detection-box box-a"><span>PERSON / TRACK 04</span></div><div className="feed-time">10:42:08</div><span className="corner-mark tl" /><span className="corner-mark br" /></div>
-              <div className="camera-feed feed-b"><div className="feed-label">MAIN HALL <span>CAM—02</span></div><div className="feed-scan" /><div className="detection-box box-b"><span>TRACK 02</span></div><div className="feed-time">10:42:09</div><span className="corner-mark tl" /><span className="corner-mark br" /></div>
-              <div className="camera-feed feed-c"><div className="feed-label">EAST WALKWAY <span>CAM—03</span></div><div className="feed-scan" /><div className="feed-time">10:42:10</div></div>
-              <div className="camera-feed feed-d"><div className="feed-label">LIBRARY ENTRY <span>CAM—04</span></div><div className="feed-scan" /><div className="feed-time">10:42:10</div></div>
-            </div>
-            <div className="monitor-bottom"><span><Activity size={12} /> AI ENGINE <b>READY</b></span><span>4 VIEWPORTS <i /> LOCAL SESSION</span></div>
-          </div>
-          <div className="floating-alert"><span className="alert-icon"><BellRing size={16} /></span><span><b>Incident for review</b><small>Human review recommended</small></span><span className="alert-chevron"><ArrowUpRight size={14} /></span></div>
-          <div className="visual-caption"><span>ILLUSTRATIVE PRODUCT VISUAL</span><span>DESIGNED FOR HUMAN REVIEW</span></div>
-        </div>
-        <div className="hero-index"><span>01 — AWARENESS</span><span>BUILT FOR THE PEOPLE WHO KEEP CAMPUSES MOVING <ArrowDownRight size={13} /></span></div>
-      </div>
-    </section>
-
     <section className="neural-section" id="pipeline" data-theme="dark">
       <div className="section-shell neural-shell">
         <div className="neural-heading">
@@ -376,9 +347,6 @@ function App() {
 
 
 
-    <section className="workflow-section" id="how-it-works" data-theme="light"><div className="section-shell workflow-shell"><div className="workflow-intro"><span className="eyebrow"><span className="eyebrow-line" /> HOW IT WORKS</span><p>AI can help surface a moment. People still provide the context, judgement and next step.</p><button className="button button-outline" onClick={() => setModal('product')}>Explore the product <ArrowUpRight size={15} /></button></div><div className="workflow-list">{workflow.map(({ n, title, text }) => <article className="workflow-item" key={n}><span className="workflow-number">{n}</span><div><h3>{title}</h3><p>{text}</p></div><ArrowUpRight className="workflow-arrow" size={19} /></article>)}</div></div></section>
-
-
     <section className="faq-section" id="faqs" data-theme="light">
       <div className="section-shell faq-shell">
         <div className="faq-intro"><span className="eyebrow"><span className="eyebrow-line" /> COMMON QUESTIONS</span><h2>Good questions.<br /><em>Clear answers.</em></h2><p>A quick guide to what CampusGuard is designed to do—and what it is not.</p></div>
@@ -400,8 +368,6 @@ function App() {
         <div className="download-visual" aria-hidden="true"><div className="download-orbit download-orbit-a"></div><div className="download-orbit download-orbit-b"></div><div className="download-device"><div className="download-device-top"><span>CG / DESKTOP</span><span className="download-device-status"><i/> LOCAL</span></div><div className="download-device-body"><div className="download-device-mark"><ShieldCheck size={35}/></div><span>CAMPUSGUARD</span><small>WINDOWS APPLICATION</small><div className="download-progress"><i/></div></div><div className="download-device-bottom">CAMERAS · AI ANALYSIS · INCIDENT REVIEW</div></div><span className="download-visual-label">DESKTOP-FIRST / READ-ONLY WEB</span></div>
       </div>
     </section>
-
-    <section className="final-cta" data-theme="dark"><div className="cta-grid" aria-hidden="true" /><div className="final-cta-inner"><span className="eyebrow"><span className="eyebrow-line" /> EARLY ACCESS PROGRAMME</span><p>We’re looking to work with institutions that want to evaluate a more considered, human-led approach to campus monitoring.</p><button className="button button-lime" onClick={openAccess}>Apply for early access <ArrowUpRight size={16} /></button><span className="cta-footnote">INSTITUTIONAL ENQUIRIES · APPLICATIONS REVIEWED INDIVIDUALLY</span></div></section>
 
     <footer className="site-footer"><div className="footer-top"><Brand /><p>More context. Better review.<br />People at the centre.</p><div className="footer-links"><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><a href="#principles">Our approach</a><a href="#faqs">FAQs</a><a href="#download">Download</a><button onClick={openAccess}>Apply for access</button></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} CampusGuard. All rights reserved.</span><span>AI-ASSISTED · HUMAN-LED · PRIVACY-AWARE</span><a href="#top">BACK TO TOP ↑</a></div></footer>
 
