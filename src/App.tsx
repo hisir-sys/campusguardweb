@@ -12,7 +12,7 @@ import {
   Monitor, ScanEye, ShieldCheck, Sparkles, X,
 } from 'lucide-react'
 
-type ModalName = 'access' | 'product' | 'login' | 'pricing' | null
+type ModalName = 'access' | 'product' | 'login' | 'pricing' | 'inquiry' | null
 
 const features = [
   { number: '01', icon: ScanEye, title: 'Context before noise', text: 'AI-assisted detection helps bring potentially important moments to the attention of the people responsible for reviewing them.' },
@@ -139,6 +139,87 @@ function LoginModal({ close, onApply, onApproved }: { close: () => void; onApply
 }
 
 
+
+function InquiryModal({ close, initialTopic }: { close: () => void; initialTopic: string }) {
+  const [form, setForm] = useState({ name: '', email: '', organisation: '', topic: initialTopic, message: '' })
+  const [busy, setBusy] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
+  const update = (key: keyof typeof form, value: string) => setForm(current => ({ ...current, [key]: value }))
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (busy) return
+    setBusy(true); setError('')
+    try {
+      const response = await fetch('/api/pilot-inquiries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'We could not send your inquiry. Please try again.')
+      setSent(true)
+    } catch (e) { setError(e instanceof Error ? e.message : 'Network error. Please try again.') }
+    finally { setBusy(false) }
+  }
+  return <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) close() }}>
+    <section className="access-modal inquiry-modal" role="dialog" aria-modal="true" aria-labelledby="inquiry-title">
+      <button className="modal-close" onClick={close} aria-label="Close inquiry"><X size={18}/></button>
+      {sent ? <div className="success-state"><span className="success-icon"><Check size={25}/></span><span className="eyebrow">MESSAGE RECEIVED</span><h2 id="inquiry-title">Thanks for reaching out.</h2><p>Your inquiry has been submitted. The CampusGuard team can follow up using the email you provided.</p><button className="button button-dark" onClick={close}>Back to CampusGuard <ArrowRight size={16}/></button></div> :
+      <><span className="eyebrow">PILOTS &amp; DEPLOYMENT</span><h2 id="inquiry-title">Let’s talk through your needs.</h2><p className="modal-intro">Share a few details and the team can follow up about scope, readiness and next steps. No pricing or availability is promised by this request.</p>
+      <form onSubmit={submit}>
+        <label>Your name<input required maxLength={120} value={form.name} onChange={e => update('name',e.target.value)} placeholder="Full name"/></label>
+        <label>Work email<input required type="email" maxLength={254} value={form.email} onChange={e => update('email',e.target.value)} placeholder="you@institution.org"/></label>
+        <label>Institution / organisation<input required maxLength={180} value={form.organisation} onChange={e => update('organisation',e.target.value)} placeholder="Organisation name"/></label>
+        <label>What would you like to discuss?<select required value={form.topic} onChange={e => update('topic',e.target.value)}><option>Request pilot details</option><option>Plan a deployment</option><option>Discuss multi-site needs</option></select></label>
+        <label>Anything we should know?<textarea rows={3} maxLength={3000} value={form.message} onChange={e => update('message',e.target.value)} placeholder="Your goals, approximate scale or questions (optional)"/></label>
+        <button className="button button-lime form-submit" type="submit" disabled={busy}>{busy ? 'Sending…' : 'Send inquiry'} <ArrowUpRight size={16}/></button>
+        {error && <p className="form-note" role="alert">{error}</p>}
+        <p className="form-note"><LockKeyhole size={12}/> Please do not include sensitive personal or security information.</p>
+      </form></>}
+    </section>
+  </div>
+}
+
+function AdminPanel() {
+  const [password, setPassword] = useState('')
+  const [authenticated, setAuthenticated] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+  const [applications, setApplications] = useState<Array<{id:string;name:string;email:string;organisation:string;role:string;purpose:string;status:string;created_at:string}>>([])
+  const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 })
+  const [filter, setFilter] = useState('pending')
+  const load = async (secret = password) => {
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const response = await fetch('/api/admin-applications', { headers: { 'X-Admin-Password': secret }, cache: 'no-store' })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Admin access could not be verified.')
+      setApplications(result.applications || []); setStats(result.stats || {pending:0,approved:0,rejected:0}); setAuthenticated(true)
+    } catch (e) { setAuthenticated(false); setError(e instanceof Error ? e.message : 'Could not load applications.') }
+    finally { setBusy(false) }
+  }
+  const login = async (event: React.FormEvent<HTMLFormElement>) => { event.preventDefault(); await load(password) }
+  const decide = async (id: string, status: 'approved' | 'rejected') => {
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const response = await fetch('/api/admin-applications', { method: 'POST', headers: {'Content-Type':'application/json','X-Admin-Password':password}, body: JSON.stringify({id,status}) })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Could not update application.')
+      setNotice(status === 'approved' ? 'Application approved. The user can now sign in.' : 'Application rejected.')
+      await load(password)
+    } catch (e) { setError(e instanceof Error ? e.message : 'Could not update application.') }
+    finally { setBusy(false) }
+  }
+  return <main className="admin-page"><header className="admin-header"><a className="brand" href="/"><span className="brand-mark"><ShieldCheck size={19}/></span><span>campus<span className="brand-light">guard</span><i>®</i></span></a><span className="admin-label">ADMINISTRATION / PRIVATE</span><a href="/" className="admin-back">Back to website ↗</a></header>
+    {!authenticated ? <section className="admin-login access-modal"><span className="eyebrow">RESTRICTED AREA</span><h1>Admin sign in<span>.</span></h1><p>Use the administrator password configured for this deployment.</p><form onSubmit={login}><label>Admin password<input required type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter admin password"/></label><button className="button button-lime form-submit" type="submit" disabled={busy}>{busy ? 'Verifying…' : 'Sign in'} <ArrowUpRight size={16}/></button>{error && <p className="form-note" role="alert">{error}</p>}</form><p className="form-note"><LockKeyhole size={12}/> Admin password is checked by the server and is not stored in the database.</p></section> :
+    <section className="admin-content"><div className="admin-title-row"><div><span className="eyebrow">ACCESS MANAGEMENT</span><h1>Applications<span>.</span></h1><p>Review requests before granting customer portal access.</p></div><button className="button button-outline" onClick={() => { setAuthenticated(false); setPassword(''); setApplications([]) }}>Log out</button></div>
+      <div className="admin-stats"><article><span>PENDING</span><strong>{stats.pending}</strong></article><article><span>APPROVED</span><strong>{stats.approved}</strong></article><article><span>REJECTED</span><strong>{stats.rejected}</strong></article></div>
+      <div className="admin-list-heading"><h2>Access requests</h2><select value={filter} onChange={e => setFilter(e.target.value)}><option value="pending">Pending</option><option value="all">All applications</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select><button className="button button-outline" onClick={() => void load()} disabled={busy}>Refresh</button></div>
+      {notice && <p className="admin-notice" role="status">{notice}</p>}{error && <p className="admin-error" role="alert">{error}</p>}
+      <div className="admin-application-list">{applications.filter(app => filter === 'all' || app.status === filter).map(app => <article className="admin-application" key={app.id}><div className="admin-application-main"><div><h3>{app.name}</h3><a href={'mailto:'+app.email}>{app.email}</a></div><span className={'admin-status status-'+app.status}>{app.status}</span></div><dl><div><dt>Organisation</dt><dd>{app.organisation}</dd></div><div><dt>Role</dt><dd>{app.role}</dd></div><div><dt>Submitted</dt><dd>{app.created_at ? new Date(app.created_at).toLocaleString() : '—'}</dd></div></dl>{app.purpose && <p className="admin-purpose">{app.purpose}</p>}{app.status === 'pending' && <div className="admin-actions"><button className="button button-lime" disabled={busy} onClick={() => void decide(app.id,'approved')}><Check size={15}/> Approve</button><button className="button button-outline" disabled={busy} onClick={() => void decide(app.id,'rejected')}><X size={15}/> Reject</button></div>}</article>)}
+      {!applications.some(app => filter === 'all' || app.status === filter) && <div className="admin-empty"><ShieldCheck size={25}/><h3>No applications here</h3><p>New requests will appear here after someone submits the access form.</p></div>}</div>
+    </section>}
+  </main>
+}
+
 function CustomerWorkspace() {
   const [activeTab, setActiveTab] = useState<'overview' | 'cameras' | 'notifications'>('overview')
   return <section className="customer-workspace" aria-labelledby="workspace-title">
@@ -258,6 +339,8 @@ function App() {
     return () => { cancelled = true }
   }, [])
   const openAccess = () => { setModal('access'); setMenuOpen(false) }
+  const [inquiryTopic, setInquiryTopic] = useState('Request pilot details')
+  const openInquiry = (topic: string) => { setInquiryTopic(topic); setModal('inquiry'); setMenuOpen(false) }
   const navigateToSection = (event: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     event.preventDefault()
     setMenuOpen(false)
@@ -269,6 +352,7 @@ function App() {
     window.history.replaceState(null, '', `#${id}`)
     window.scrollTo({ top: Math.max(0, top), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   }
+  if (window.location.pathname.replace(/\/+$/, '') === '/admin') return <AdminPanel />
   return <main id="top">
     <div className="reading-progress" aria-hidden="true"><span style={{ width: `${scrollProgress}%` }} /></div>
     <header className={headerLight ? "site-header header-light" : "site-header"}>
@@ -281,7 +365,7 @@ function App() {
       </div>
     </header>
 
-    {isAuthenticated && <><CustomerWorkspace /><CustomerResources onPilot={openAccess} /></>}
+    {isAuthenticated && <><CustomerWorkspace /><CustomerResources onPilot={() => openInquiry("Request pilot details")} /></>}
     {!isAuthenticated && <div className="public-site-content">
 
     <section className="public-hero" id="overview" data-theme="dark">
@@ -392,8 +476,9 @@ function App() {
     <section className="final-cta-section" id="final-cta" data-theme="dark"><div className="section-shell final-cta-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> EARLY ACCESS PROGRAMME</span><h2>Make room for a<br /><em>clearer picture.</em></h2><p>Tell us what your institution needs to evaluate. Pilot scope, availability and fees are discussed directly—nothing here is a live subscription offer.</p></div><button className="button button-lime" onClick={openAccess}>Apply for early access <ArrowUpRight size={16} /></button></div></section>
     <footer className="site-footer"><div className="footer-top"><Brand /><p>More context. Better review.<br />People at the centre.</p><div className="footer-links"><a href="#platform">Platform</a><a href="#principles">Our approach</a><a href="#faqs">FAQs</a><a href="#download">Download</a><button onClick={openAccess}>Apply for access</button></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} CampusGuard. All rights reserved.</span><span>AI-ASSISTED · HUMAN-LED · PRIVACY-AWARE</span><a href="#top">BACK TO TOP ↑</a></div></footer>
 
+    {modal === 'inquiry' && <InquiryModal close={() => setModal(null)} initialTopic={inquiryTopic} />}
     {modal === 'access' && <AccessModal close={() => setModal(null)} onLogin={() => setModal('login')} />}
-    {modal === 'pricing' && <div className="modal-backdrop pricing-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setModal(null) }}><section className="pricing-modal" role="dialog" aria-modal="true" aria-labelledby="pricing-modal-title"><button className="modal-close pricing-modal-close" onClick={() => setModal(null)} aria-label="Close pricing"><X size={18} /></button><div className="pricing-modal-content"><div className="section-heading pricing-heading"><div><span className="eyebrow"><span className="eyebrow-line" /> PRICING &amp; PILOTS</span><h2 id="pricing-modal-title">A plan that fits<br /><em>your campus.</em></h2></div><p>Start with a focused evaluation, then shape a deployment around your cameras, team and operational needs. Final pricing will be confirmed with each institution.</p></div><div className="pricing-grid"><article className="pricing-card"><span className="pricing-kicker">01 / EVALUATE</span><h3>Campus pilot</h3><p className="pricing-summary">For teams exploring the workflow before a wider rollout.</p><div className="pricing-price">Discuss your pilot</div><ul><li><Check size={15} /> Guided evaluation scope</li><li><Check size={15} /> Desktop-first workflow review</li><li><Check size={15} /> Feedback and setup discussion</li></ul><button className="button button-outline pricing-action" onClick={openAccess}>Request pilot details <ArrowUpRight size={15} /></button></article><article className="pricing-card pricing-featured"><span className="pricing-kicker">02 / DEPLOY</span><span className="pricing-badge">RECOMMENDED TO DISCUSS</span><h3>Single campus</h3><p className="pricing-summary">For an institution planning a day-to-day operational deployment.</p><div className="pricing-price">Custom quote</div><ul><li><Check size={15} /> Camera and team requirements review</li><li><Check size={15} /> Deployment planning conversation</li><li><Check size={15} /> Support needs scoped with your team</li></ul><button className="button button-lime pricing-action" onClick={openAccess}>Discuss your campus <ArrowUpRight size={15} /></button></article><article className="pricing-card"><span className="pricing-kicker">03 / EXPAND</span><h3>Multi-campus</h3><p className="pricing-summary">For groups coordinating needs across multiple locations.</p><div className="pricing-price">Custom quote</div><ul><li><Check size={15} /> Multi-site requirements review</li><li><Check size={15} /> Organisation-level planning</li><li><Check size={15} /> Rollout scope defined together</li></ul><button className="button button-outline pricing-action" onClick={openAccess}>Talk to our team <ArrowUpRight size={15} /></button></article></div><p className="pricing-disclaimer"><LockKeyhole size={13} /> Pricing is not published yet. These are planning options, not live subscriptions; final features, availability and fees will be confirmed before purchase.</p></div></section></div>}
+    {modal === 'pricing' && <div className="modal-backdrop pricing-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setModal(null) }}><section className="pricing-modal" role="dialog" aria-modal="true" aria-labelledby="pricing-modal-title"><button className="modal-close pricing-modal-close" onClick={() => setModal(null)} aria-label="Close pricing"><X size={18} /></button><div className="pricing-modal-content"><div className="section-heading pricing-heading"><div><span className="eyebrow"><span className="eyebrow-line" /> PRICING &amp; PILOTS</span><h2 id="pricing-modal-title">A plan that fits<br /><em>your campus.</em></h2></div><p>Start with a focused evaluation, then shape a deployment around your cameras, team and operational needs. Final pricing will be confirmed with each institution.</p></div><div className="pricing-grid"><article className="pricing-card"><span className="pricing-kicker">01 / EVALUATE</span><h3>Campus pilot</h3><p className="pricing-summary">For teams exploring the workflow before a wider rollout.</p><div className="pricing-price">Discuss your pilot</div><ul><li><Check size={15} /> Guided evaluation scope</li><li><Check size={15} /> Desktop-first workflow review</li><li><Check size={15} /> Feedback and setup discussion</li></ul><button className="button button-outline pricing-action" onClick={() => openInquiry("Request pilot details")}>Request pilot details <ArrowUpRight size={15} /></button></article><article className="pricing-card pricing-featured"><span className="pricing-kicker">02 / DEPLOY</span><span className="pricing-badge">RECOMMENDED TO DISCUSS</span><h3>Single campus</h3><p className="pricing-summary">For an institution planning a day-to-day operational deployment.</p><div className="pricing-price">Custom quote</div><ul><li><Check size={15} /> Camera and team requirements review</li><li><Check size={15} /> Deployment planning conversation</li><li><Check size={15} /> Support needs scoped with your team</li></ul><button className="button button-lime pricing-action" onClick={() => openInquiry("Plan a deployment")}>Discuss your campus <ArrowUpRight size={15} /></button></article><article className="pricing-card"><span className="pricing-kicker">03 / EXPAND</span><h3>Multi-campus</h3><p className="pricing-summary">For groups coordinating needs across multiple locations.</p><div className="pricing-price">Custom quote</div><ul><li><Check size={15} /> Multi-site requirements review</li><li><Check size={15} /> Organisation-level planning</li><li><Check size={15} /> Rollout scope defined together</li></ul><button className="button button-outline pricing-action" onClick={() => openInquiry("Discuss multi-site needs")}>Talk to our team <ArrowUpRight size={15} /></button></article></div><p className="pricing-disclaimer"><LockKeyhole size={13} /> Pricing is not published yet. These are planning options, not live subscriptions; final features, availability and fees will be confirmed before purchase.</p></div></section></div>}
     {modal === 'login' && <LoginModal close={() => setModal(null)} onApply={() => setModal('access')} onApproved={() => { setIsAuthenticated(true); setModal(null); window.scrollTo({ top: 0, behavior: 'auto' }) }} />}
     {modal === 'product' && <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setModal(null) }}><section className="access-modal info-modal" role="dialog" aria-modal="true" aria-labelledby="portal-title"><button className="modal-close" onClick={() => setModal(null)} aria-label="Close"><X size={18} /></button><span className="eyebrow">CUSTOMER ACCESS</span><h2 id="portal-title">A portal with purpose.</h2><p className="modal-intro">The web portal is intentionally read-only: it will show camera names, locations, active/offline status and text notifications. Camera setup, live streams and incident footage remain in the Windows desktop application.</p><div className="portal-status"><LockKeyhole size={18} /><span><b>Read-only web access</b><small>Camera and notification data appear when desktop sync is connected.</small></span></div><button className="button button-dark" onClick={() => { setModal(null); openAccess() }}>Apply for early access <ArrowUpRight size={15} /></button></section></div>}
     </div>}
