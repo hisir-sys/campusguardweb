@@ -51,7 +51,7 @@ export default async function handler(req: any, res: any) {
       name, email, organisation, role, purpose, status: 'pending',
     })
     if (error) {
-      console.error('Access application insert failed:', error.message)
+      console.error('Access application insert failed:', JSON.stringify({ code: error.code, message: error.message, hint: error.hint }))
       return res.status(500).json({ error: 'We could not save your application right now. Please try again later.' })
     }
     return res.status(201).json({ ok: true })
