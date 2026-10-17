@@ -225,7 +225,7 @@ function AdminPanel() {
         throw new Error('Sign-in configuration is missing. Please contact the site administrator.')
       }
       const { data, error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
-      if (signInError || !data.session) throw new Error('Email or password is incorrect.')
+      if (signInError || !data.session) throw new Error(signInError ? `Supabase sign-in failed (${signInError.status ?? 'no status'}): ${signInError.message}` : 'Supabase sign-in returned no session. Check the project URL and publishable key, then try again.')
       if ((data.user.email ?? '').trim().toLowerCase() !== email.trim().toLowerCase() || !data.user.email_confirmed_at) {
         await supabase.auth.signOut()
         throw new Error('Use the verified owner account email to access administration.')
