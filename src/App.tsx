@@ -339,7 +339,7 @@ function AdminPanel() {
             <div className="admin-application-list">
               {visibleApplications.map(app => (
                 <article className="admin-application" key={app.id}>
-                  <div className="admin-application-main"><div><h3>{app.name}</h3><a href={'mailto:' + app.email}>{app.email}</a></div><span className={'admin-status status-' + app.status}>{app.status}</span></div>
+                  <div className="admin-application-main"><div><h3>{app.name}</h3><a href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(app.email)} target="_blank" rel="noopener noreferrer">{app.email}</a></div><span className={'admin-status status-' + app.status}>{app.status}</span></div>
                   <dl><div><dt>Organisation</dt><dd>{app.organisation}</dd></div><div><dt>Role</dt><dd>{app.role}</dd></div><div><dt>Submitted</dt><dd>{app.created_at ? new Date(app.created_at).toLocaleString() : '—'}</dd></div></dl>
                   {app.purpose && <p className="admin-purpose">{app.purpose}</p>}
                   {app.status === 'pending' && <div className="admin-actions"><button className="button button-lime" disabled={busy} onClick={() => void decide(app.id, 'approved')}><Check size={15} /> Approve</button><button className="button button-outline" disabled={busy} onClick={() => void decide(app.id, 'rejected')}><X size={15} /> Reject</button></div>}
@@ -361,10 +361,10 @@ function AdminPanel() {
             <div className="admin-application-list">
               {inquiries.map(item => (
                 <article className="admin-application" key={item.id}>
-                  <div className="admin-application-main"><div><h3>{item.name}</h3><a href={'mailto:' + item.email}>{item.email}</a></div><span className="admin-status status-approved">{item.topic}</span></div>
+                  <div className="admin-application-main"><div><h3>{item.name}</h3><a href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(item.email)} target="_blank" rel="noopener noreferrer">{item.email}</a></div><span className="admin-status status-approved">{item.topic}</span></div>
                   <dl><div><dt>Organisation</dt><dd>{item.organisation}</dd></div><div><dt>Received</dt><dd>{item.created_at ? new Date(item.created_at).toLocaleString() : '—'}</dd></div></dl>
                   {item.message && <p className="admin-purpose">{item.message}</p>}
-                  <div className="admin-actions"><a className="button button-outline" href={'mailto:' + item.email + '?subject=' + encodeURIComponent('CampusGuard inquiry follow-up: ' + item.topic)}>Reply by email <ArrowUpRight size={15} /></a></div>
+                  <div className="admin-actions"><a className="button button-outline" href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(item.email) + '&su=' + encodeURIComponent('CampusGuard inquiry follow-up: ' + item.topic)} target="_blank" rel="noopener noreferrer">Reply by email <ArrowUpRight size={15} /></a></div>
                 </article>
               ))}
               {inquiries.length === 0 && <div className="admin-empty"><ShieldCheck size={25} /><h3>No inquiries yet</h3><p>New pilot and deployment inquiries will appear here after submission.</p></div>}
