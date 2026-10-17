@@ -194,25 +194,32 @@ function AdminPanel() {
 
   const load = async (token = ownerToken) => {
     if (!token) return
-    setBusy(true); setError(''); setNotice('')
+    setBusy(true)
+    setError('')
+    setNotice('')
     try {
       const response = await fetch('/api/admin-applications', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
       const result = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Owner access could not be verified.')
       setApplications(result.applications || [])
       setInquiries(result.inquiries || [])
-      setStats(result.stats || {pending:0,approved:0,rejected:0})
-      setInquiryStats(result.inquiryStats || {total:0,pilots:0,deployments:0,multiSite:0})
+      setStats(result.stats || { pending: 0, approved: 0, rejected: 0 })
+      setInquiryStats(result.inquiryStats || { total: 0, pilots: 0, deployments: 0, multiSite: 0 })
       setAuthenticated(true)
     } catch (e) {
-      setAuthenticated(false); setOwnerToken('')
+      setAuthenticated(false)
+      setOwnerToken('')
       setError(e instanceof Error ? e.message : 'Could not load admin data.')
-    } finally { setBusy(false) }
+    } finally {
+      setBusy(false)
+    }
   }
+
   const login = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (busy) return
-    setBusy(true); setError('')
+    setBusy(true)
+    setError('')
     try {
       if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
         throw new Error('Sign-in configuration is missing. Please contact the site administrator.')
@@ -229,57 +236,144 @@ function AdminPanel() {
     } catch (e) {
       setAuthenticated(false)
       setError(e instanceof Error ? e.message : 'Could not sign in.')
-    } finally { setBusy(false) }
+    } finally {
+      setBusy(false)
+    }
   }
+
   const decide = async (id: string, status: 'approved' | 'rejected') => {
-    setBusy(true); setError(''); setNotice('')
+    setBusy(true)
+    setError('')
+    setNotice('')
     try {
       const response = await fetch('/api/admin-applications', {
         method: 'POST',
-        headers: {'Content-Type':'application/json', Authorization:`Bearer ${ownerToken}`},
-        body: JSON.stringify({id,status}),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ownerToken}` },
+        body: JSON.stringify({ id, status }),
       })
       const result = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Could not update application.')
       setNotice(status === 'approved' ? 'Application approved. The user can now sign in.' : 'Application rejected.')
       await load(ownerToken)
-    } catch (e) { setError(e instanceof Error ? e.message : 'Could not update application.') }
-    finally { setBusy(false) }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not update application.')
+    } finally {
+      setBusy(false)
+    }
   }
+
   const logout = async () => {
     await supabase.auth.signOut()
-    setOwnerToken(''); setPassword(''); setAuthenticated(false)
-    setApplications([]); setInquiries([]); setSection('applications')
+    setOwnerToken('')
+    setPassword('')
+    setAuthenticated(false)
+    setApplications([])
+    setInquiries([])
+    setSection('applications')
   }
+
+  const header = (
+    <header className="admin-header">
+      <a className="brand" href="/"><span className="brand-mark"><ShieldCheck size={19} /></span><span>campus<span className="brand-light">guard</span><i>®</i></span></a>
+      <span className="admin-label">ADMINISTRATION / PRIVATE</span>
+      <a href="/" className="admin-back">Back to website ↗</a>
+    </header>
+  )
 
   if (!authenticated) {
     return (
       <main className="admin-page">
-        <header className="admin-header"><a className="brand" href="/"><span className="brand-mark"><ShieldCheck size={19}/></span><span>campus<span className="brand-light">guard</span><i>®</i></span></a><span className="admin-label">ADMINISTRATION / PRIVATE</span><a href="/" className="admin-back">Back to website ↗</a></header>
-        <section className="admin-login access-modal"><span className="eyebrow">OWNER ACCESS</span><h1>Admin sign in<span>.</span></h1><p>Sign in with the verified owner account. The server checks the account email against the configured owner email.</p><form onSubmit={login}><label>Owner email<input required type="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} placeholder="Owner account email"/></label><label>Owner account password<input required type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter account password"/></label><button className="button button-lime form-submit" type="submit" disabled={busy}>{busy ? 'Verifying…' : 'Sign in securely'} <ArrowUpRight size={16}/></button>{error && <p className="form-note" role="alert">{error}</p>}</form><p className="form-note"><LockKeyhole size={12}/> Access requires a valid Supabase session, a verified email and an exact match with the server-side ADMIN_EMAIL setting.</p></section>
+        {header}
+        <section className="admin-login access-modal">
+          <span className="eyebrow">OWNER ACCESS</span>
+          <h1>Admin sign in<span>.</span></h1>
+          <p>Sign in with the verified owner account. The server checks the account email against the configured owner email.</p>
+          <form onSubmit={login}>
+            <label>Owner email<input required type="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} placeholder="Owner account email" /></label>
+            <label>Owner account password<input required type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter account password" /></label>
+            <button className="button button-lime form-submit" type="submit" disabled={busy}>{busy ? 'Verifying…' : 'Sign in securely'} <ArrowUpRight size={16} /></button>
+            {error && <p className="form-note" role="alert">{error}</p>}
+          </form>
+          <p className="form-note"><LockKeyhole size={12} /> Access requires a valid Supabase session, a verified email and an exact match with the server-side ADMIN_EMAIL setting.</p>
+        </section>
       </main>
     )
   }
+
+  const visibleApplications = applications.filter(app => filter === 'all' || app.status === filter)
+
   return (
     <main className="admin-page">
-      <header className="admin-header"><a className="brand" href="/"><span className="brand-mark"><ShieldCheck size={19}/></span><span>campus<span className="brand-light">guard</span><i>®</i></span></a><span className="admin-label">ADMINISTRATION / PRIVATE</span><a href="/" className="admin-back">Back to website ↗</a></header>
-            <section className="admin-content"><div className="admin-title-row"><div><span className="eyebrow">OWNER CONSOLE</span><h1>{section === 'applications' ? 'Applications' : 'Pilot inquiries'}<span>.</span></h1><p>Private owner workspace for access requests and pilot/deployment inquiries.</p></div><button className="button button-outline" onClick={() => void logout()}>Log out</button></div>
-        <div className="admin-stats"><article><span>PENDING</span><strong>{stats.pending}</strong></article><article><span>APPROVED</span><strong>{stats.approved}</strong></article><article><span>REJECTED</span><strong>{stats.rejected}</strong></article><article><span>INQUIRIES</span><strong>{inquiryStats.total}</strong></article></div>
-        <div className="admin-list-heading"><h2>Owner workspace</h2><div className="admin-toolbar"><select aria-label="Admin section" value={section} onChange={e => setSection(e.target.value as 'applications' | 'inquiries')}><option value="applications">Access applications</option><option value="inquiries">Pilot inquiries</option></select><button className="button button-outline" onClick={() => void load()} disabled={busy}>Refresh</button></div></div>
-        {notice && <p className="admin-notice" role="status">{notice}</p>}{error && <p className="admin-error" role="alert">{error}</p>}
-        {section === 'applications' ? <>
-          <div className="admin-list-heading"><h2>Access requests</h2><select aria-label="Application status filter" value={filter} onChange={e => setFilter(e.target.value)}><option value="pending">Pending</option><option value="all">All applications</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></div>
-          <div className="admin-application-list">{applications.filter(app => filter === 'all' || app.status === filter).map(app => <article className="admin-application" key={app.id}><div className="admin-application-main"><div><h3>{app.name}</h3><a href={'mailto:'+app.email}>{app.email}</a></div><span className={'admin-status status-'+app.status}>{app.status}</span></div><dl><div><dt>Organisation</dt><dd>{app.organisation}</dd></div><div><dt>Role</dt><dd>{app.role}</dd></div><div><dt>Submitted</dt><dd>{app.created_at ? new Date(app.created_at).toLocaleString() : '—'}</dd></div></dl>{app.purpose && <p className="admin-purpose">{app.purpose}</p>}{app.status === 'pending' && <div className="admin-actions"><button className="button button-lime" disabled={busy} onClick={() => void decide(app.id,'approved')}><Check size={15}/> Approve</button><button className="button button-outline" disabled={busy} onClick={() => void decide(app.id,'rejected')}><X size={15}/> Reject</button></div>}</article>)}
-          {!applications.some(app => filter === 'all' || app.status === filter) && <div className="admin-empty"><ShieldCheck size={25}/><h3>No applications here</h3><p>New requests will appear here after someone submits the access form.</p></div>}</div>
-        </> : <>
-          <div className="admin-stats inquiry-stats"><article><span>ALL INQUIRIES</span><strong>{inquiryStats.total}</strong></article><article><span>PILOT DETAILS</span><strong>{inquiryStats.pilots}</strong></article><article><span>DEPLOYMENT</span><strong>{inquiryStats.deployments}</strong></article><article><span>MULTI-SITE</span><strong>{inquiryStats.multiSite}</strong></article></div>
-          <div className="admin-application-list">{inquiries.map(item => <article className="admin-application" key={item.id}><div className="admin-application-main"><div><h3>{item.name}</h3><a href={'mailto:'+item.email}>{item.email}</a></div><span className="admin-status status-approved">{item.topic}</span></div><dl><div><dt>Organisation</dt><dd>{item.organisation}</dd></div><div><dt>Received</dt><dd>{item.created_at ? new Date(item.created_at).toLocaleString() : '—'}</dd></div></dl>{item.message && <p className="admin-purpose">{item.message}</p>}<div className="admin-actions"><a className="button button-outline" href={'mailto:'+item.email+'?subject='+encodeURIComponent('CampusGuard inquiry follow-up: '+item.topic)}>Reply by email <ArrowUpRight size={15}/></a></div></article>)}
-          {inquiries.length === 0 && <div className="admin-empty"><ShieldCheck size={25}/><h3>No inquiries yet</h3><p>New pilot and deployment inquiries will appear here after submission.</p></div>}
-        </>}
+      {header}
+      <section className="admin-content">
+        <div className="admin-title-row">
+          <div><span className="eyebrow">OWNER CONSOLE</span><h1>{section === 'applications' ? 'Applications' : 'Pilot inquiries'}<span>.</span></h1><p>Private owner workspace for access requests and pilot/deployment inquiries.</p></div>
+          <button className="button button-outline" onClick={() => void logout()}>Log out</button>
+        </div>
+        <div className="admin-stats">
+          <article><span>PENDING</span><strong>{stats.pending}</strong></article>
+          <article><span>APPROVED</span><strong>{stats.approved}</strong></article>
+          <article><span>REJECTED</span><strong>{stats.rejected}</strong></article>
+          <article><span>INQUIRIES</span><strong>{inquiryStats.total}</strong></article>
+        </div>
+        <div className="admin-list-heading">
+          <h2>Owner workspace</h2>
+          <div className="admin-toolbar">
+            <select aria-label="Admin section" value={section} onChange={e => setSection(e.target.value as 'applications' | 'inquiries')}>
+              <option value="applications">Access applications</option><option value="inquiries">Pilot inquiries</option>
+            </select>
+            <button className="button button-outline" onClick={() => void load()} disabled={busy}>Refresh</button>
+          </div>
+        </div>
+        {notice && <p className="admin-notice" role="status">{notice}</p>}
+        {error && <p className="admin-error" role="alert">{error}</p>}
+
+        {section === 'applications' && (
+          <div className="admin-section">
+            <div className="admin-list-heading">
+              <h2>Access requests</h2>
+              <select aria-label="Application status filter" value={filter} onChange={e => setFilter(e.target.value)}>
+                <option value="pending">Pending</option><option value="all">All applications</option><option value="approved">Approved</option><option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div className="admin-application-list">
+              {visibleApplications.map(app => (
+                <article className="admin-application" key={app.id}>
+                  <div className="admin-application-main"><div><h3>{app.name}</h3><a href={'mailto:' + app.email}>{app.email}</a></div><span className={'admin-status status-' + app.status}>{app.status}</span></div>
+                  <dl><div><dt>Organisation</dt><dd>{app.organisation}</dd></div><div><dt>Role</dt><dd>{app.role}</dd></div><div><dt>Submitted</dt><dd>{app.created_at ? new Date(app.created_at).toLocaleString() : '—'}</dd></div></dl>
+                  {app.purpose && <p className="admin-purpose">{app.purpose}</p>}
+                  {app.status === 'pending' && <div className="admin-actions"><button className="button button-lime" disabled={busy} onClick={() => void decide(app.id, 'approved')}><Check size={15} /> Approve</button><button className="button button-outline" disabled={busy} onClick={() => void decide(app.id, 'rejected')}><X size={15} /> Reject</button></div>}
+                </article>
+              ))}
+              {visibleApplications.length === 0 && <div className="admin-empty"><ShieldCheck size={25} /><h3>No applications here</h3><p>New requests will appear here after someone submits the access form.</p></div>}
+            </div>
+          </div>
+        )}
+
+        {section === 'inquiries' && (
+          <div className="admin-section">
+            <div className="admin-stats inquiry-stats">
+              <article><span>ALL INQUIRIES</span><strong>{inquiryStats.total}</strong></article>
+              <article><span>PILOT DETAILS</span><strong>{inquiryStats.pilots}</strong></article>
+              <article><span>DEPLOYMENT</span><strong>{inquiryStats.deployments}</strong></article>
+              <article><span>MULTI-SITE</span><strong>{inquiryStats.multiSite}</strong></article>
+            </div>
+            <div className="admin-application-list">
+              {inquiries.map(item => (
+                <article className="admin-application" key={item.id}>
+                  <div className="admin-application-main"><div><h3>{item.name}</h3><a href={'mailto:' + item.email}>{item.email}</a></div><span className="admin-status status-approved">{item.topic}</span></div>
+                  <dl><div><dt>Organisation</dt><dd>{item.organisation}</dd></div><div><dt>Received</dt><dd>{item.created_at ? new Date(item.created_at).toLocaleString() : '—'}</dd></div></dl>
+                  {item.message && <p className="admin-purpose">{item.message}</p>}
+                  <div className="admin-actions"><a className="button button-outline" href={'mailto:' + item.email + '?subject=' + encodeURIComponent('CampusGuard inquiry follow-up: ' + item.topic)}>Reply by email <ArrowUpRight size={15} /></a></div>
+                </article>
+              ))}
+              {inquiries.length === 0 && <div className="admin-empty"><ShieldCheck size={25} /><h3>No inquiries yet</h3><p>New pilot and deployment inquiries will appear here after submission.</p></div>}
+            </div>
+          </div>
+        )}
       </section>
     </main>
   )
-}
 }
 
 function CustomerWorkspace() {
