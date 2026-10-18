@@ -71,12 +71,102 @@ function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => voi
 }
 
 
+function PasswordResetPage() {
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [ready, setReady] = useState(false)
+  const [message, setMessage] = useState('Checking your recovery link…')
+  const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    const check = async () => {
+      const { data, error } = await supabase.auth.getSession()
+      if (!active) return
+      if (error || !data.session) {
+        setMessage('This recovery link is invalid or expired. Please request a new password-reset email and open the latest link.')
+        return
+      }
+      setReady(true)
+      setMessage('')
+    }
+    void check()
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active) return
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        setReady(true)
+        setMessage('')
+      }
+    })
+    return () => { active = false; listener.subscription.unsubscribe() }
+  }, [])
+
+  const updatePassword = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (busy) return
+    if (password.length < 12) { setMessage('Choose a password with at least 12 characters.'); return }
+    if (password !== confirmPassword) { setMessage('The passwords do not match.'); return }
+    setBusy(true)
+    setMessage('')
+    try {
+      const { error } = await supabase.auth.updateUser({ password })
+      if (error) throw error
+      await supabase.auth.signOut()
+      setReady(false)
+      setDone(true)
+      setPassword('')
+      setConfirmPassword('')
+      setMessage('Your password has been updated. Return to CampusGuard and sign in with your new password.')
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'We could not update your password. Please request a new reset link and try again.')
+    } finally { setBusy(false) }
+  }
+
+  return <main className="admin-page">
+    <header className="admin-header"><a className="brand" href="/"><span className="brand-mark"><ShieldCheck size={19} /></span><span>campus<span className="brand-light">guard</span><i>®</i></span></a><span className="admin-label">ACCOUNT SECURITY</span><a href="/" className="admin-back">Back to website ↗</a></header>
+    <section className="admin-login access-modal" aria-labelledby="reset-title">
+      <span className="eyebrow">PASSWORD RECOVERY</span>
+      <h1 id="reset-title">{done ? 'Password updated.' : 'Choose a new password.'}</h1>
+      {message && <p className="form-note" role="status">{message}</p>}
+      {ready && !done && <form onSubmit={updatePassword}>
+        <label>New password<input required type="password" autoComplete="new-password" minLength={12} maxLength={128} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 12 characters" /></label>
+        <label>Confirm new password<input required type="password" autoComplete="new-password" minLength={12} maxLength={128} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Enter it again" /></label>
+        <button className="button button-lime form-submit" type="submit" disabled={busy}>{busy ? 'Updating…' : 'Update password'} <ArrowUpRight size={16} /></button>
+      </form>}
+      <p className="account-prompt"><a href="/">Return to CampusGuard</a></p>
+    </section>
+  </main>
+}
+
+
 function LoginModal({ close, onApply, onApproved }: { close: () => void; onApply: () => void; onApproved: () => void }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [checking, setChecking] = useState(false)
   const [message, setMessage] = useState('')
   const [messageKind, setMessageKind] = useState<'error' | 'info' | 'success'>('info')
+  const [resetMode, setResetMode] = useState(false)
+
+  const requestPasswordReset = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (checking) return
+    setChecking(true)
+    setMessage('')
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: window.location.origin + '/reset-password',
+      })
+      if (error) throw error
+      setMessageKind('success')
+      setMessage('If an account exists for that email, a password-reset link will be sent. Check your inbox and spam folder.')
+    } catch (error) {
+      setMessageKind('error')
+      setMessage(error instanceof Error ? error.message : 'We could not request a reset email. Please try again.')
+    } finally {
+      setChecking(false)
+    }
+  }
 
   const signIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -124,16 +214,16 @@ function LoginModal({ close, onApply, onApproved }: { close: () => void; onApply
     <section className="access-modal login-modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
       <button className="modal-close" onClick={close} aria-label="Close login"><X size={18} /></button>
       <span className="eyebrow">CUSTOMER SIGN IN</span>
-      <h2 id="login-title">Welcome back.</h2>
-      <p className="modal-intro">Sign in with the email and password you used when requesting early access.</p>
+      <h2 id="login-title">{resetMode ? "Reset your password." : "Welcome back."}</h2>
+      <p className="modal-intro">{resetMode ? "Enter your account email and we’ll send a secure reset link if the account exists." : "Sign in with the email and password you used when requesting early access."}</p>
       {message && <div className="login-prototype-note" role={messageKind === 'error' ? 'alert' : 'status'}><LockKeyhole size={16} /><span><b>{messageKind === 'success' ? 'Access approved' : messageKind === 'error' ? 'Could not sign in' : 'Access status'}</b><small>{message}</small></span></div>}
-      <form onSubmit={signIn}>
+      <form onSubmit={resetMode ? requestPasswordReset : signIn}>
         <label>Email address<input required type="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@institution.org" /></label>
-        <label>Password<input required type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" /></label>
-        <button className="button button-lime form-submit" type="submit" disabled={checking}>{checking ? 'Checking…' : 'Log in'} <ArrowUpRight size={16} /></button>
-        <p className="form-note"><LockKeyhole size={12} /> Account approval is checked on the server before access is granted.</p>
+        {!resetMode && <label>Password<input required type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" /></label>}
+        <button className="button button-lime form-submit" type="submit" disabled={checking}>{checking ? (resetMode ? 'Sending…' : 'Checking…') : (resetMode ? 'Send reset link' : 'Log in')} <ArrowUpRight size={16} /></button>
+        {!resetMode && <p className="form-note"><LockKeyhole size={12} /> Account approval is checked on the server before access is granted.</p>}
       </form>
-      <p className="account-prompt">New to CampusGuard? <button type="button" onClick={onApply}>Request early access <ArrowUpRight size={13} /></button></p>
+      <p className="account-prompt">{resetMode ? <button type="button" onClick={() => { setResetMode(false); setMessage('') }}>Back to log in</button> : <><button type="button" onClick={() => { setResetMode(true); setMessage('') }}>Forgot password?</button> · New to CampusGuard? <button type="button" onClick={onApply}>Request early access <ArrowUpRight size={13} /></button></>}</p>
     </section>
   </div>
 }
@@ -509,6 +599,7 @@ function App() {
     window.scrollTo({ top: Math.max(0, top), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   }
   if (window.location.pathname.replace(/\/+$/, '') === '/admin') return <AdminPanel />
+  if (window.location.pathname.replace(/\/+$/, '') === '/reset-password') return <PasswordResetPage />
   return <main id="top">
     <div className="reading-progress" aria-hidden="true"><span style={{ width: `${scrollProgress}%` }} /></div>
     <header className={headerLight ? "site-header header-light" : "site-header"}>
