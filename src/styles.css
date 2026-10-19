@@ -1907,3 +1907,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   html { scroll-behavior: auto; }
   .button, .pricing-card, .feature-card, .pipeline-node, .kinetic-step { transition: none !important; }
 }
+
+
+/* Contact-first lead flow: clear direct-contact actions after form submission. */
+.success-contact-actions{display:flex;flex-direction:column;gap:10px;margin:22px 0 18px}
+.success-contact-actions .button{width:100%;justify-content:center;min-height:46px;white-space:normal;overflow-wrap:anywhere;text-align:center}
+.pricing-card .pricing-action{display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;text-align:center}
+.final-cta-actions{max-width:560px}
+.final-cta-actions .button{white-space:normal;text-align:center;justify-content:center}
+@media(max-width:600px){.success-contact-actions .button{font-size:12px;padding:13px 12px}.final-cta-actions{width:100%}}
