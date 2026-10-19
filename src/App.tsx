@@ -257,7 +257,7 @@ function InquiryModal({ close, initialTopic }: { close: () => void; initialTopic
         <label>Your name<input required maxLength={120} value={form.name} onChange={e => update('name',e.target.value)} placeholder="Full name"/></label>
         <label>Work email<input required type="email" maxLength={254} value={form.email} onChange={e => update('email',e.target.value)} placeholder="you@institution.org"/></label>
         <label>Institution / organisation<input required maxLength={180} value={form.organisation} onChange={e => update('organisation',e.target.value)} placeholder="Organisation name"/></label>
-        <label>What would you like to discuss?<select required value={form.topic} onChange={e => update('topic',e.target.value)}><option>Request pilot details</option><option>Plan a deployment</option><option>Discuss multi-site needs</option></select></label>
+        <label>What would you like to discuss?<select required value={form.topic} onChange={e => update('topic',e.target.value)}><option value="" disabled>Choose a topic</option><option>Request pilot details</option><option>Plan a deployment</option><option>Discuss multi-site needs</option></select></label>
         <label>Anything we should know?<textarea rows={3} maxLength={3000} value={form.message} onChange={e => update('message',e.target.value)} placeholder="Your goals, approximate scale or questions (optional)"/></label>
         <button className="button button-lime form-submit" type="submit" disabled={busy}>{busy ? 'Sending…' : 'Send inquiry'} <ArrowUpRight size={16}/></button>
         {error && <p className="form-note" role="alert">{error}</p>}
