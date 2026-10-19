@@ -1849,3 +1849,61 @@ html { scroll-behavior: smooth; }
 .admin-actions{display:flex;gap:9px;margin-top:20px}.admin-actions .button{padding:10px 14px}.admin-notice,.admin-error{padding:12px 15px;font-size:12px;margin:0 0 14px}.admin-notice{background:#e8f2dc;color:#456527}.admin-error{background:#f8e8e4;color:#9a4434}
 .admin-empty{text-align:center;padding:52px 20px;border:1px dashed #cfd5c7;color:#6d746b}.admin-empty svg{color:#78934c}.admin-empty h3{color:#171b16;margin:12px 0 5px}.admin-empty p{font-size:12px;margin:0}
 @media(max-width:640px){.admin-page{padding:0 15px 45px}.admin-header{height:68px}.admin-label{display:none}.admin-content{margin-top:35px}.admin-stats{gap:8px;margin:24px 0 30px}.admin-stats article{padding:15px 12px}.admin-stats article strong{font-size:30px}.admin-title-row{align-items:flex-start}.admin-list-heading{flex-wrap:wrap}.admin-list-heading h2{width:100%;margin-bottom:4px}.admin-list-heading select{flex:1}.admin-application{padding:18px 16px}.admin-application dl{grid-template-columns:1fr 1fr}.admin-application dl div:last-child{grid-column:1/-1}.inquiry-modal form{grid-template-columns:1fr}.inquiry-modal form label,.inquiry-modal form .form-submit,.inquiry-modal form .form-note{grid-column:1/-1}}
+
+
+/* CampusGuard contact + visual consistency pass (2026-10) */
+:root {
+  --cg-radius: 4px;
+  --cg-space: clamp(24px, 4vw, 54px);
+  --cg-border-soft: color-mix(in srgb, var(--ink) 12%, transparent);
+}
+html { scroll-behavior: smooth; scroll-padding-top: 92px; }
+body, button, input, select, textarea { font-family: 'DM Sans', sans-serif; }
+h1, h2, h3, h4, .button, .brand { text-wrap: pretty; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #9bc84d;
+  outline-offset: 3px;
+}
+.button, .nav-cta, .pricing-card, .pricing-modal, .feature-card, .workspace-panel, .workspace-stat,
+.customer-pilot-grid article, .customer-download-card, .admin-application {
+  border-radius: var(--cg-radius);
+}
+.button { transition: transform .24s cubic-bezier(.2,.75,.25,1), box-shadow .24s, background .24s, border-color .24s; }
+.button:hover { transform: translateY(-2px); }
+.button:active { transform: translateY(0); }
+.pricing-contact-actions, .final-cta-actions {
+  display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 22px;
+}
+.pricing-contact-actions .button, .final-cta-actions .button { min-height: 46px; }
+.pricing-contact-actions .button svg { flex-shrink: 0; }
+.pricing-disclaimer { line-height: 1.8; }
+.site-footer .footer-links a { transition: color .2s ease; }
+.site-footer .footer-links a:hover { color: var(--cg-lime, #c8ff52); }
+.site-footer .footer-links { row-gap: 14px; }
+.public-site-content > section, .customer-resources > .customer-resource-section {
+  scroll-margin-top: 90px;
+}
+.section-heading, .faq-layout, .workflow-shell, .interface-layout, .dark-band-inner {
+  align-items: center;
+}
+.section-heading > p, .customer-resource-lead, .faq-intro > p {
+  max-width: 52ch;
+}
+.feature-card, .pricing-card, .pipeline-node, .kinetic-step, .customer-pilot-grid article {
+  will-change: transform;
+}
+.pricing-card ul { padding-left: 0; }
+.pricing-card li { line-height: 1.65; }
+.pricing-modal-content { width: 100%; }
+.pricing-modal { max-height: min(92vh, 980px); overflow: auto; }
+@media (max-width: 700px) {
+  .pricing-contact-actions, .final-cta-actions { align-items: stretch; flex-direction: column; }
+  .pricing-contact-actions .button, .final-cta-actions .button { width: 100%; justify-content: center; }
+  .pricing-modal-content { padding-inline: 2px; }
+  .footer-links { align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .button, .pricing-card, .feature-card, .pipeline-node, .kinetic-step { transition: none !important; }
+}
