@@ -612,7 +612,7 @@ function App() {
       </div>
     </header>
 
-    {isAuthenticated && <><CustomerWorkspace /><CustomerResources onPilot={openInquiry} /></>}
+    {isAuthenticated && <><CustomerWorkspace /><CustomerResources /></>}
     {!isAuthenticated && <div className="public-site-content">
 
     <section className="public-hero" id="overview" data-theme="dark">
