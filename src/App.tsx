@@ -402,31 +402,37 @@ function AdminPanel() {
         </div>
         <div className="admin-commandline">
           <div className="admin-live-indicator"><i /> SYSTEM OVERVIEW <span>LIVE DATA</span></div>
-          <div className="admin-commandline-right"><span><Activity size={13}/> OWNER ANALYTICS</span><span>{new Date().toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
+          <div className="admin-commandline-right"><span><Activity size={13} /> OWNER ANALYTICS</span><span>{new Date().toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
         </div>
         <div className="admin-stats admin-kpi-grid">
-          <article className="admin-kpi admin-kpi-pending"><div className="admin-kpi-top"><span>PENDING REVIEW</span><span className="admin-kpi-icon"><Activity size={16}/></span></div><strong>{stats.pending}</strong><small>{stats.pending === 1 ? 'Application needs' : 'Applications need'} attention</small><div className="admin-kpi-spark" aria-hidden="true"><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div></article>
-          <article className="admin-kpi admin-kpi-approved"><div className="admin-kpi-top"><span>APPROVED ACCESS</span><span className="admin-kpi-icon"><Check size={16}/></span></div><strong>{stats.approved}</strong><small>Approved customer accounts</small><div className="admin-kpi-spark" aria-hidden="true"><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div></article>
-          <article className="admin-kpi admin-kpi-rejected"><div className="admin-kpi-top"><span>REJECTED</span><span className="admin-kpi-icon"><X size={16}/></span></div><strong>{stats.rejected}</strong><small>Applications declined</small><div className="admin-kpi-spark" aria-hidden="true"><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div></article>
-          <article className="admin-kpi admin-kpi-inquiries"><div className="admin-kpi-top"><span>TOTAL INQUIRIES</span><span className="admin-kpi-icon"><BellRing size={16}/></span></div><strong>{inquiryStats.total}</strong><small>Potential customer conversations</small><div className="admin-kpi-spark" aria-hidden="true"><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div></article>
+          <article className="admin-kpi admin-kpi-pending"><div className="admin-kpi-top"><span>PENDING REVIEW</span><span className="admin-kpi-icon"><Activity size={16} /></span></div><strong>{stats.pending}</strong><small>{stats.pending === 1 ? 'Application needs' : 'Applications need'} attention</small><div className="admin-kpi-spark" aria-hidden="true">{Array.from({ length: 10 }, (_, i) => <i key={i} />)}</div></article>
+          <article className="admin-kpi admin-kpi-approved"><div className="admin-kpi-top"><span>APPROVED ACCESS</span><span className="admin-kpi-icon"><Check size={16} /></span></div><strong>{stats.approved}</strong><small>Approved customer accounts</small><div className="admin-kpi-spark" aria-hidden="true">{Array.from({ length: 10 }, (_, i) => <i key={i} />)}</div></article>
+          <article className="admin-kpi admin-kpi-rejected"><div className="admin-kpi-top"><span>REJECTED</span><span className="admin-kpi-icon"><X size={16} /></span></div><strong>{stats.rejected}</strong><small>Applications declined</small><div className="admin-kpi-spark" aria-hidden="true">{Array.from({ length: 10 }, (_, i) => <i key={i} />)}</div></article>
+          <article className="admin-kpi admin-kpi-inquiries"><div className="admin-kpi-top"><span>TOTAL INQUIRIES</span><span className="admin-kpi-icon"><BellRing size={16} /></span></div><strong>{inquiryStats.total}</strong><small>Potential customer conversations</small><div className="admin-kpi-spark" aria-hidden="true">{Array.from({ length: 10 }, (_, i) => <i key={i} />)}</div></article>
         </div>
         <div className="admin-analytics-grid">
           <article className="admin-analytics-card admin-status-chart">
             <div className="admin-panel-top"><div><span className="admin-panel-eyebrow">APPLICATION HEALTH</span><h2>Access distribution</h2></div><span className="admin-panel-tag">ALL RECORDS</span></div>
             <div className="admin-chart-body">
-              <div className="admin-donut" role="img" aria-label={`Application distribution: ${stats.pending} pending, ${stats.approved} approved, ${stats.rejected} rejected`} style={{'--pending-share': `${(stats.pending / Math.max(stats.pending + stats.approved + stats.rejected, 1)) * 100}%`, '--approved-share': `${(stats.approved / Math.max(stats.pending + stats.approved + stats.rejected, 1)) * 100}%`}><div><strong>{stats.pending + stats.approved + stats.rejected}</strong><span>APPLICATIONS</span></div></div>
-              <div className="admin-chart-legend"><div><i className="legend-pending"/><span>Pending</span><b>{stats.pending}</b></div><div><i className="legend-approved"/><span>Approved</span><b>{stats.approved}</b></div><div><i className="legend-rejected"/><span>Rejected</span><b>{stats.rejected}</b></div></div>
+              <div className="admin-donut" role="img" aria-label={`Application distribution: ${stats.pending} pending, ${stats.approved} approved, ${stats.rejected} rejected`}>
+                <div><strong>{stats.pending + stats.approved + stats.rejected}</strong><span>APPLICATIONS</span></div>
+              </div>
+              <div className="admin-chart-legend">
+                <div><i className="legend-pending" /><span>Pending</span><b>{stats.pending}</b></div>
+                <div><i className="legend-approved" /><span>Approved</span><b>{stats.approved}</b></div>
+                <div><i className="legend-rejected" /><span>Rejected</span><b>{stats.rejected}</b></div>
+              </div>
             </div>
             <p className="admin-chart-footnote">Distribution is calculated from the current application records.</p>
           </article>
           <article className="admin-analytics-card admin-activity-card">
-            <div className="admin-panel-top"><div><span className="admin-panel-eyebrow">WORKSPACE SNAPSHOT</span><h2>Incoming activity</h2></div><span className="admin-panel-tag"><i/> CURRENT</span></div>
+            <div className="admin-panel-top"><div><span className="admin-panel-eyebrow">WORKSPACE SNAPSHOT</span><h2>Incoming activity</h2></div><span className="admin-panel-tag"><i /> CURRENT</span></div>
             <div className="admin-activity-total"><strong>{applications.length + inquiries.length}</strong><span>records currently loaded</span></div>
             <div className="admin-activity-bars" aria-label="Current record counts">
-              <div className="admin-activity-row"><span>Applications</span><div><i style={{width: `${Math.max(4, applications.length / Math.max(applications.length, inquiries.length, 1) * 100)}%`}}/></div><b>{applications.length}</b></div>
-              <div className="admin-activity-row"><span>Inquiries</span><div><i style={{width: `${Math.max(4, inquiries.length / Math.max(applications.length, inquiries.length, 1) * 100)}%`}}/></div><b>{inquiries.length}</b></div>
+              <div className="admin-activity-row"><span>Applications</span><div><i style={{ width: `${Math.max(4, applications.length / Math.max(applications.length, inquiries.length, 1) * 100)}%` }} /></div><b>{applications.length}</b></div>
+              <div className="admin-activity-row"><span>Inquiries</span><div><i style={{ width: `${Math.max(4, inquiries.length / Math.max(applications.length, inquiries.length, 1) * 100)}%` }} /></div><b>{inquiries.length}</b></div>
             </div>
-            <div className="admin-activity-note"><Activity size={15}/><span>Counts update when the owner console refreshes.</span></div>
+            <div className="admin-activity-note"><Activity size={15} /><span>Counts update when the owner console refreshes.</span></div>
           </article>
         </div>
         <div className="admin-list-heading">
