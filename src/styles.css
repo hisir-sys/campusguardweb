@@ -1916,3 +1916,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .final-cta-actions{max-width:560px}
 .final-cta-actions .button{white-space:normal;text-align:center;justify-content:center}
 @media(max-width:600px){.success-contact-actions .button{font-size:12px;padding:13px 12px}.final-cta-actions{width:100%}}
+
+/* Published monthly plan ranges and feature lists. */
+.customer-pilot-grid article{display:flex;flex-direction:column;align-items:flex-start}
+.customer-plan-price{font:700 clamp(24px,2.4vw,31px)/1.2 var(--display);letter-spacing:-1px;color:var(--cg-lime);margin:16px 0 18px}
+.customer-plan-price span{font:500 12px var(--mono);letter-spacing:0;color:#a8b0a5;margin-left:5px}
+.customer-pilot-grid article ul{list-style:none;padding:0;margin:0 0 20px;display:grid;gap:10px;width:100%}
+.customer-pilot-grid article ul li{position:relative;padding-left:20px;color:#a8b0a5;font-size:12px;line-height:1.65}
+.customer-pilot-grid article ul li::before{content:"✓";position:absolute;left:0;color:var(--cg-lime);font-weight:700}
+.customer-pilot-grid article>b{margin-top:auto;margin-bottom:16px;font-size:11px;line-height:1.6}
+.customer-pilot-grid article .button{width:100%;justify-content:center;white-space:normal;text-align:center}
+.customer-pilot-grid .customer-plan-featured{border-color:#c8ff5270;box-shadow:0 0 0 1px #c8ff5220,0 20px 55px #0003}
+@media(max-width:760px){.customer-plan-price{font-size:27px}}
