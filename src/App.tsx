@@ -435,12 +435,6 @@ function AdminPanel() {
             <div className="admin-activity-note"><Activity size={15} /><span>Counts update when the owner console refreshes.</span></div>
           </article>
         </div>
-        <article className="admin-analytics-card admin-website-analytics">
-          <div className="admin-panel-top"><div><span className="admin-panel-eyebrow">WEBSITE PERFORMANCE</span><h2>Traffic analytics</h2></div><span className="admin-panel-tag">VERCEL</span></div>
-          <div className="admin-activity-total"><strong><Activity size={22} /></strong><span>Visitor and page-view reporting</span></div>
-          <p className="admin-chart-footnote">Website visits are tracked by Vercel Web Analytics after deployment. Open Vercel to view visitors, page views, top pages and date ranges.</p>
-          <a className="button button-outline" href="https://vercel.com/ty-c121/campusguardweb/analytics?environment=all" target="_blank" rel="noopener noreferrer">Open website analytics <ArrowUpRight size={15} /></a>
-        </article>
         <div className="admin-list-heading">
           <h2>Owner workspace</h2>
           <div className="admin-toolbar">
