@@ -2778,3 +2778,121 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     transition: none !important;
   }
 }
+
+
+/* CampusGuard UI polish pass — align motion with the actual React class names. */
+.cg-reveal {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+  transition: opacity .72s cubic-bezier(.2,.75,.25,1),
+              transform .72s cubic-bezier(.2,.75,.25,1),
+              border-color .28s ease, box-shadow .35s ease;
+  transition-delay: var(--cg-reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+.cg-reveal.cg-is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+.hero .monitor-frame {
+  animation: cg-monitor-float 8s ease-in-out infinite;
+  transform-origin: center;
+}
+.hero .floating-alert {
+  animation: cg-alert-float 5s ease-in-out infinite;
+}
+.hero .visual-orbit.orbit-one { animation: cg-orbit-breathe 9s ease-in-out infinite; }
+.hero .visual-orbit.orbit-two { animation: cg-orbit-breathe 7s ease-in-out -2s infinite reverse; }
+.feature-card, .pricing-card, .workflow-item, .how-steps article,
+.faq-item, .customer-resource-section .customer-flowchart article,
+.customer-pilot-grid article {
+  transition: transform .32s cubic-bezier(.2,.75,.25,1),
+              border-color .3s ease, box-shadow .32s ease, background-color .3s ease;
+}
+.feature-card:hover, .customer-resource-section .customer-flowchart article:hover,
+.customer-pilot-grid article:hover {
+  transform: translateY(-5px);
+}
+.how-it-works-section .how-steps article,
+.customer-resources .how-steps article {
+  position: relative;
+  overflow: hidden;
+}
+.how-it-works-section .how-steps article:after,
+.customer-resources .how-steps article:after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: linear-gradient(90deg, #8fbf3d, #d7ff78);
+  transition: transform .4s cubic-bezier(.2,.75,.25,1);
+}
+.how-it-works-section .how-steps article:hover:after,
+.customer-resources .how-steps article:hover:after { transform: scaleX(1); }
+.kinetic-flow { position: relative; }
+.kinetic-step {
+  transition: transform .32s cubic-bezier(.2,.75,.25,1),
+              border-color .3s ease, box-shadow .3s ease;
+}
+.kinetic-step:hover { transform: translateY(-5px); }
+.kinetic-step-icon { transition: box-shadow .3s ease, color .3s ease, transform .3s ease; }
+.kinetic-step:hover .kinetic-step-icon { transform: scale(1.06); }
+.kinetic-arrow { position: relative; overflow: hidden; }
+.kinetic-arrow svg { animation: cg-arrow-nudge 2s ease-in-out infinite; }
+.kinetic-arrow:nth-of-type(4) svg { animation-delay: -.5s; }
+.kinetic-arrow:nth-of-type(6) svg { animation-delay: -1s; }
+.kinetic-arrow:nth-of-type(8) svg { animation-delay: -1.5s; }
+.customer-neural-links path {
+  stroke-dasharray: 5 10;
+  animation: cg-link-drift 9s linear infinite;
+}
+.customer-neural-pulse {
+  fill: none;
+  stroke: #c8ff52;
+  stroke-width: 2.5;
+  stroke-dasharray: 5 18;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px #c8ff5260);
+  animation: cg-network-flow 4s linear infinite;
+}
+.customer-neural-nodes circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cg-node-breathe 3s ease-in-out infinite;
+}
+.customer-neural-nodes circle:nth-child(3n) { animation-delay: -.8s; }
+.customer-neural-nodes circle:nth-child(3n + 1) { animation-delay: -1.5s; }
+.site-footer .footer-links a, .site-footer .footer-links button {
+  transition: color .22s ease, transform .22s ease;
+}
+.site-footer .footer-links a:hover, .site-footer .footer-links button:hover { transform: translateX(3px); }
+.modal-backdrop { animation: cg-backdrop-in .22s ease both; }
+.access-modal, .info-modal { animation: cg-modal-rise .36s cubic-bezier(.2,.8,.2,1) both; }
+.workspace-tab, .workspace-text-button, .workspace-panel, .workspace-stat {
+  transition: transform .28s ease, border-color .28s ease, box-shadow .28s ease, background-color .28s ease;
+}
+.workspace-panel:hover, .workspace-stat:hover { transform: translateY(-3px); }
+.button { transition: transform .22s ease, box-shadow .22s ease, background-color .22s ease, border-color .22s ease; }
+.button:hover { box-shadow: 0 8px 24px #11130e14; }
+.button-lime:hover { box-shadow: 0 8px 24px #9dcf3430; }
+@keyframes cg-monitor-float { 0%,100% { transform: perspective(1200px) rotateY(-3deg) translateY(0); } 50% { transform: perspective(1200px) rotateY(-2deg) translateY(-5px); } }
+@keyframes cg-alert-float { 0%,100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+@keyframes cg-orbit-breathe { 0%,100% { opacity: .55; scale: .99; } 50% { opacity: 1; scale: 1.025; } }
+@keyframes cg-arrow-nudge { 0%,100% { transform: translateX(0); opacity: .7; } 50% { transform: translateX(4px); opacity: 1; } }
+@media (max-width: 760px) {
+  .cg-reveal { transform: translate3d(0, 14px, 0); }
+  .hero .monitor-frame { animation: none; transform: none; }
+  .hero .floating-alert { animation-duration: 7s; }
+  .kinetic-arrow svg { animation: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cg-reveal, .cg-reveal.cg-is-visible { opacity: 1; transform: none; transition: none; }
+  .hero .monitor-frame, .hero .floating-alert, .hero .visual-orbit,
+  .customer-neural-links path, .customer-neural-pulse, .customer-neural-nodes circle,
+  .kinetic-arrow svg { animation: none !important; }
+  .feature-card, .pricing-card, .workflow-item, .how-steps article,
+  .faq-item, .customer-resource-section .customer-flowchart article,
+  .customer-pilot-grid article, .workspace-panel, .workspace-stat { transition: none; }
+}
