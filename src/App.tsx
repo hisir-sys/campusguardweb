@@ -277,10 +277,11 @@ function AdminPanel() {
   const [notice, setNotice] = useState('')
   const [applications, setApplications] = useState<Array<{id:string;name:string;email:string;organisation:string;role:string;purpose:string;status:string;created_at:string}>>([])
   const [inquiries, setInquiries] = useState<Array<{id:string;name:string;email:string;organisation:string;topic:string;message:string;created_at:string}>>([])
+  const [downloadRequests, setDownloadRequests] = useState<Array<{id:string;user_email:string;user_name:string|null;product:string;status:string;payment_confirmed:boolean;requested_at:string}>>([])
   const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 })
   const [inquiryStats, setInquiryStats] = useState({ total: 0, pilots: 0, deployments: 0, multiSite: 0 })
   const [filter, setFilter] = useState('pending')
-  const [section, setSection] = useState<'applications' | 'inquiries'>('applications')
+  const [section, setSection] = useState<'applications' | 'inquiries' | 'downloads'>('applications')
 
   const load = async (token = ownerToken) => {
     if (!token) return
@@ -293,6 +294,10 @@ function AdminPanel() {
       if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Owner access could not be verified.')
       setApplications(result.applications || [])
       setInquiries(result.inquiries || [])
+      const downloadsResponse = await fetch('/api/admin-download-requests', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
+      const downloadsResult = await downloadsResponse.json().catch(() => ({}))
+      if (!downloadsResponse.ok) throw new Error(downloadsResult.error || 'Could not load download requests.')
+      setDownloadRequests(downloadsResult.requests || [])
       setStats(result.stats || { pending: 0, approved: 0, rejected: 0 })
       setInquiryStats(result.inquiryStats || { total: 0, pilots: 0, deployments: 0, multiSite: 0 })
       setAuthenticated(true)
@@ -397,7 +402,7 @@ function AdminPanel() {
       {header}
       <section className="admin-content">
         <div className="admin-title-row">
-          <div><span className="eyebrow">OWNER CONSOLE</span><h1>{section === 'applications' ? 'Applications' : 'Pilot inquiries'}<span>.</span></h1><p>Private owner workspace for access requests and pilot/deployment inquiries.</p></div>
+          <div><span className="eyebrow">OWNER CONSOLE</span><h1>{section === 'applications' ? 'Applications' : section === 'inquiries' ? 'Pilot inquiries' : 'Download requests'}<span>.</span></h1><p>Private owner workspace for access requests and pilot/deployment inquiries.</p></div>
           <button className="button button-outline" onClick={() => void logout()}>Log out</button>
         </div>
         <div className="admin-commandline">
@@ -439,7 +444,7 @@ function AdminPanel() {
           <h2>Owner workspace</h2>
           <div className="admin-toolbar">
             <select aria-label="Admin section" value={section} onChange={e => setSection(e.target.value as 'applications' | 'inquiries')}>
-              <option value="applications">Access applications</option><option value="inquiries">Pilot inquiries</option>
+              <option value="applications">Access applications</option><option value="inquiries">Pilot inquiries</option><option value="downloads">Download requests</option>
             </select>
             <button className="button button-outline" onClick={() => void load()} disabled={busy}>Refresh</button>
           </div>
@@ -465,6 +470,20 @@ function AdminPanel() {
                 </article>
               ))}
               {visibleApplications.length === 0 && <div className="admin-empty"><ShieldCheck size={25} /><h3>No applications here</h3><p>New requests will appear here after someone submits the access form.</p></div>}
+            </div>
+          </div>
+        )}
+
+        {section === 'downloads' && (
+          <div className="admin-section">
+            <div className="admin-list-heading"><h2>Desktop download requests</h2><p>Confirm payment separately before approving a request.</p></div>
+            <div className="admin-application-list">
+              {downloadRequests.map(item => <article className="admin-application" key={item.id}>
+                <div className="admin-application-main"><div><h3>{item.user_name || item.user_email}</h3><a href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(item.user_email)} target="_blank" rel="noopener noreferrer">{item.user_email}</a></div><span className={'admin-status status-' + item.status}>{item.status}</span></div>
+                <dl><div><dt>Product</dt><dd>{item.product}</dd></div><div><dt>Requested</dt><dd>{item.requested_at ? new Date(item.requested_at).toLocaleString() : '—'}</dd></div><div><dt>Payment</dt><dd>{item.payment_confirmed ? 'Confirmed' : 'Not confirmed'}</dd></div></dl>
+                {item.status === 'pending' && <div className="admin-actions"><button className="button button-lime" disabled={busy} onClick={async () => { if (!window.confirm('Confirm that payment has been received separately and approve download access?')) return; setBusy(true); setError(''); setNotice(''); try { const response = await fetch('/api/admin-download-requests', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ownerToken}` }, body: JSON.stringify({ id: item.id, status: 'approved', payment_confirmed: true }) }); const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.error || 'Could not approve download request.'); setNotice('Payment confirmed and download request approved.'); await load(ownerToken) } catch (e) { setError(e instanceof Error ? e.message : 'Could not approve request.') } finally { setBusy(false) } }}><Check size={15}/> Confirm payment &amp; approve</button><button className="button button-outline" disabled={busy} onClick={async () => { setBusy(true); setError(''); try { const response = await fetch('/api/admin-download-requests', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ownerToken}` }, body: JSON.stringify({ id: item.id, status: 'rejected' }) }); const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.error || 'Could not reject request.'); setNotice('Download request rejected.'); await load(ownerToken) } catch (e) { setError(e instanceof Error ? e.message : 'Could not reject request.') } finally { setBusy(false) } }}><X size={15}/> Reject</button></div>}
+              </article>)}
+              {downloadRequests.length === 0 && <div className="admin-empty"><Monitor size={25}/><h3>No download requests yet</h3><p>Customer requests will appear here after submission.</p></div>}
             </div>
           </div>
         )}
@@ -528,11 +547,55 @@ function CustomerWorkspace() {
 
 
 function CustomerResources() {
+  const [downloadRequest, setDownloadRequest] = useState<{id:string;status:string;requested_at:string}|null>(null)
+  const [downloadBusy, setDownloadBusy] = useState(false)
+  const [downloadError, setDownloadError] = useState('')
+  const [downloadNotice, setDownloadNotice] = useState('')
+  const [downloadAvailable, setDownloadAvailable] = useState(false)
+  const loadDownloadRequest = async () => {
+    const { data } = await supabase.auth.getSession()
+    const token = data.session?.access_token
+    if (!token) return
+    const response = await fetch('/api/download-requests', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
+    const result = await response.json().catch(() => ({}))
+    if (response.ok) { setDownloadRequest(result.request || null); setDownloadAvailable(Boolean(result.downloadAvailable)) }
+    else setDownloadError(result.error || 'Could not load download request status.')
+  }
+  useEffect(() => { void loadDownloadRequest() }, [])
+  const applyForDownload = async () => {
+    setDownloadBusy(true); setDownloadError(''); setDownloadNotice('')
+    try {
+      const { data } = await supabase.auth.getSession()
+      const token = data.session?.access_token
+      if (!token) throw new Error('Please sign in again to request a download.')
+      const response = await fetch('/api/download-requests', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({}) })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(result.error || 'Could not submit download request.')
+      setDownloadRequest(result.request || null); setDownloadNotice(result.message || 'Your request has been submitted.')
+      await loadDownloadRequest()
+    } catch (e) { setDownloadError(e instanceof Error ? e.message : 'Could not submit request.') }
+    finally { setDownloadBusy(false) }
+  }
+  const getApprovedDownload = async () => {
+    setDownloadBusy(true); setDownloadError('')
+    try {
+      const { data } = await supabase.auth.getSession()
+      const token = data.session?.access_token
+      if (!token) throw new Error('Please sign in again.')
+      const response = await fetch('/api/secure-download', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(result.error || 'Download is not available yet.')
+      window.location.assign(result.url)
+    } catch (e) { setDownloadError(e instanceof Error ? e.message : 'Could not start download.') }
+    finally { setDownloadBusy(false) }
+  }
+  return <div className="customer-resources">
+function CustomerResources() {
   return <div className="customer-resources">
     <section className="customer-resource-section" id="customer-how-it-works" data-theme="dark"><div className="section-shell"><span className="eyebrow"><span className="eyebrow-line" /> CUSTOMER GUIDE</span><h2>How CampusGuard works.</h2><p className="customer-resource-lead">A desktop-first workflow, with people making the decisions at every step.</p><div className="how-steps"><article><span>01</span><h3>Connect cameras</h3><p>Configure compatible cameras in the Windows app. Camera setup remains desktop-only.</p></article><article><span>02</span><h3>Analyse locally</h3><p>The installed AI model analyses video sequences and may flag a potential event.</p></article><article><span>03</span><h3>Review and respond</h3><p>Staff check context, follow campus procedures and decide the appropriate next action.</p></article></div></div></section>
     <section className="customer-resource-section customer-ai-section" id="customer-ai-pipeline" data-theme="light"><div className="section-shell"><span className="eyebrow"><span className="eyebrow-line" /> DETAILED AI PIPELINE</span><h2>From camera input to a<br /><em>human-reviewed alert.</em></h2><p className="customer-resource-lead">This is a conceptual flowchart of the intended workflow, not live model telemetry. Actual implementation depends on the installed model and configuration.</p><div className="customer-flowchart"><article><b>01</b><h3>Capture</h3><p>Camera frames enter the desktop workflow.</p></article><span>→</span><article><b>02</b><h3>Prepare</h3><p>Frames are sampled and shaped into model input.</p></article><span>→</span><article><b>03</b><h3>Analyse</h3><p>Temporal patterns are evaluated by the installed model.</p></article><span>→</span><article><b>04</b><h3>Flag</h3><p>A candidate event can trigger an alert for review.</p></article><span>→</span><article className="customer-flow-human"><b>05</b><h3>Human review</h3><p>Staff assess context and decide what action is appropriate.</p></article></div><p className="customer-resource-note"><LockKeyhole size={14}/> AI alerts can be wrong. They support staff review and must not be treated as proof of an incident.</p></div></section>
     <section className="customer-resource-section customer-neural-section" id="customer-neural-network" data-theme="dark"><div className="section-shell"><span className="eyebrow"><span className="eyebrow-line" /> NEURAL NETWORK / CONCEPTUAL VIEW</span><h2>The neural network<span className="customer-heading-period">.</span></h2><p className="customer-resource-lead">A visual explanation of how connected processing stages can learn patterns across a sequence. This graphic is illustrative—not a live view of model internals or performance.</p><div className="customer-neural-visual"><div className="customer-neural-meta"><span><i/> CONCEPTUAL NETWORK</span><span>SEQUENCE → SIGNAL</span></div><svg className="customer-neural-svg" viewBox="0 0 900 270" role="img" aria-label="Illustrative neural network with connected input, hidden and output nodes"><g className="customer-neural-links"><path d="M70 135L220 48L390 85L560 40L730 92L830 135M70 135L220 135L390 85L560 135L730 92L830 135M70 135L220 222L390 185L560 230L730 178L830 135M220 48L220 135L220 222M390 85L390 185M560 40L560 135L560 230M730 92L730 178"/></g><g className="customer-neural-nodes"><circle cx="70" cy="135" r="15"/><circle cx="220" cy="48" r="10"/><circle cx="220" cy="135" r="13"/><circle cx="220" cy="222" r="10"/><circle cx="390" cy="85" r="13"/><circle cx="390" cy="185" r="11"/><circle cx="560" cy="40" r="9"/><circle cx="560" cy="135" r="16"/><circle cx="560" cy="230" r="9"/><circle cx="730" cy="92" r="12"/><circle cx="730" cy="178" r="10"/><circle cx="830" cy="135" r="15"/></g><path className="customer-neural-pulse" d="M70 135L220 48L390 85L560 135L730 92L830 135"/></svg><div className="customer-neural-labels"><span>INPUT SEQUENCE</span><span>LEARNED FEATURES</span><span>MODEL OUTPUT</span></div></div><p className="customer-resource-note"><LockKeyhole size={14}/> Network visualisation is explanatory only. It does not expose actual weights, activations, confidence values or live inference.</p></div></section>
-    <section className="customer-resource-section customer-download-section" id="customer-downloads" data-theme="light"><div className="section-shell customer-download-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> DESKTOP APPLICATION</span><h2>Get the full CampusGuard workflow.</h2><p>Camera setup, live monitoring, AI analysis and incident footage belong in the Windows desktop application. This website does not stream or replay footage.</p><div className="download-actions"><a className="button button-lime" href="https://github.com/hisir-sys/campusguard/releases" target="_blank" rel="noreferrer">Check desktop releases <ArrowUpRight size={15}/></a><a className="download-secondary" href="https://github.com/hisir-sys/campusguard" target="_blank" rel="noreferrer">View desktop project <ArrowRight size={14}/></a></div><small className="download-note"><LockKeyhole size={12}/> A direct installer link will be added when a public release is available.</small></div><div className="customer-download-card"><Monitor size={34}/><b>CampusGuard for Windows</b><span>CAMERAS · LOCAL AI · INCIDENT REVIEW</span></div></div></section>
+    <section className="customer-resource-section customer-download-section" id="customer-downloads" data-theme="light"><div className="section-shell customer-download-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> DESKTOP APPLICATION</span><h2>Get the full CampusGuard workflow.</h2><p>Apply for the Windows installer. Download access is granted only after the owner reviews your request and confirms payment separately.</p><div className="download-actions">{downloadRequest?.status === 'approved' ? <button className="button button-lime" disabled={downloadBusy} onClick={() => void getApprovedDownload()}>{downloadBusy ? 'Preparing secure download…' : 'Download CampusGuard for Windows'} <ArrowUpRight size={15}/></button> : <button className="button button-lime" disabled={downloadBusy || downloadRequest?.status === 'pending'} onClick={() => void applyForDownload()}>{downloadBusy ? 'Submitting…' : downloadRequest?.status === 'pending' ? 'Request pending owner approval' : 'Apply for download'} <ArrowUpRight size={15}/></button>}</div>{downloadRequest?.status === 'pending' && <small className="download-note"><LockKeyhole size={12}/> Request received. You’ll get access once the owner approves it after payment confirmation.</small>}{downloadRequest?.status === 'rejected' && <small className="download-note">Your previous request was not approved. You may apply again.</small>}{downloadNotice && <p className="form-note" role="status">{downloadNotice}</p>}{downloadError && <p className="form-note" role="alert">{downloadError}</p>}{downloadRequest?.status === 'approved' && !downloadAvailable && <small className="download-note"><LockKeyhole size={12}/> Your request is approved, but the private installer has not been uploaded yet. Contact the owner.</small>}</div><div className="customer-download-card"><Monitor size={34}/><b>CampusGuard for Windows</b><span>CAMERAS · LOCAL AI · INCIDENT REVIEW</span><small>Owner approval required</small></div></div></section>
     <section className="customer-resource-section customer-pilot-section" id="customer-pricing" data-theme="dark"><div className="section-shell"><div className="section-heading"><div><span className="eyebrow"><span className="eyebrow-line" /> PRICING &amp; PILOTS</span><h2>Plan the right-sized<br /><em>evaluation.</em></h2></div><p>Contact us to discuss a plan that fits your campus. We’ll understand your needs and agree on scope and pricing directly.</p></div><div className="customer-pilot-grid"><article><span>01 / STARTER</span><h3>Starter</h3><p>Perfect for a focused pilot to explore the workflow and understand the impact on your campus.</p><div className="customer-plan-price">₹2,500–8,000<span>/month</span></div><ul><li>4–10 cameras</li><li>2 team members</li><li>Monthly billing</li><li>Email support only</li><li>Installation visit included</li><li>Incident logging &amp; review</li></ul><b>Pricing based on camera count</b><a className="button button-outline" href="https://wa.me/917003276998?text=Hello%20CampusGuard%2C%20I%27d%20like%20to%20request%20Starter%20pilot%20details%20for%20the%20%E2%82%B92500%E2%80%938000%2Fmonth%20plan." target="_blank" rel="noopener noreferrer">Request pilot details <ArrowUpRight size={15}/></a></article><article className="customer-plan-featured"><span>02 / PROFESSIONAL</span><h3>Professional</h3><p>Active deployment across your campus with priority support and on-site assistance for daily operations.</p><div className="customer-plan-price">₹8,000–15,000<span>/month</span></div><ul><li>10–20 cameras</li><li>5–7 team members</li><li>Monthly billing</li><li>Email + WhatsApp support</li><li>Installation visit + emergency support</li><li>Staff training &amp; onboarding</li></ul><b>Most popular · Pricing based on camera count</b><a className="button button-lime" href="https://wa.me/917003276998?text=Hello%20CampusGuard%2C%20I%27d%20like%20to%20discuss%20the%20Professional%20plan%20for%20my%20campus." target="_blank" rel="noopener noreferrer">Discuss your campus <ArrowUpRight size={15}/></a></article><article><span>03 / ENTERPRISE</span><h3>Enterprise</h3><p>Multi-site coordination with on-site support and custom integration for large educational groups.</p><div className="customer-plan-price">₹15,000–30,000<span>/month</span></div><ul><li>20–40 cameras</li><li>10–15 team members</li><li>Monthly billing</li><li>Email + WhatsApp + on-site support</li><li>Installation visit + emergency support</li><li>Dedicated account manager</li></ul><b>Pricing based on camera count</b><a className="button button-outline" href="https://wa.me/917003276998?text=Hello%20CampusGuard%2C%20I%27d%20like%20to%20discuss%20the%20Enterprise%20plan%20for%20our%20educational%20group." target="_blank" rel="noopener noreferrer">Talk to our team <ArrowUpRight size={15}/></a></article></div><p className="customer-resource-note"><LockKeyhole size={14}/> Contact us to discuss a plan that fits your campus. We’ll understand your needs and agree on scope and pricing directly.</p></div></section>
   </div>
 }
