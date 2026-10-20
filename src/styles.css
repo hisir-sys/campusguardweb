@@ -2003,3 +2003,162 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 @media(max-width:850px){.admin-stats.admin-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-analytics-grid{grid-template-columns:1fr}.admin-chart-body{justify-content:flex-start;gap:clamp(22px,8vw,70px)}}
 @media(max-width:520px){.admin-commandline{align-items:flex-start;flex-direction:column}.admin-commandline-right{width:100%;justify-content:space-between}.admin-kpi{padding:16px 14px!important;min-height:150px}.admin-kpi strong{font-size:35px}.admin-kpi-top>span:first-child{font-size:8px}.admin-chart-body{gap:20px;padding-inline:0}.admin-donut{width:128px;height:128px;flex-basis:128px}.admin-donut strong{font-size:27px}.admin-analytics-card{padding:18px 15px}.admin-activity-row{grid-template-columns:80px 1fr 20px;gap:8px}.admin-title-row{align-items:flex-start}.admin-title-row .button{padding:10px 12px}}
 @media(prefers-reduced-motion:reduce){.admin-live-indicator>i,.admin-kpi-spark i,.admin-kpi strong,.admin-donut,.admin-activity-row>div i{animation:none!important}.admin-kpi,.admin-application,.admin-analytics-card{transition:none!important}.admin-kpi:hover,.admin-application:hover{transform:none}}
+
+
+/* Visual QA pass: keep public marketing, customer workspace and owner console distinct. */
+/* PUBLIC WEBSITE — muted olive emphasis on light surfaces; reserve neon lime for dark sections. */
+.public-site-content > section:not(.dark-band):not(.neural-section):not(.final-cta-section) h1 em,
+.public-site-content > section:not(.dark-band):not(.neural-section):not(.final-cta-section) h2 em,
+.public-site-content > section:not(.dark-band):not(.neural-section):not(.final-cta-section) h3 em,
+.public-site-content > section:not(.dark-band):not(.neural-section):not(.final-cta-section) .section-heading em,
+.public-site-content > section:not(.dark-band):not(.neural-section):not(.final-cta-section) .faq-intro em {
+  color: #70884a;
+}
+.public-site-content > section:not(.dark-band):not(.neural-section):not(.final-cta-section) .section-heading,
+.public-site-content > section:not(.dark-band):not(.neural-section):not(.final-cta-section) .faq-layout {
+  align-items: start;
+}
+.public-site-content > section:not(.dark-band):not(.neural-section):not(.final-cta-section) .section-heading > *,
+.public-site-content > section:not(.dark-band):not(.neural-section):not(.final-cta-section) .faq-layout > * {
+  min-width: 0;
+}
+.public-site-content > section:not(.dark-band):not(.neural-section):not(.final-cta-section) .section-heading h2 {
+  max-width: 14ch;
+  text-wrap: balance;
+}
+.public-site-content > section:not(.dark-band):not(.neural-section):not(.final-cta-section) a:not(.button):focus-visible {
+  outline-color: #70884a;
+}
+.public-site-content .faq-layout,
+.public-site-content .section-heading {
+  column-gap: clamp(28px, 6vw, 88px);
+  row-gap: 22px;
+}
+.public-site-content .faq-layout > *,
+.public-site-content .section-heading > * {
+  flex: 1 1 0;
+}
+.public-site-content .faq-list,
+.public-site-content .faq-items,
+.public-site-content .faq-content {
+  min-width: 0;
+  width: 100%;
+}
+.public-site-content .faq-list button,
+.public-site-content .faq-items button,
+.public-site-content .faq-content button {
+  text-align: left;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+@media(max-width:760px) {
+  .public-site-content .section-heading,
+  .public-site-content .faq-layout {
+    align-items: stretch;
+    gap: 18px;
+  }
+  .public-site-content > section:not(.dark-band):not(.neural-section):not(.final-cta-section) .section-heading h2 {
+    max-width: 18ch;
+  }
+}
+/* CUSTOMER WORKSPACE — maintain its own dark-console palette and align its cards independently. */
+.customer-resources {
+  --customer-accent: #c8ff52;
+  --customer-accent-readable: #a8d34a;
+}
+.customer-resources .customer-resource-section {
+  min-width: 0;
+}
+.customer-resources .customer-resource-section .section-heading,
+.customer-resources .customer-resource-section .customer-resource-heading {
+  align-items: flex-end;
+  gap: 22px;
+}
+.customer-resources .customer-resource-section h2 em,
+.customer-resources .customer-heading-period {
+  color: var(--customer-accent-readable);
+}
+.customer-resources .customer-pilot-grid {
+  align-items: stretch;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.customer-resources .customer-pilot-grid > article {
+  height: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.customer-resources .customer-pilot-grid > article h3,
+.customer-resources .customer-pilot-grid > article p,
+.customer-resources .customer-pilot-grid > article li {
+  overflow-wrap: anywhere;
+}
+.customer-resources .customer-plan-price {
+  color: #d2f39b;
+  font-variant-numeric: tabular-nums;
+}
+.customer-resources .customer-pilot-grid article>b,
+.customer-resources .customer-pilot-grid article ul li::before {
+  color: #b6df79;
+}
+.customer-resources .customer-pilot-grid .customer-plan-featured {
+  border-color: #9fca63;
+  box-shadow: 0 0 0 1px #9fca6320, 0 18px 44px #0002;
+}
+.customer-resources .customer-pilot-grid article .button {
+  margin-top: auto;
+  min-height: 44px;
+}
+.customer-resources .workspace-stat,
+.customer-resources .workspace-panel {
+  min-width: 0;
+}
+@media(max-width:900px) {
+  .customer-resources .customer-pilot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media(max-width:620px) {
+  .customer-resources .customer-pilot-grid { grid-template-columns: minmax(0, 1fr); }
+  .customer-resources .customer-resource-section .section-heading,
+  .customer-resources .customer-resource-section .customer-resource-heading { align-items: flex-start; }
+}
+/* ADMIN CONSOLE — neutral, high-contrast text on its light background, separate from both site themes. */
+.admin-page .admin-title-row h1 span,
+.admin-page .admin-title-row .eyebrow,
+.admin-page .admin-list-heading h2,
+.admin-page .admin-application h3 {
+  color: #20271c;
+}
+.admin-page .admin-title-row h1 span { color: #71884c; }
+.admin-page .admin-stats article,
+.admin-page .admin-analytics-card,
+.admin-page .admin-application {
+  box-sizing: border-box;
+}
+.admin-page .admin-title-row,
+.admin-page .admin-list-heading,
+.admin-page .admin-application-main,
+.admin-page .admin-application dl {
+  min-width: 0;
+}
+.admin-page .admin-list-heading { flex-wrap: wrap; }
+.admin-page .admin-toolbar { flex-wrap: wrap; justify-content: flex-end; }
+.admin-page .admin-application dl dd { line-height: 1.55; }
+.admin-page .admin-application-main > div { min-width: 0; }
+.admin-page .admin-application-main a { overflow-wrap: anywhere; }
+.admin-page .admin-status-chart .admin-donut {
+  background: conic-gradient(#b88a24 0 var(--pending-share), #608c35 var(--pending-share) calc(var(--pending-share) + var(--approved-share)), #b65a4b calc(var(--pending-share) + var(--approved-share)) 100%);
+}
+@media(max-width:640px) {
+  .admin-page .admin-title-row { gap: 14px; }
+  .admin-page .admin-title-row h1 { letter-spacing: -2px; }
+  .admin-page .admin-toolbar { width: 100%; justify-content: stretch; }
+  .admin-page .admin-toolbar select { flex: 1 1 170px; min-width: 0; }
+  .admin-page .admin-toolbar .button { flex: 0 0 auto; }
+  .admin-page .admin-application-main { gap: 10px; }
+  .admin-page .admin-application dl { gap: 14px 10px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .customer-resources .customer-pilot-grid > article,
+  .public-site-content .section-heading,
+  .public-site-content .faq-layout { transition: none !important; }
+}
