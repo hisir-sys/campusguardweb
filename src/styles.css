@@ -2162,3 +2162,253 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .public-site-content .section-heading,
   .public-site-content .faq-layout { transition: none !important; }
 }
+
+
+/* Premium motion pass — preserve the established CampusGuard palette and keep
+   the public marketing experience distinct from the signed-in customer console. */
+
+/* PUBLIC EXPERIENCE: cinematic, restrained motion layered over existing colors. */
+.public-site-content .public-hero-copy > * {
+  animation: cg-public-arrive .8s cubic-bezier(.2,.75,.25,1) both;
+}
+.public-site-content .public-hero-copy > *:nth-child(1) { animation-delay: .06s; }
+.public-site-content .public-hero-copy > *:nth-child(2) { animation-delay: .14s; }
+.public-site-content .public-hero-copy > *:nth-child(3) { animation-delay: .22s; }
+.public-site-content .public-hero-copy > *:nth-child(4) { animation-delay: .3s; }
+.public-site-content .public-hero-copy > *:nth-child(5) { animation-delay: .38s; }
+.public-site-content .public-hero-art { animation: cg-public-art-arrive 1.1s cubic-bezier(.2,.75,.25,1) both; }
+.public-site-content .hero-console {
+  animation: cg-console-float 7s ease-in-out infinite;
+  transform-origin: center;
+}
+.public-site-content .hero-orbit-one { animation: cg-orbit-spin 28s linear infinite; }
+.public-site-content .hero-orbit-two { animation: cg-orbit-spin 36s linear infinite reverse; }
+.public-site-content .hero-scan-ring { animation: cg-scan-breathe 3.8s ease-in-out infinite; }
+.public-site-content .hero-console-grid {
+  background-size: 28px 28px;
+  animation: cg-grid-drift 18s linear infinite;
+}
+.public-site-content .hero-console-bars i { animation: cg-signal-bars 1.6s ease-in-out infinite alternate; }
+.public-site-content .hero-console-bars i:nth-child(2) { animation-delay: -.5s; }
+.public-site-content .hero-console-bars i:nth-child(3) { animation-delay: -.9s; }
+.public-site-content .hero-console-bars i:nth-child(4) { animation-delay: -.25s; }
+.public-site-content .hero-console-bars i:nth-child(5) { animation-delay: -.7s; }
+.public-site-content .feature-card,
+.public-site-content .pricing-card,
+.public-site-content .pipeline-node,
+.public-site-content .kinetic-step {
+  transform: translateZ(0);
+  transition: transform .38s cubic-bezier(.2,.8,.2,1), border-color .38s, background-color .38s, box-shadow .38s;
+}
+.public-site-content .feature-card:hover,
+.public-site-content .pricing-card:hover,
+.public-site-content .kinetic-step:hover {
+  transform: translateY(-6px);
+}
+.public-site-content .feature-card .feature-top svg,
+.public-site-content .kinetic-step-icon,
+.public-site-content .pipeline-node .pipeline-icon {
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), color .35s;
+}
+.public-site-content .feature-card:hover .feature-top svg,
+.public-site-content .kinetic-step:hover .kinetic-step-icon {
+  transform: translateY(-3px) rotate(-5deg);
+}
+.public-site-content .pipeline-connector i {
+  animation: cg-flow-pulse 1.8s ease-in-out infinite;
+}
+.public-site-content .pipeline-connector:nth-of-type(2) i { animation-delay: -.6s; }
+.public-site-content .pipeline-connector:nth-of-type(4) i { animation-delay: -1.2s; }
+.public-site-content .network-pulse {
+  stroke-dasharray: 12 24;
+  animation: cg-network-travel 5s linear infinite;
+}
+.public-site-content .network-pulse.pulse-delay { animation-delay: -2.5s; }
+.public-site-content .network-nodes circle { transform-box: fill-box; transform-origin: center; animation: cg-node-breathe 3.2s ease-in-out infinite; }
+.public-site-content .network-nodes circle:nth-child(3n) { animation-delay: -1.1s; }
+.public-site-content .network-nodes circle:nth-child(3n + 1) { animation-delay: -2s; }
+.public-site-content .kinetic-arrow svg { animation: cg-arrow-nudge 2s ease-in-out infinite; }
+.public-site-content .kinetic-step:nth-of-type(3) { animation-delay: -.3s; }
+.public-site-content .download-device { animation: cg-console-float 8s ease-in-out infinite; }
+.public-site-content .download-progress i { animation: cg-download-sweep 3s ease-in-out infinite; transform-origin: left; }
+.public-site-content .download-orbit-a { animation: cg-orbit-spin 34s linear infinite; }
+.public-site-content .download-orbit-b { animation: cg-orbit-spin 43s linear infinite reverse; }
+.public-site-content .final-cta-section .button { transition: transform .25s, background-color .25s, border-color .25s; }
+.public-site-content .final-cta-section .button:hover { transform: translateY(-3px); }
+
+/* CUSTOMER CONSOLE: more product-like depth and activity without borrowing the
+   public page's editorial composition. The colors remain the existing dark UI. */
+.customer-workspace {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.customer-workspace:before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: min(54vw, 660px);
+  aspect-ratio: 1;
+  right: -14%;
+  top: -22%;
+  border: 1px solid #c8ff5214;
+  border-radius: 50%;
+  box-shadow: 0 0 0 48px #c8ff5206, 0 0 0 96px #c8ff5204;
+  pointer-events: none;
+  animation: cg-customer-orbit 30s linear infinite;
+}
+.customer-workspace .workspace-heading {
+  animation: cg-customer-enter .65s cubic-bezier(.2,.75,.25,1) both;
+}
+.customer-workspace .workspace-session-dot {
+  animation: cg-session-pulse 2.4s ease-in-out infinite;
+}
+.customer-workspace .workspace-tabs {
+  position: relative;
+  isolation: isolate;
+}
+.customer-workspace .workspace-tab {
+  transition: color .25s, background-color .25s, border-color .25s, transform .25s;
+}
+.customer-workspace .workspace-tab:hover { transform: translateY(-2px); }
+.customer-workspace .workspace-tab.active {
+  box-shadow: 0 4px 18px #c8ff5210;
+}
+.customer-workspace .workspace-stat-grid .workspace-stat {
+  animation: cg-customer-enter .65s cubic-bezier(.2,.75,.25,1) both;
+  transition: transform .3s cubic-bezier(.2,.8,.2,1), border-color .3s, box-shadow .3s;
+}
+.customer-workspace .workspace-stat-grid .workspace-stat:nth-child(2) { animation-delay: .08s; }
+.customer-workspace .workspace-stat-grid .workspace-stat:nth-child(3) { animation-delay: .16s; }
+.customer-workspace .workspace-stat-grid .workspace-stat:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 42px #0002;
+}
+.customer-workspace .workspace-panel {
+  animation: cg-customer-enter .7s cubic-bezier(.2,.75,.25,1) both;
+  transition: transform .3s, border-color .3s, box-shadow .3s;
+}
+.customer-workspace .workspace-panel-grid .workspace-panel:nth-child(2) { animation-delay: .1s; }
+.customer-workspace .workspace-panel:hover {
+  border-color: #c8ff5240;
+  box-shadow: 0 18px 44px #0002;
+}
+.customer-workspace .workspace-empty-icon {
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), border-color .35s, color .35s;
+}
+.customer-workspace .workspace-panel:hover .workspace-empty-icon {
+  transform: translateY(-3px) scale(1.04);
+  border-color: #c8ff5250;
+}
+.customer-workspace .workspace-text-button svg {
+  transition: transform .25s;
+}
+.customer-workspace .workspace-text-button:hover svg { transform: translateX(4px); }
+.customer-workspace .workspace-chip { transition: border-color .25s, background-color .25s; }
+.customer-resources .customer-pilot-grid > article {
+  animation: cg-customer-enter .65s cubic-bezier(.2,.75,.25,1) both;
+}
+.customer-resources .customer-pilot-grid > article:nth-child(2) { animation-delay: .09s; }
+.customer-resources .customer-pilot-grid > article:nth-child(3) { animation-delay: .18s; }
+.customer-resources .customer-pilot-grid > article:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 22px 50px #0003;
+}
+.customer-resources .customer-pilot-grid > article .button {
+  transition: transform .25s, filter .25s;
+}
+.customer-resources .customer-pilot-grid > article .button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+}
+
+@keyframes cg-public-arrive {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes cg-public-art-arrive {
+  from { opacity: 0; transform: translate3d(18px, 12px, 0) scale(.97); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes cg-console-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(.25deg); }
+}
+@keyframes cg-orbit-spin { to { transform: rotate(360deg); } }
+@keyframes cg-scan-breathe {
+  0%, 100% { opacity: .72; transform: scale(.96); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+@keyframes cg-grid-drift { to { background-position: 28px 28px; } }
+@keyframes cg-signal-bars {
+  from { transform: scaleY(.55); opacity: .5; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+@keyframes cg-flow-pulse {
+  0%, 100% { opacity: .45; transform: scale(.88); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+@keyframes cg-network-travel { to { stroke-dashoffset: -180; } }
+@keyframes cg-node-breathe {
+  0%, 100% { opacity: .7; }
+  50% { opacity: 1; }
+}
+@keyframes cg-arrow-nudge {
+  0%, 100% { transform: translateX(0); opacity: .65; }
+  50% { transform: translateX(4px); opacity: 1; }
+}
+@keyframes cg-download-sweep {
+  0% { transform: scaleX(.15); opacity: .5; }
+  55% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(.15); opacity: .5; }
+}
+@keyframes cg-customer-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes cg-customer-orbit { to { transform: rotate(360deg); } }
+@keyframes cg-session-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 #c8ff5230; }
+  50% { box-shadow: 0 0 0 5px #c8ff5200; }
+}
+@media(max-width:760px) {
+  .public-site-content .public-hero-art { animation-delay: .12s; }
+  .public-site-content .hero-console { animation-duration: 9s; }
+  .customer-workspace:before { width: 100vw; right: -42%; top: -8%; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .public-site-content .public-hero-copy > *,
+  .public-site-content .public-hero-art,
+  .public-site-content .hero-console,
+  .public-site-content .hero-orbit-one,
+  .public-site-content .hero-orbit-two,
+  .public-site-content .hero-scan-ring,
+  .public-site-content .hero-console-grid,
+  .public-site-content .hero-console-bars i,
+  .public-site-content .pipeline-connector i,
+  .public-site-content .network-pulse,
+  .public-site-content .network-nodes circle,
+  .public-site-content .kinetic-arrow svg,
+  .public-site-content .download-device,
+  .public-site-content .download-progress i,
+  .public-site-content .download-orbit-a,
+  .public-site-content .download-orbit-b,
+  .customer-workspace:before,
+  .customer-workspace .workspace-heading,
+  .customer-workspace .workspace-session-dot,
+  .customer-workspace .workspace-stat-grid .workspace-stat,
+  .customer-workspace .workspace-panel,
+  .customer-resources .customer-pilot-grid > article {
+    animation: none !important;
+  }
+  .public-site-content .feature-card,
+  .public-site-content .pricing-card,
+  .public-site-content .pipeline-node,
+  .public-site-content .kinetic-step,
+  .customer-workspace .workspace-tab,
+  .customer-workspace .workspace-stat-grid .workspace-stat,
+  .customer-workspace .workspace-panel,
+  .customer-resources .customer-pilot-grid > article {
+    transition: none !important;
+  }
+}
