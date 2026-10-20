@@ -443,7 +443,7 @@ function AdminPanel() {
         <div className="admin-list-heading">
           <h2>Owner workspace</h2>
           <div className="admin-toolbar">
-            <select aria-label="Admin section" value={section} onChange={e => setSection(e.target.value as 'applications' | 'inquiries')}>
+            <select aria-label="Admin section" value={section} onChange={e => setSection(e.target.value as 'applications' | 'inquiries' | 'downloads')}>
               <option value="applications">Access applications</option><option value="inquiries">Pilot inquiries</option><option value="downloads">Download requests</option>
             </select>
             <button className="button button-outline" onClick={() => void load()} disabled={busy}>Refresh</button>
