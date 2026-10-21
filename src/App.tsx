@@ -310,6 +310,46 @@ function AdminPanel() {
     }
   }
 
+  useEffect(() => {
+    let active = true
+
+    const restoreOwnerSession = async () => {
+      try {
+        const { data, error: sessionError } = await supabase.auth.getSession()
+        if (!active || sessionError || !data.session) return
+        if (!data.session.user.email_confirmed_at) return
+
+        // The admin API still performs the authoritative ADMIN_EMAIL check.
+        // Restoring a Supabase session alone never grants owner privileges.
+        setOwnerToken(data.session.access_token)
+        await load(data.session.access_token)
+      } catch {
+        if (active) {
+          setAuthenticated(false)
+          setOwnerToken('')
+        }
+      }
+    }
+
+    void restoreOwnerSession()
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active) return
+      if (event === 'SIGNED_OUT' || !session) {
+        setOwnerToken('')
+        setAuthenticated(false)
+      } else {
+        // Keep API calls in sync when Supabase refreshes the access token.
+        setOwnerToken(session.access_token)
+      }
+    })
+
+    return () => {
+      active = false
+      authListener.subscription.unsubscribe()
+    }
+  }, [])
+
   const login = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (busy) return
