@@ -281,7 +281,7 @@ function AdminPanel() {
   const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 })
   const [inquiryStats, setInquiryStats] = useState({ total: 0, pilots: 0, deployments: 0, multiSite: 0 })
   const [filter, setFilter] = useState('pending')
-  const [section, setSection] = useState<'applications' | 'inquiries' | 'downloads'>('applications')
+  const [section, setSection] = useState<'all' | 'applications' | 'inquiries' | 'downloads'>('all')
 
   const load = async (token = ownerToken) => {
     if (!token) return
@@ -436,13 +436,25 @@ function AdminPanel() {
   }
 
   const visibleApplications = applications.filter(app => filter === 'all' || app.status === filter)
+  const allNotifications = [
+    ...applications.map(item => ({ id: 'application-' + item.id, kind: 'Access application', name: item.name, email: item.email, organisation: item.organisation, detail: [item.role, item.purpose].filter(Boolean).join(' · '), status: item.status, date: item.created_at, subject: 'CampusGuard early access follow-up', body: 'Hello ' + item.name + ',\n\nThank you for your CampusGuard early access application.\n\n[Add your update here: application status and next steps.]\n\nBest regards,\nCampusGuard' })),
+    ...inquiries.map(item => ({ id: 'inquiry-' + item.id, kind: 'Pilot inquiry', name: item.name, email: item.email, organisation: item.organisation, detail: [item.topic, item.message].filter(Boolean).join(' · '), status: 'new', date: item.created_at, subject: 'CampusGuard inquiry follow-up: ' + item.topic, body: 'Hello ' + item.name + ',\n\nThank you for contacting CampusGuard about ' + item.topic + '.\n\n[Add your response and next steps here.]\n\nBest regards,\nCampusGuard' })),
+    ...downloadRequests.map(item => ({ id: 'download-' + item.id, kind: 'Download request', name: item.user_name || item.user_email, email: item.user_email, organisation: item.product, detail: 'Payment: ' + (item.payment_confirmed ? 'confirmed' : 'not confirmed'), status: item.status, date: item.requested_at, subject: 'CampusGuard download request update', body: 'Hello ' + (item.user_name || item.user_email) + ',\n\nThank you for your CampusGuard desktop download request.\n\n[Add your update here: request status, payment confirmation, approval, or next steps.]\n\nBest regards,\nCampusGuard' })),
+  ].sort((a, b) => (Date.parse(b.date || '') || 0) - (Date.parse(a.date || '') || 0))
+  const analyticsCounts = [
+    { label: 'Access applications', value: applications.length },
+    { label: 'Pilot inquiries', value: inquiries.length },
+    { label: 'Download requests', value: downloadRequests.length },
+    { label: 'Pending items', value: applications.filter(x => x.status === 'pending').length + downloadRequests.filter(x => x.status === 'pending').length },
+  ]
+  const analyticsMax = Math.max(1, ...analyticsCounts.map(item => item.value))
 
   return (
     <main className="admin-page">
       {header}
       <section className="admin-content">
         <div className="admin-title-row">
-          <div><span className="eyebrow">OWNER CONSOLE</span><h1>{section === 'applications' ? 'Applications' : section === 'inquiries' ? 'Pilot inquiries' : 'Download requests'}<span>.</span></h1><p>Private owner workspace for access requests and pilot/deployment inquiries.</p></div>
+          <div><span className="eyebrow">OWNER CONSOLE</span><h1>{section === 'all' ? 'All notifications' : section === 'applications' ? 'Applications' : section === 'inquiries' ? 'Pilot inquiries' : 'Download requests'}<span>.</span></h1><p>Private owner workspace for access requests and pilot/deployment inquiries.</p></div>
           <button className="button button-outline" onClick={() => void logout()}>Log out</button>
         </div>
         <div className="admin-commandline">
@@ -484,7 +496,7 @@ function AdminPanel() {
           <h2>Owner workspace</h2>
           <div className="admin-toolbar">
             <select aria-label="Admin section" value={section} onChange={e => setSection(e.target.value as 'applications' | 'inquiries' | 'downloads')}>
-              <option value="applications">Access applications</option><option value="inquiries">Pilot inquiries</option><option value="downloads">Download requests</option>
+              <option value="all">All notifications</option><option value="applications">Access applications</option><option value="inquiries">Pilot inquiries</option><option value="downloads">Download requests</option>
             </select>
             <button className="button button-outline" onClick={() => void load()} disabled={busy}>Refresh</button>
           </div>
@@ -492,6 +504,22 @@ function AdminPanel() {
         {notice && <p className="admin-notice" role="status">{notice}</p>}
         {error && <p className="admin-error" role="alert">{error}</p>}
 
+        {section === 'all' && (
+          <div className="admin-section">
+            <div className="admin-list-heading"><h2>All incoming activity</h2><p>Applications, pilot inquiries and download requests, newest first.</p></div>
+            <div className="admin-application-list">
+              {allNotifications.map(item => (
+                <article className="admin-application" key={item.id}>
+                  <div className="admin-application-main"><div><span className="admin-panel-eyebrow">{item.kind}</span><h3>{item.name}</h3><a href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(item.email) + '&su=' + encodeURIComponent(item.subject) + '&body=' + encodeURIComponent(item.body)} target="_blank" rel="noopener noreferrer">{item.email}</a></div><span className={'admin-status status-' + (item.status === 'new' ? 'pending' : item.status)}>{item.status}</span></div>
+                  <dl><div><dt>Organisation / product</dt><dd>{item.organisation || '—'}</dd></div><div><dt>Received</dt><dd>{item.date ? new Date(item.date).toLocaleString() : '—'}</dd></div></dl>
+                  {item.detail && <p className="admin-purpose">{item.detail}</p>}
+                  <div className="admin-actions"><a className="button button-outline" href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(item.email) + '&su=' + encodeURIComponent(item.subject) + '&body=' + encodeURIComponent(item.body)} target="_blank" rel="noopener noreferrer">Reply by email <ArrowUpRight size={15}/></a></div>
+                </article>
+              ))}
+              {allNotifications.length === 0 && <div className="admin-empty"><BellRing size={25}/><h3>No notifications yet</h3><p>New access applications, pilot inquiries and download requests will appear here.</p></div>}
+            </div>
+          </div>
+        )}
         {section === 'applications' && (
           <div className="admin-section">
             <div className="admin-list-heading">
@@ -551,6 +579,19 @@ function AdminPanel() {
             </div>
           </div>
         )}
+        <section className="admin-section" aria-labelledby="admin-analytics-title">
+          <div className="admin-list-heading"><div><h2 id="admin-analytics-title">Activity &amp; scaling analytics</h2><p>Live totals from loaded records; these are operational request metrics, not visitor/page-view tracking.</p></div></div>
+          <div className="admin-stats admin-kpi-grid">
+            {analyticsCounts.map(item => <article className="admin-kpi" key={item.label}><div className="admin-kpi-top"><span>{item.label.toUpperCase()}</span><span className="admin-kpi-icon"><Activity size={16}/></span></div><strong>{item.value}</strong><small>Current records</small><div className="admin-kpi-spark" aria-hidden="true">{Array.from({length:10},(_,i)=><i key={i}/>)}</div></article>)}
+          </div>
+          <article className="admin-analytics-card" style={{ marginTop: 18 }}>
+            <div className="admin-panel-top"><div><span className="admin-panel-eyebrow">REQUEST VOLUME</span><h2>Current workload by category</h2></div><span className="admin-panel-tag">CURRENT SNAPSHOT</span></div>
+            <div style={{ display: 'grid', gap: 18, padding: '18px 0' }}>
+              {analyticsCounts.map(item => <div key={item.label} style={{ display: 'grid', gridTemplateColumns: 'minmax(120px, 1fr) 3fr auto', gap: 14, alignItems: 'center' }}><span>{item.label}</span><div style={{ height: 10, borderRadius: 999, background: 'var(--admin-border, #252b35)', overflow: 'hidden' }}><div style={{ width: (item.value / analyticsMax * 100) + '%', height: '100%', borderRadius: 999, background: 'var(--lime, #c7ff45)', transition: 'width .3s ease' }}/></div><strong>{item.value}</strong></div>)}
+            </div>
+            <p className="admin-chart-footnote">Refresh the admin console to update totals. Historical traffic, unique visitors and page views require a separate analytics provider.</p>
+          </article>
+        </section>
       </section>
     </main>
   )
