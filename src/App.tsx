@@ -7,7 +7,7 @@ const supabase = createClient(
   { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } },
 )
 import {
-  ArrowRight, ArrowUpRight, Activity, BellRing, Check,
+  ArrowRight, ArrowUpRight, Activity, BellRing, Check, ChevronDown,
   Fingerprint, LockKeyhole, Menu,
   Monitor, ScanEye, ShieldCheck, Sparkles, X,
 } from 'lucide-react'
