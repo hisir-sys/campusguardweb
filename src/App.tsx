@@ -686,7 +686,7 @@ function App() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduceMotion || !('IntersectionObserver' in window)) return
     const targets = document.querySelectorAll(
-      '.section-heading, .feature-card, .pricing-card, .pricing-disclaimer, .neural-heading, .neural-visual, .pipeline-node, .interface-copy, .interface-art, .dark-band-inner > *, .faq-layout > *, .final-cta-inner, .strip-inner > span:not(.strip-label)'
+      '.section-heading, .feature-card, .pricing-card, .pricing-disclaimer, .neural-heading, .neural-visual, .pipeline-node, .interface-copy, .interface-art, .dark-band-inner > *, .faq-layout > *, .final-cta-inner, .strip-inner > span:not(.strip-label), .public-editorial-heading, .public-challenge-card, .public-workflow-heading > *, .public-workflow-step, .public-value-copy, .public-value-art'
     )
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -799,6 +799,45 @@ function App() {
       <div className="feature-grid">{features.map(({ number, icon: Icon, title, text }) => <article className="feature-card" key={number}><div className="feature-top"><span>{number}</span><Icon size={21} strokeWidth={1.5} /></div><h3>{title}</h3><p>{text}</p><span className="feature-arrow"><ArrowUpRight size={17} /></span></article>)}</div>
       <div className="platform-note"><Sparkles size={17} /><p><b>Built around a desktop application.</b> CampusGuard’s Windows app remains the primary place for camera capture and local analysis. A future web workspace may support account and incident-review experiences once secure authentication and data services are connected.</p></div>
     </div></section>
+
+    <section className="public-problem-section" id="challenges" data-theme="light">
+      <div className="section-shell">
+        <div className="public-editorial-heading">
+          <span className="eyebrow"><span className="eyebrow-line" /> THE CHALLENGE</span>
+          <h2>When every screen matters,<br /><em>context matters more.</em></h2>
+          <p>Campus teams can have cameras, staff and established procedures—and still face the difficult work of noticing a moment, finding the relevant context and deciding what deserves attention.</p>
+        </div>
+        <div className="public-challenge-grid">
+          <article className="public-challenge-card"><div className="public-card-icon"><ScanEye size={22}/></div><span className="public-card-index">01 / ATTENTION</span><h3>Too much to watch.</h3><p>Reviewing many camera views at once can place a heavy demand on staff attention. A supporting signal can help direct a closer look at a potential event.</p><div className="public-mini-timeline"><i/><i/><i/><i/><i/><b/></div></article>
+          <article className="public-challenge-card"><div className="public-card-icon"><Activity size={22}/></div><span className="public-card-index">02 / CONTEXT</span><h3>A signal is only a start.</h3><p>A model output is not the full story. People need context, the ability to review what happened and room to apply campus policy before acting.</p><div className="public-context-graphic"><span>VIDEO SEQUENCE</span><i/><i/><i/><span className="public-context-highlight">REVIEW</span></div></article>
+          <article className="public-challenge-card"><div className="public-card-icon"><ShieldCheck size={22}/></div><span className="public-card-index">03 / FOLLOW-THROUGH</span><h3>Make the next step clearer.</h3><p>When a potential event is flagged, a consistent workflow can help staff review it, record relevant details and follow their existing procedures.</p><div className="public-checklist-graphic"><span><i/> Review context</span><span><i/> Record the event</span><span><i/> Decide next steps</span></div></article>
+        </div>
+        <p className="public-section-footnote"><LockKeyhole size={14}/> CampusGuard is designed as decision support—not autonomous enforcement, a guarantee of prevention, or a replacement for trained staff.</p>
+      </div>
+    </section>
+
+    <section className="public-workflow-section" id="workflow" data-theme="dark">
+      <div className="section-shell">
+        <div className="public-workflow-heading">
+          <div><span className="eyebrow"><span className="eyebrow-line" /> A WORKFLOW BUILT AROUND PEOPLE</span><h2>From a possible signal<br />to a <em>considered response.</em></h2></div>
+          <p>The goal is not to automate judgement. It is to make a potential moment easier to surface, examine and handle through a human-led process.</p>
+        </div>
+        <div className="public-animated-workflow">
+          <div className="public-workflow-track" aria-hidden="true"><span/><span/><span/><span/></div>
+          <article className="public-workflow-step"><div className="public-step-visual public-step-capture"><div className="public-frame-grid"/><div className="public-frame-person"/><span className="public-frame-tag">CAMERA INPUT</span></div><span className="public-step-number">01 / CAPTURE</span><h3>Use the cameras you have.</h3><p>Start from compatible camera feeds configured in the CampusGuard Windows application.</p></article>
+          <article className="public-workflow-step"><div className="public-step-visual public-step-analysis"><div className="public-analysis-ring"><ScanEye size={32}/></div><span className="public-analysis-dot dot-one"/><span className="public-analysis-dot dot-two"/><span className="public-analysis-dot dot-three"/><span className="public-frame-tag">LOCAL ANALYSIS</span></div><span className="public-step-number">02 / ANALYSE</span><h3>Surface a potential event.</h3><p>The installed model evaluates video sequences and may flag a moment for staff to examine.</p></article>
+          <article className="public-workflow-step"><div className="public-step-visual public-step-review"><div className="public-review-line"/><div className="public-review-line short"/><div className="public-review-badge"><ShieldCheck size={16}/> HUMAN REVIEW</div><span className="public-frame-tag">CONTEXT FIRST</span></div><span className="public-step-number">03 / REVIEW</span><h3>People make the call.</h3><p>Staff review available context, check the alert and decide what response fits their procedures.</p></article>
+          <article className="public-workflow-step"><div className="public-step-visual public-step-record"><div className="public-record-row"><i/> Event noted <b>01</b></div><div className="public-record-row"><i/> Context reviewed <b>02</b></div><div className="public-record-row"><i/> Next step decided <b>03</b></div><span className="public-frame-tag">DOCUMENT & RESPOND</span></div><span className="public-step-number">04 / FOLLOW THROUGH</span><h3>Keep the process clear.</h3><p>Use the desktop workflow to review and document events, with staff retaining responsibility for action.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section className="public-value-section" id="designed-for" data-theme="light">
+      <div className="section-shell public-value-layout">
+        <div className="public-value-copy"><span className="eyebrow"><span className="eyebrow-line" /> DESIGNED FOR REAL-WORLD TEAMS</span><h2>Useful technology.<br /><em>Clear boundaries.</em></h2><p>CampusGuard is being developed for schools and educational environments that want an additional way to surface potential safety events while keeping people responsible for interpretation and response.</p><ul className="public-value-list"><li><ShieldCheck size={17}/><span><b>Human review stays central</b><small>AI output is a prompt to review, not proof that something happened.</small></span></li><li><LockKeyhole size={17}/><span><b>Desktop-first by design</b><small>Camera configuration and the core workflow remain in the Windows application.</small></span></li><li><Activity size={17}/><span><b>A more structured process</b><small>Bring detection signals, review and incident documentation into a consistent workflow.</small></span></li></ul><button className="button button-lime" onClick={openAccess}>Explore a campus pilot <ArrowUpRight size={15}/></button></div>
+        <div className="public-value-art" aria-label="Illustration of a potential alert being reviewed by a staff member"><div className="public-value-orbit orbit-a"/><div className="public-value-orbit orbit-b"/><div className="public-value-panel"><div className="public-value-panel-top"><span><i/> CAMPUSGUARD / REVIEW</span><span>CONCEPTUAL UI</span></div><div className="public-value-preview"><div className="public-value-scan"/><div className="public-value-person person-a"/><div className="public-value-person person-b"/><div className="public-value-box"/><span>REVIEW MOMENT</span></div><div className="public-value-alert"><span className="public-value-alert-icon"><Activity size={16}/></span><span><b>Potential event flagged</b><small>Staff review required</small></span><span className="public-value-status">TO REVIEW</span></div><div className="public-value-footer"><span><LockKeyhole size={12}/> Illustrative interface</span><span>NOT LIVE FOOTAGE</span></div></div><div className="public-value-float"><ShieldCheck size={17}/><span><b>Human-led</b><small>Decision workflow</small></span></div></div>
+      </div>
+    </section>
 
     <section className="neural-section" id="pipeline" data-theme="dark">
       <div className="section-shell neural-shell">
