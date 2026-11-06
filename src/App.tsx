@@ -599,7 +599,70 @@ function AdminPanel() {
   )
 }
 
+type SyncServer = { server_id: string; server_name: string; app_version: string | null; cameras_total: number; cameras_ai_enabled: number; cameras_online: number | null; open_incidents: number; last_seen: string }
+type SyncIncident = { server_id: string; incident_id: string; camera_name: string; happened_at: string; event: string; confidence: number; severity: string; status: string; has_footage: boolean }
+type SyncData = { servers: SyncServer[]; incidents: SyncIncident[] }
+
+const timeAgo = (iso: string) => {
+  const seconds = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000))
+  if (seconds < 90) return 'just now'
+  if (seconds < 5400) return `${Math.round(seconds / 60)} min ago`
+  if (seconds < 129600) return `${Math.round(seconds / 3600)} h ago`
+  return new Date(iso).toLocaleDateString()
+}
+const serverOnline = (server: SyncServer) => Date.now() - new Date(server.last_seen).getTime() < 3 * 60 * 1000
+
+function useSyncData() {
+  const [data, setData] = useState<SyncData | null>(null)
+  const [error, setError] = useState('')
+  const [loaded, setLoaded] = useState(false)
+  useEffect(() => {
+    let active = true
+    const load = async () => {
+      try {
+        const { data: auth } = await supabase.auth.getSession()
+        const token = auth.session?.access_token
+        if (!token) return
+        const response = await fetch('/api/sync-data', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
+        const result = await response.json().catch(() => ({}))
+        if (!active) return
+        if (!response.ok) throw new Error(result.error || 'Could not load synced data.')
+        setData(result as SyncData); setError('')
+      } catch (e) {
+        if (active) setError(e instanceof Error ? e.message : 'Could not load synced data.')
+      } finally { if (active) setLoaded(true) }
+    }
+    load()
+    const timer = window.setInterval(load, 30000)
+    return () => { active = false; window.clearInterval(timer) }
+  }, [])
+  return { data, error, loaded }
+}
+
+function SyncedServers({ servers }: { servers: SyncServer[] }) {
+  return <div className="sync-table-wrap"><table className="sync-table"><thead><tr><th>Server</th><th>Status</th><th>Cameras</th><th>AI on</th><th>Open incidents</th><th>Last update</th></tr></thead><tbody>
+    {servers.map(server => <tr key={server.server_id}><td><b>{server.server_name}</b>{server.app_version && <small>v{server.app_version}</small>}</td><td><span className={serverOnline(server) ? 'sync-pill sync-pill-ok' : 'sync-pill sync-pill-off'}>{serverOnline(server) ? 'Online' : 'Offline'}</span></td><td>{server.cameras_online === null ? server.cameras_total : `${server.cameras_online} / ${server.cameras_total} live`}</td><td>{server.cameras_ai_enabled}</td><td>{server.open_incidents}</td><td>{timeAgo(server.last_seen)}</td></tr>)}
+  </tbody></table></div>
+}
+
+function SyncedIncidents({ incidents, servers, limit }: { incidents: SyncIncident[]; servers: SyncServer[]; limit?: number }) {
+  const names = new Map(servers.map(server => [server.server_id, server.server_name]))
+  const rows = limit ? incidents.slice(0, limit) : incidents
+  return <div className="sync-table-wrap"><table className="sync-table"><thead><tr><th>Severity</th><th>Camera</th><th>Server</th><th>Time</th><th>Confidence</th><th>Status</th></tr></thead><tbody>
+    {rows.map(item => <tr key={item.server_id + item.incident_id}><td><span className={`sync-pill sync-sev-${item.severity.toLowerCase()}`}>{item.severity}</span></td><td><b>{item.camera_name}</b><small>{item.incident_id}</small></td><td>{names.get(item.server_id) ?? '—'}</td><td>{new Date(item.happened_at).toLocaleString()}</td><td>{Math.round(item.confidence * 100)}%</td><td>{item.status.replace('_', ' ')}</td></tr>)}
+  </tbody></table></div>
+}
+
 function CustomerWorkspace() {
+  const sync = useSyncData()
+  const servers = sync.data?.servers ?? []
+  const incidents = sync.data?.incidents ?? []
+  const hasSync = servers.length > 0
+  const camerasTotal = servers.reduce((sum, server) => sum + server.cameras_total, 0)
+  const knownOnline = servers.filter(server => server.cameras_online !== null)
+  const camerasOnline = knownOnline.reduce((sum, server) => sum + (server.cameras_online ?? 0), 0)
+  const openIncidents = servers.reduce((sum, server) => sum + server.open_incidents, 0)
+  const lastUpdate = hasSync ? timeAgo(servers.map(server => server.last_seen).sort().slice(-1)[0]) : ''
   const [activeTab, setActiveTab] = useState<'overview' | 'cameras' | 'notifications'>('overview')
   return <section className="customer-workspace" aria-labelledby="workspace-title">
     <div className="workspace-shell">
@@ -614,9 +677,9 @@ function CustomerWorkspace() {
       </nav>
       {activeTab === 'overview' && <div className="workspace-content">
         <div className="workspace-stat-grid">
-          <article className="workspace-stat"><span>CAMERAS REGISTERED</span><strong>—</strong><small>Waiting for desktop sync</small><Monitor size={18} /></article>
-          <article className="workspace-stat"><span>CAMERAS ACTIVE</span><strong>—</strong><small>Live status not connected yet</small><Activity size={18} /></article>
-          <article className="workspace-stat"><span>UNREAD NOTIFICATIONS</span><strong>0</strong><small>No notifications loaded</small><BellRing size={18} /></article>
+          <article className="workspace-stat"><span>CAMERAS REGISTERED</span><strong>{hasSync ? camerasTotal : '—'}</strong><small>{hasSync ? `${servers.length} server${servers.length === 1 ? '' : 's'} · updated ${lastUpdate}` : sync.error || (sync.loaded ? 'Waiting for the desktop app to sync' : 'Loading…')}</small><Monitor size={18} /></article>
+          <article className="workspace-stat"><span>CAMERAS ACTIVE</span><strong>{hasSync && knownOnline.length ? camerasOnline : '—'}</strong><small>{hasSync && knownOnline.length ? 'Reported live by your servers' : 'Live status not reported yet'}</small><Activity size={18} /></article>
+          <article className="workspace-stat"><span>OPEN INCIDENTS</span><strong>{hasSync ? openIncidents : 0}</strong><small>{hasSync ? `${incidents.length} recent incident${incidents.length === 1 ? '' : 's'} synced` : 'No incidents synced yet'}</small><BellRing size={18} /></article>
         </div>
       <section className="workspace-learning" aria-labelledby="workspace-guide-title">
         <div className="workspace-learning-heading"><span className="eyebrow"><span className="eyebrow-line" /> CAMPUSGUARD FIELD GUIDE</span><h2 id="workspace-guide-title">Know the workflow.<br/><em>Stay ready.</em></h2><p>Short, practical guidance for using CampusGuard responsibly. These interactive guides are informational and do not change your cameras, settings or alerts.</p></div>
@@ -627,13 +690,13 @@ function CustomerWorkspace() {
         </div>
       </section>
         <div className="workspace-panel-grid">
-          <article className="workspace-panel"><div className="workspace-panel-head"><div><span className="eyebrow">CAMERA INVENTORY</span><h2>Attached cameras</h2></div><button className="workspace-text-button" onClick={() => setActiveTab('cameras')}>View inventory <ArrowRight size={14} /></button></div><div className="workspace-empty"><span className="workspace-empty-icon"><Monitor size={20} /></span><b>Camera sync is not connected</b><p>Once the desktop app shares its camera inventory securely, this area will show each camera’s name, location and active/offline status. Cameras cannot be added or controlled from the website.</p></div></article>
-          <article className="workspace-panel"><div className="workspace-panel-head"><div><span className="eyebrow">RECENT UPDATES</span><h2>Alerts &amp; notifications</h2></div><button className="workspace-text-button" onClick={() => setActiveTab('notifications')}>View alerts <ArrowRight size={14} /></button></div><div className="workspace-empty"><span className="workspace-empty-icon"><BellRing size={20} /></span><b>No notifications to display</b><p>Alerts will appear here when the desktop app’s notification feed is securely connected. No live footage or incident playback is shown on the web.</p></div></article>
+          <article className="workspace-panel"><div className="workspace-panel-head"><div><span className="eyebrow">CAMERA INVENTORY</span><h2>Attached cameras</h2></div><button className="workspace-text-button" onClick={() => setActiveTab('cameras')}>View inventory <ArrowRight size={14} /></button></div>{hasSync ? <SyncedServers servers={servers} /> : <div className="workspace-empty"><span className="workspace-empty-icon"><Monitor size={20} /></span><b>Waiting for your first sync</b><p>Sign in to the CampusGuard desktop app or school server with this same account. Camera totals and server status appear here automatically. Cameras cannot be added or controlled from the website.</p></div>}</article>
+          <article className="workspace-panel"><div className="workspace-panel-head"><div><span className="eyebrow">RECENT UPDATES</span><h2>Alerts &amp; notifications</h2></div><button className="workspace-text-button" onClick={() => setActiveTab('notifications')}>View alerts <ArrowRight size={14} /></button></div>{incidents.length ? <SyncedIncidents incidents={incidents} servers={servers} limit={5} /> : <div className="workspace-empty"><span className="workspace-empty-icon"><BellRing size={20} /></span><b>No incidents yet</b><p>Incidents detected by your servers appear here with severity, camera and time only. No footage is shown on the web.</p></div>}</article>
         </div>
         <p className="workspace-footnote"><LockKeyhole size={13} /> Read-only web access · No camera controls · No live video · No incident footage</p>
       </div>}
-      {activeTab === 'cameras' && <div className="workspace-content"><article className="workspace-panel workspace-full-panel"><div className="workspace-panel-head"><div><span className="eyebrow">READ-ONLY INVENTORY</span><h2>Camera locations &amp; status</h2></div><span className="workspace-chip">Desktop sync pending</span></div><div className="workspace-empty workspace-empty-large"><span className="workspace-empty-icon"><Monitor size={22} /></span><b>No camera inventory has synced yet</b><p>This page will list only camera name, campus/building location and whether the desktop application reports it active or offline. It will not offer add-camera controls, stream previews or footage.</p></div></article></div>}
-      {activeTab === 'notifications' && <div className="workspace-content"><article className="workspace-panel workspace-full-panel"><div className="workspace-panel-head"><div><span className="eyebrow">NOTIFICATION CENTRE</span><h2>Alerts &amp; notifications</h2></div><span className="workspace-chip">Feed not connected</span></div><div className="workspace-empty workspace-empty-large"><span className="workspace-empty-icon"><BellRing size={22} /></span><b>Your notification feed is ready for connection</b><p>When the desktop app’s alert feed is connected, this page will show alert level, time, camera name/location and a short text summary only. It will never show fight footage or a view-footage action.</p></div></article></div>}
+      {activeTab === 'cameras' && <div className="workspace-content"><article className="workspace-panel workspace-full-panel"><div className="workspace-panel-head"><div><span className="eyebrow">READ-ONLY INVENTORY</span><h2>Camera locations &amp; status</h2></div><span className="workspace-chip">{hasSync ? `Synced ${lastUpdate}` : 'Desktop sync pending'}</span></div>{hasSync ? <SyncedServers servers={servers} /> : <div className="workspace-empty workspace-empty-large"><span className="workspace-empty-icon"><Monitor size={22} /></span><b>No data has synced yet</b><p>Sign in to the desktop app or school server with this account and keep it running. Totals and server status appear here automatically.</p></div>}</article></div>}
+      {activeTab === 'notifications' && <div className="workspace-content"><article className="workspace-panel workspace-full-panel"><div className="workspace-panel-head"><div><span className="eyebrow">NOTIFICATION CENTRE</span><h2>Alerts &amp; notifications</h2></div><span className="workspace-chip">{incidents.length ? `${incidents.length} recent` : 'No incidents yet'}</span></div>{incidents.length ? <SyncedIncidents incidents={incidents} servers={servers} /> : <div className="workspace-empty workspace-empty-large"><span className="workspace-empty-icon"><BellRing size={22} /></span><b>No incidents have synced</b><p>When your servers detect an incident it appears here with severity, camera, time and status. Footage stays on your school\u2019s own server and is never shown on the web.</p></div>}</article></div>}
     </div>
   </section>
 }

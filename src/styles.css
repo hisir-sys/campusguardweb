@@ -2938,3 +2938,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .public-value-panel{transform-style:preserve-3d}
 @media(max-width:760px){.public-hero-art{transform:none!important;will-change:auto}.hero-console,.public-hero-art:hover .hero-console{transform:none}.public-workflow-detail p{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.public-hero-art,.hero-console,.hero-orbit,.feature-card,.public-challenge-card,.public-workflow-step,.public-step-visual,.public-value-panel,.public-workflow-detail p{transition:none!important;animation:none!important;transform:none!important;will-change:auto}}
+
+/* Synced app data (read-only tables) */
+.sync-table-wrap{margin-top:18px;overflow-x:auto;border:1px solid #dfe5d6;background:#fff}
+.sync-table{width:100%;border-collapse:collapse;font:12px 'DM Sans',sans-serif;color:#2b3326}
+.sync-table th{padding:10px 12px;text-align:left;background:#f1f5ea;color:#6a7662;font:9px var(--mono);letter-spacing:.6px;text-transform:uppercase;white-space:nowrap}
+.sync-table td{padding:11px 12px;border-top:1px solid #e8ede0;vertical-align:top;white-space:nowrap}
+.sync-table td small{display:block;margin-top:2px;color:#8a9283;font:9px var(--mono)}
+.sync-pill{display:inline-block;padding:3px 8px;border:1px solid #d7dfcf;background:#eef2e8;color:#52683d;font:9px var(--mono);letter-spacing:.4px}
+.sync-pill-ok{background:#e4f1d4;border-color:#c5dca6;color:#3f6a12}
+.sync-pill-off{background:#f3e9e7;border-color:#e2c7c1;color:#8a3b2e}
+.sync-sev-low{background:#eef2e8}
+.sync-sev-medium{background:#fff4d6;border-color:#ecd48a;color:#7a5a00}
+.sync-sev-high{background:#ffe3cf;border-color:#efb78f;color:#8a3d00}
+.sync-sev-critical{background:#fbd9d5;border-color:#ec9d95;color:#8f1d12}
