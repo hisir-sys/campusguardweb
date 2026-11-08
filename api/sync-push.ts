@@ -31,7 +31,7 @@ export default async function handler(req: any, res: any) {
 
     const now = new Date().toISOString()
     const online = server?.cameras_online
-    const { error: serverError } = await db.from('school_servers').upsert({
+    const { error: serverError } = await db.from('account_servers').upsert({
       user_id: auth.user.id, server_id: serverId, server_name: text(server?.server_name, 60) || serverId,
       app_version: text(server?.version, 40) || null,
       cameras_total: count(server?.cameras_total), cameras_ai_enabled: count(server?.cameras_ai_enabled),
@@ -55,7 +55,7 @@ export default async function handler(req: any, res: any) {
       }]
     })
     if (rows.length) {
-      const { error } = await db.from('school_incidents').upsert(rows, { onConflict: 'user_id,server_id,incident_id' })
+      const { error } = await db.from('account_incidents').upsert(rows, { onConflict: 'user_id,server_id,incident_id' })
       if (error) { console.error('Incident upsert failed:', error.message); return res.status(500).json({ error: 'Could not save incidents.' }) }
     }
     return res.status(200).json({ ok: true, accepted: rows.length })

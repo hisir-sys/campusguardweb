@@ -16,8 +16,8 @@ export default async function handler(req: any, res: any) {
     const { data: access } = await db.from('access_applications').select('status').eq('auth_user_id', auth.user.id).maybeSingle()
     if (access?.status !== 'approved') return res.status(403).json({ error: 'Your account is not approved.' })
     const [servers, incidents] = await Promise.all([
-      db.from('school_servers').select('server_id,server_name,app_version,cameras_total,cameras_ai_enabled,cameras_online,open_incidents,last_seen').eq('user_id', auth.user.id).order('server_name'),
-      db.from('school_incidents').select('server_id,incident_id,camera_name,happened_at,event,confidence,severity,status,has_footage').eq('user_id', auth.user.id).order('happened_at', { ascending: false }).limit(100),
+      db.from('account_servers').select('server_id,server_name,app_version,cameras_total,cameras_ai_enabled,cameras_online,open_incidents,last_seen').eq('user_id', auth.user.id).order('server_name'),
+      db.from('account_incidents').select('server_id,incident_id,camera_name,happened_at,event,confidence,severity,status,has_footage').eq('user_id', auth.user.id).order('happened_at', { ascending: false }).limit(100),
     ])
     if (servers.error || incidents.error) return res.status(500).json({ error: 'Could not load synced data.' })
     return res.status(200).json({ servers: servers.data ?? [], incidents: incidents.data ?? [] })

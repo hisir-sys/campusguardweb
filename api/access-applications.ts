@@ -38,7 +38,7 @@ export default async function handler(req: any, res: any) {
   }
   const allowedRoles = new Set([
     'School / campus leadership', 'IT / security team', 'Facilities / operations',
-    'Research / evaluation', 'Other',
+    'Research / evaluation', 'Individual / personal use', 'Other',
   ])
   if (!allowedRoles.has(role)) {
     return res.status(400).json({ error: 'Please choose a valid role.' })
