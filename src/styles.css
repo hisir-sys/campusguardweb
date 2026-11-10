@@ -2969,3 +2969,47 @@ h1,h2,h3{font-weight:500;letter-spacing:-.02em}
 @media (prefers-reduced-motion:no-preference){.device-float,[class*="orbit"],[class*="sheen"]{animation:none!important}}
 *{animation-iteration-count:1!important}
 .workspace-pulse,[class*="breathe"],[class*="nudge"]{animation:none!important}
+
+/* ---- Story scroll + interaction layer (additive) ---- */
+.story-section{background:#0e0f11;color:#e9e9eb;padding:112px 0 120px}
+.story-head{max-width:640px;margin-bottom:56px}
+.story-head h2{font-family:var(--display);font-weight:500;font-size:clamp(30px,4.2vw,48px);line-height:1.08;letter-spacing:-.02em;margin:14px 0 0;text-wrap:balance}
+.story-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:64px;align-items:start}
+.story-steps{display:flex;flex-direction:column;gap:20vh;padding:8vh 0 14vh}
+.story-step{opacity:.38;transition:opacity .4s ease,transform .4s ease;transform:translateX(-6px);border-left:1px solid #ffffff1c;padding-left:24px}
+.story-step.is-active{opacity:1;transform:none;border-left-color:#8fa6c8}
+.story-time{font:500 12px var(--mono);color:#8fa6c8;letter-spacing:.02em}
+.story-step h3{font-family:var(--display);font-weight:500;font-size:clamp(22px,2.4vw,30px);line-height:1.15;margin:10px 0 12px;letter-spacing:-.01em}
+.story-step p{color:#b6b8bd;font-size:16px;line-height:1.6;max-width:46ch;margin:0 0 16px}
+.story-step ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.story-step li{font-size:12px;color:#c9cbd1;border:1px solid #ffffff1f;border-radius:999px;padding:6px 12px;transition:border-color .2s,background .2s}
+.story-step li:hover{border-color:#8fa6c8;background:#8fa6c814}
+.story-stage{position:sticky;top:112px}
+.story-screen{background:#141518;border:1px solid #ffffff1a;border-radius:16px;overflow:hidden;box-shadow:0 30px 80px -40px #000}
+.story-bar,.story-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;font:500 12px var(--mono);color:#9a9da6}
+.story-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#7c93b5;margin-right:8px;box-shadow:0 0 0 4px #7c93b522}
+.story-floor{position:relative;height:clamp(220px,30vw,340px);background:linear-gradient(#1b1c20,#131417);border-block:1px solid #ffffff10;overflow:hidden}
+.story-floor::before{content:"";position:absolute;inset:auto 0 0 0;height:42%;background:repeating-linear-gradient(90deg,#ffffff08 0 1px,transparent 1px 64px)}
+.story-figure{position:absolute;bottom:18%;width:26px;height:84px;border-radius:13px 13px 6px 6px;background:#3a3d45;transition:left .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1),background .4s}
+.story-figure::before{content:"";position:absolute;top:-22px;left:2px;width:22px;height:22px;border-radius:50%;background:inherit}
+.f1{left:18%}.f2{left:46%}.f3{left:74%}
+.story-box{position:absolute;left:30%;bottom:14%;width:34%;height:62%;border:1.5px solid #8fa6c8;border-radius:10px;opacity:0;transform:scale(.9);transition:all .6s cubic-bezier(.2,.7,.2,1)}
+.tone-warn .f1{left:36%;transform:rotate(-6deg)}.tone-warn .f2{left:44%;transform:rotate(7deg)}
+.tone-warn .story-box,.tone-hot .story-box{opacity:1;transform:none}
+.tone-hot .f1{left:38%;transform:rotate(-14deg);background:#6a5258}.tone-hot .f2{left:46%;transform:rotate(12deg);background:#6a5258}
+.tone-hot .story-box{border-color:#c27a5a;left:32%}
+.tone-done .f1{left:22%}.tone-done .f2{left:52%}.tone-done .f3{left:70%}
+.tone-done .story-box{opacity:0}
+.story-meter{flex:1;height:4px;border-radius:2px;background:#ffffff14;overflow:hidden}
+.story-meter b{display:block;height:100%;background:#8fa6c8;border-radius:2px;transition:width .8s cubic-bezier(.2,.7,.2,1),background .4s}
+.tone-hot .story-meter b{background:#c27a5a}.tone-done .story-meter b{background:#6fa58c}
+.story-foot strong{color:#e9e9eb;font-weight:500;min-width:64px;text-align:right}
+.story-caption{font-size:12px;color:#7b7e86;margin:14px 2px 0}
+.story-dots{display:flex;gap:6px;margin-top:12px}.story-dots span{width:20px;height:3px;border-radius:2px;background:#ffffff1c;transition:background .3s,width .3s}.story-dots .on{background:#8fa6c8;width:32px}
+@media (max-width:860px){.story-grid{grid-template-columns:1fr;gap:28px}.story-stage{position:sticky;top:84px;z-index:2;order:-1}.story-steps{gap:42vh;padding:4vh 0 20vh}.story-floor{height:180px}.story-section{padding:72px 0 80px}}
+
+/* hover polish for existing cards, no layout change */
+.feature-card,.pricing-card,.customer-pilot-grid article,.how-steps article,.pipeline-node{transition:transform .25s cubic-bezier(.2,.7,.2,1),border-color .25s,box-shadow .25s}
+.feature-card:hover,.pricing-card:hover,.customer-pilot-grid article:hover,.how-steps article:hover{transform:translateY(-4px);border-color:#8fa6c8aa;box-shadow:0 18px 40px -24px #0008}
+.button{transition:transform .2s,box-shadow .2s,background .2s,border-color .2s}.button:hover{transform:translateY(-1px)}
+@media (prefers-reduced-motion:reduce){.story-step,.story-figure,.story-box,.story-meter b,.feature-card,.pricing-card,.button{transition:none!important}.feature-card:hover,.pricing-card:hover,.button:hover{transform:none}}

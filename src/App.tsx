@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import StoryScroll from './StoryScroll'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL || '',
@@ -867,6 +868,7 @@ function App() {
         <div className="public-hero-art" aria-label="Interactive 3D-style illustration of the CampusGuard desktop monitoring workflow" onMouseMove={event => { const rect = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty('--tilt-x', ((event.clientY - rect.top) / rect.height - .5).toFixed(3)); event.currentTarget.style.setProperty('--tilt-y', ((event.clientX - rect.left) / rect.width - .5).toFixed(3)) }} onMouseLeave={event => { event.currentTarget.style.setProperty('--tilt-x', '0'); event.currentTarget.style.setProperty('--tilt-y', '0') }}><div className="hero-orbit hero-orbit-one"></div><div className="hero-orbit hero-orbit-two"></div><div className="hero-console"><div className="hero-console-top"><span><i></i> CAMPUSGUARD / DESKTOP</span><small>LOCAL WORKFLOW</small></div><div className="hero-console-screen"><div className="hero-console-grid"></div><div className="hero-scan-ring"><ScanEye size={38}/></div><span className="hero-console-tag">AI-ASSISTED SIGNAL</span><div className="hero-console-bars"><i></i><i></i><i></i><i></i><i></i></div></div><div className="hero-console-bottom"><span>01 / CAPTURE</span><span>02 / REVIEW</span><span>03 / RESPOND</span></div></div><span className="hero-float-tag">HUMAN REVIEW REQUIRED</span></div>
       </div>
     </section>
+    <StoryScroll />
     <section className="section platform-section" id="platform" data-theme="dark"><div className="section-shell">
       <div className="section-heading"><div><span className="eyebrow"><span className="eyebrow-line" /> The platform</span><h2>From camera feeds to<br /><em>clearer decisions</em></h2></div><p>Security teams already have a lot to watch. CampusGuard is being built to help make the important moments easier to find, review and document.</p></div>
       <div className="feature-grid">{features.map(({ number, icon: Icon, title, text }) => <article className="feature-card" key={number}><div className="feature-top"><span>{number}</span><Icon size={21} strokeWidth={1.5} /></div><h3>{title}</h3><p>{text}</p><span className="feature-arrow"><ArrowUpRight size={17} /></span></article>)}</div>
