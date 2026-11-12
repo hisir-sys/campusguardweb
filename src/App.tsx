@@ -732,7 +732,7 @@ function App() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduceMotion || !('IntersectionObserver' in window)) return
     const targets = document.querySelectorAll(
-      '.section-heading, .feature-card, .pricing-card, .pricing-disclaimer, .neural-heading, .neural-visual, .pipeline-node, .interface-copy, .interface-art, .dark-band-inner > *, .faq-layout > *, .final-cta-inner, .strip-inner > span:not(.strip-label), .public-editorial-heading, .public-challenge-card, .public-workflow-heading > *, .public-workflow-step, .public-value-copy, .public-value-art'
+      '.section-heading, .feature-card, .pricing-card, .pricing-disclaimer, .neural-heading, .neural-visual, .pipeline-node, .interface-copy, .interface-art, .dark-band-inner > *, .faq-layout > *, .faq-intro, .faq-item, .final-cta-inner, .final-cta-actions > *, .strip-inner > *, .public-editorial-heading, .public-challenge-card, .public-workflow-heading > *, .public-workflow-step, .public-value-copy, .public-value-art, .public-value-list li, .how-steps article, .download-copy, .download-visual, .story-head, .story-step, .story-stage, .customer-resource-section .section-shell > .eyebrow, .customer-resource-section .section-shell > h2, .customer-resource-section .section-shell > .customer-resource-lead, .customer-flowchart article, .customer-neural-visual, .customer-pilot-grid article, .customer-download-card, .site-footer .footer-top > *, .site-footer .footer-bottom > *'
     )
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -744,7 +744,7 @@ function App() {
     }, { threshold: 0.14, rootMargin: '0px 0px -35px 0px' })
     targets.forEach((target, index) => {
       target.classList.add('cg-reveal')
-      if (target instanceof HTMLElement) target.style.setProperty('--cg-reveal-delay', `${Math.min(index % 3, 2) * 90}ms`)
+      if (target instanceof HTMLElement) target.style.setProperty('--cg-reveal-delay', `${Math.min(index % 5, 4) * 85}ms`)
       observer.observe(target)
     })
     return () => observer.disconnect()
