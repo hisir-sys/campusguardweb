@@ -25,9 +25,10 @@ export default async function handler(req: any, res: any) {
     const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
     const { data: auth, error: authError } = await db.auth.getUser(token)
     if (authError || !auth.user) return res.status(401).json({ error: 'Your session is invalid. Please sign in again.' })
-    const { data: access, error: accessError } = await db.from('access_applications').select('status').eq('auth_user_id', auth.user.id).maybeSingle()
+    const { data: access, error: accessError } = await db.from('access_applications').select('login_status,payment_status,status').eq('auth_user_id', auth.user.id).maybeSingle()
     if (accessError) return res.status(503).json({ error: 'Could not verify your account.' })
-    if (access?.status !== 'approved') return res.status(403).json({ error: 'Your account is not approved.' })
+    const loginApproved = access?.login_status === 'approved' || (!access?.login_status && access?.status === 'approved')
+    if (!loginApproved || access?.payment_status !== 'approved') return res.status(403).json({ error: 'Both login and payment approvals are required for CampusGuard access.' })
 
     const now = new Date().toISOString()
     const online = server?.cameras_online
