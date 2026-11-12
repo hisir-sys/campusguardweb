@@ -3325,3 +3325,41 @@ main[data-site-theme="dark"] .customer-ai-section .customer-resource-note,
 main[data-site-theme="dark"] .customer-download-section .download-note {
   color: #a8b0bf !important;
 }
+
+
+/* Remaining alternating content bands use the same dark-only palette. */
+main[data-site-theme="dark"] .dark-band,
+main[data-site-theme="dark"] .how-it-works-section,
+main[data-site-theme="dark"] .faq-section {
+  background: #11151d !important;
+  color: #eef1f6 !important;
+}
+main[data-site-theme="dark"] .principle-strip {
+  background: #0b0e14 !important;
+  color: #dce3ee !important;
+  border-color: #293241 !important;
+}
+main[data-site-theme="dark"] .dark-band h2,
+main[data-site-theme="dark"] .how-it-works-section h2,
+main[data-site-theme="dark"] .faq-section h2,
+main[data-site-theme="dark"] .how-it-works-section h3,
+main[data-site-theme="dark"] .faq-section h3 {
+  color: #f1f3f7 !important;
+}
+main[data-site-theme="dark"] .dark-band p,
+main[data-site-theme="dark"] .how-it-works-section p,
+main[data-site-theme="dark"] .faq-section p,
+main[data-site-theme="dark"] .how-it-works-section .eyebrow,
+main[data-site-theme="dark"] .faq-section .eyebrow {
+  color: #a8b0bf !important;
+}
+main[data-site-theme="dark"] .how-it-works-section .how-steps article,
+main[data-site-theme="dark"] .faq-section .faq-item {
+  background: linear-gradient(145deg, #1a202b, #131821) !important;
+  border-color: #343e4e !important;
+  color: #eef1f6 !important;
+}
+main[data-site-theme="dark"] .principle-strip .strip-inner,
+main[data-site-theme="dark"] .principle-strip .strip-inner > span {
+  color: #c1cad8 !important;
+}
