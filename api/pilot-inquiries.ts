@@ -23,15 +23,17 @@ export default async function handler(req: any, res: any) {
   const organisation = clean(body.organisation, 180)
   const topic = clean(body.topic, 80)
   const message = typeof body.message === 'string' ? body.message.trim().slice(0, 3000) : ''
+  const privacyConsent = body.privacy_consent === true
+  const privacyNoticeVersion = typeof body.privacy_notice_version === 'string' ? body.privacy_notice_version.slice(0, 32) : ''
   const allowedTopics = new Set(['Request pilot details', 'Plan a deployment', 'Discuss multi-site needs'])
-  if (!name || !email || !organisation || !topic || !allowedTopics.has(topic) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!name || !email || !organisation || !topic || !allowedTopics.has(topic) || !privacyConsent || privacyNoticeVersion !== '2026-11-12' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Please check your name, email, organisation and inquiry type.' })
   }
   try {
     const supabase = createClient(supabaseUrl, serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     })
-    const { error } = await supabase.from('pilot_inquiries').insert({ name, email, organisation, topic, message })
+    const { error } = await supabase.from('pilot_inquiries').insert({ name, email, organisation, topic, message, privacy_notice_version: privacyNoticeVersion, privacy_consent_at: new Date().toISOString() })
     if (error) {
       console.error('Pilot inquiry insert failed:', JSON.stringify({ code: error.code, message: error.message }))
       return res.status(500).json({ error: 'We could not save your inquiry. Please try again later.' })
