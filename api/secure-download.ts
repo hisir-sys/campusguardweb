@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 export default async function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 'no-store, max-age=0')
   res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('Vary', 'Authorization')
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'Method not allowed.' }) }
   const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY
   const token = typeof req.headers.authorization === 'string' && req.headers.authorization.startsWith('Bearer ') ? req.headers.authorization.slice(7) : ''
@@ -12,8 +13,10 @@ export default async function handler(req: any, res: any) {
     const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
     const { data: auth, error: authError } = await db.auth.getUser(token)
     if (authError || !auth.user) return res.status(401).json({ error: 'Your session is invalid.' })
-    const { data: request, error } = await db.from('download_requests').select('status,payment_confirmed').eq('user_id', auth.user.id).eq('status', 'approved').eq('payment_confirmed', true).order('reviewed_at', { ascending: false }).limit(1).maybeSingle()
-    if (error || !request) return res.status(403).json({ error: 'Download access has not been approved by the owner.' })
+    const { data: app, error } = await db.from('access_applications').select('login_status,payment_status,status').eq('auth_user_id', auth.user.id).maybeSingle()
+    if (error) return res.status(503).json({ error: 'Could not verify your approvals.' })
+    const loginApproved = app?.login_status === 'approved' || (!app?.login_status && app?.status === 'approved')
+    if (!loginApproved || app?.payment_status !== 'approved') return res.status(403).json({ error: 'Both login and payment approvals are required before downloading CampusGuard.' })
     const { data: file, error: fileError } = await db.storage.from('campusguard-downloads').createSignedUrl('CampusGuard.exe', 90, { download: 'CampusGuard.exe' })
     if (fileError || !file?.signedUrl) return res.status(503).json({ error: 'The private installer is not uploaded yet. Please contact the owner.' })
     return res.status(200).json({ url: file.signedUrl })
