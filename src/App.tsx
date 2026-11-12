@@ -1009,7 +1009,7 @@ function App() {
       </div>
     </section>
 
-    <section className="dark-band" id="principles" data-theme="dark"><div className="section-shell dark-band-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> A more thoughtful approach</span><h2>Technology should<br />support <em>people</em></h2></div><p>CampusGuard is designed as an aid to awareness and review—not a substitute for trained staff, established safety procedures or human judgement.</p><div className="dark-band-mark"><ShieldCheck size={35} strokeWidth={1} /></div></div></section>
+    <section className="dark-band" id="principles" data-theme="light"><div className="section-shell dark-band-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> A more thoughtful approach</span><h2>Technology should<br />support <em>people</em></h2></div><p>CampusGuard is designed as an aid to awareness and review—not a substitute for trained staff, established safety procedures or human judgement.</p><div className="dark-band-mark"><ShieldCheck size={35} strokeWidth={1} /></div></div></section>
 
     <section className="principle-strip" data-theme="dark"><div className="strip-inner"><span className="strip-label">A DIFFERENT KIND OF MONITORING</span><span><ShieldCheck size={17} /> Human-led decisions</span><span><Monitor size={17} /> Desktop-first workflow</span><span><LockKeyhole size={17} /> Privacy-aware by design</span></div></section>
 
@@ -1024,7 +1024,7 @@ function App() {
         <div className="how-steps"><article><span>01</span><h3>Connect</h3><p>Set up compatible cameras in the Windows desktop application.</p></article><article><span>02</span><h3>Understand</h3><p>Local AI analysis can surface a potential event for attention.</p></article><article><span>03</span><h3>Review</h3><p>Trained staff check the context and decide what to do next.</p></article></div>
       </div>
     </section>
-    <section className="faq-section" id="faqs" data-theme="dark">
+    <section className="faq-section" id="faqs" data-theme="light">
       <div className="section-shell faq-shell">
         <div className="faq-intro"><span className="eyebrow"><span className="eyebrow-line" /> Common questions</span><h2>Good questions.<br /><em>Clear answers</em></h2><p>A quick guide to what CampusGuard is designed to do—and what it is not.</p></div>
         <div className="faq-list">
