@@ -3587,3 +3587,84 @@ main[data-site-theme="dark"] .public-value-float small {
   .story-control,.story-progress button { transition: none !important; }
   .story-control:hover:not(:disabled) { transform: none; }
 }
+
+
+/* Requested editorial rhythm: light principles, dark process, light FAQ, dark CTA. */
+main[data-site-theme="dark"] .dark-band {
+  background: #f4f5f6 !important;
+  color: #17191d !important;
+}
+main[data-site-theme="dark"] .dark-band .dark-band-inner h2,
+main[data-site-theme="dark"] .dark-band .dark-band-inner h2 em {
+  color: #17191d !important;
+}
+main[data-site-theme="dark"] .dark-band .dark-band-inner > p,
+main[data-site-theme="dark"] .dark-band .eyebrow {
+  color: #626874 !important;
+}
+main[data-site-theme="dark"] .dark-band .dark-band-mark {
+  color: #566b8c !important;
+}
+main[data-site-theme="dark"] .faq-section {
+  background: #f4f5f6 !important;
+  color: #17191d !important;
+}
+main[data-site-theme="dark"] .faq-section h2,
+main[data-site-theme="dark"] .faq-section h2 em {
+  color: #17191d !important;
+}
+main[data-site-theme="dark"] .faq-section .eyebrow,
+main[data-site-theme="dark"] .faq-section .faq-layout > div:first-child > p {
+  color: #626874 !important;
+}
+main[data-site-theme="dark"] .faq-section .faq-list,
+main[data-site-theme="dark"] .faq-section .faq-item {
+  border-color: #d5d8de !important;
+}
+main[data-site-theme="dark"] .faq-section .faq-item > button {
+  color: #20242b !important;
+}
+main[data-site-theme="dark"] .faq-section .faq-item > button svg {
+  color: #687386 !important;
+}
+main[data-site-theme="dark"] .faq-section .faq-item > p {
+  color: #626874 !important;
+}
+main[data-site-theme="dark"] .how-it-works-section {
+  background: #0b0e14 !important;
+  color: #f1f3f7 !important;
+}
+main[data-site-theme="dark"] .how-it-works-section .section-heading h2 {
+  color: #f1f3f7 !important;
+}
+main[data-site-theme="dark"] .how-it-works-section .section-heading h2 em {
+  color: #a8b8d1 !important;
+}
+main[data-site-theme="dark"] .how-it-works-section .section-heading > p,
+main[data-site-theme="dark"] .how-it-works-section .eyebrow {
+  color: #a8b0bf !important;
+}
+main[data-site-theme="dark"] .how-it-works-section .how-steps article {
+  background: linear-gradient(145deg, #1a202b, #111720) !important;
+  border-color: #354155 !important;
+}
+main[data-site-theme="dark"] .how-it-works-section .how-steps h3 {
+  color: #f1f3f7 !important;
+}
+main[data-site-theme="dark"] .how-it-works-section .how-steps p {
+  color: #a8b0bf !important;
+}
+main[data-site-theme="dark"] .final-cta-section {
+  background: #090b10 !important;
+  color: #f1f3f7 !important;
+}
+main[data-site-theme="dark"] .final-cta-section h2 {
+  color: #f1f3f7 !important;
+}
+main[data-site-theme="dark"] .final-cta-section h2 em {
+  color: #a8b8d1 !important;
+}
+main[data-site-theme="dark"] .final-cta-section .eyebrow,
+main[data-site-theme="dark"] .final-cta-section p {
+  color: #a8b0bf !important;
+}
