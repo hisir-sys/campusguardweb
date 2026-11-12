@@ -10,6 +10,13 @@ React + TypeScript + Vite website and customer portal for CampusGuard, with Supa
 - The installer is served through a short-lived signed URL from the private `campusguard-downloads` storage bucket.
 - The admin console keeps the existing visual design and presents both approval controls on the same application card. There is no second user-facing download application.
 
+## Privacy and Supabase setup
+
+- The public privacy notice is available at `/privacy` and linked in the website footer and both data-submission forms.
+- Access applications and pilot inquiries require an affirmative privacy-notice checkbox. The accepted notice version and timestamp are recorded in Supabase.
+- Run `supabase/privacy-consent.sql` once in the Supabase SQL Editor to add the consent-record columns before deploying this code.
+- The notice documents the fields currently collected by the website, customer sync metadata, providers, browser session storage, and the current manual deletion process. Confirm operator legal identity, provider regions, and retention procedures before treating it as final legal compliance advice.
+
 ## Supabase setup
 
 Before deploying this version, run `supabase/single-application-approvals.sql` once in the Supabase SQL Editor. It adds the two approval states and reviewer timestamps to `access_applications`, then safely migrates existing decisions:
