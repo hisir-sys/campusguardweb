@@ -29,8 +29,10 @@ export default async function handler(req: any, res: any) {
   const role = textField(body.role, 100)
   const purpose = typeof body.purpose === 'string' ? body.purpose.trim().slice(0, 2000) : ''
   const password = typeof body.password === 'string' ? body.password : ''
+  const privacyConsent = body.privacy_consent === true
+  const privacyNoticeVersion = typeof body.privacy_notice_version === 'string' ? body.privacy_notice_version.slice(0, 32) : ''
 
-  if (!name || !email || !organisation || !role || !password) {
+  if (!name || !email || !organisation || !role || !password || !privacyConsent || privacyNoticeVersion !== '2026-11-12') {
     return res.status(400).json({ error: 'Please complete all required fields.' })
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -63,7 +65,7 @@ export default async function handler(req: any, res: any) {
 
     const { error } = await supabase.from('access_applications').insert({
       auth_user_id: authData.user.id,
-      name, email, organisation, role, purpose, status: 'pending', login_status: 'pending', payment_status: 'pending',
+      name, email, organisation, role, purpose, status: 'pending', login_status: 'pending', payment_status: 'pending', privacy_notice_version: privacyNoticeVersion, privacy_consent_at: new Date().toISOString(),
     })
     if (error) {
       console.error('Access application insert failed:', JSON.stringify({ code: error.code, message: error.message, hint: error.hint }))
