@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowLeft, ArrowRight, Pause, Play, RotateCcw } from 'lucide-react'
 
 const SCENES = [
@@ -11,75 +11,64 @@ const SCENES = [
 export default function StoryScroll() {
   const [active, setActive] = useState(0)
   const [playing, setPlaying] = useState(false)
-  const refs = useRef<(HTMLElement | null)[]>([])
   const scene = SCENES[active]
 
   useEffect(() => {
     if (!playing) return
     const timer = window.setInterval(() => {
-      setActive(current => Math.min(SCENES.length - 1, current + 1))
+      setActive(current => {
+        if (current >= SCENES.length - 1) {
+          window.clearInterval(timer)
+          setPlaying(false)
+          return current
+        }
+        return current + 1
+      })
     }, 3200)
     return () => window.clearInterval(timer)
   }, [playing])
 
-  useEffect(() => {
-    if (active === SCENES.length - 1) setPlaying(false)
-  }, [active])
-
-  useEffect(() => {
-    if (!('IntersectionObserver' in window)) return
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && !playing) setActive(Number((entry.target as HTMLElement).dataset.i))
-      })
-    }, { rootMargin: '-42% 0px -42% 0px', threshold: 0 })
-    refs.current.forEach(el => el && obs.observe(el))
-    return () => obs.disconnect()
-  }, [playing])
-
   const selectScene = (index: number) => { setActive(index); setPlaying(false) }
-  const play = () => { if (active === SCENES.length - 1) setActive(0); setPlaying(true) }
+  const play = () => {
+    if (active === SCENES.length - 1) setActive(0)
+    setPlaying(true)
+  }
 
   return (
     <section className="story-section" id="story" data-theme="dark" aria-labelledby="story-title">
       <div className="section-shell">
         <div className="story-head">
-          <span className="eyebrow"><span className="eyebrow-line" /> Interactive product walkthrough</span>
-          <h2 id="story-title">See how CampusGuard works, step by step</h2>
-          <p className="story-intro">Choose a stage, or play the walkthrough to watch the camera-to-review journey unfold.</p>
+          <span className="eyebrow"><span className="eyebrow-line" /> One incident, start to finish</span>
+          <h2 id="story-title">From a quiet corridor<br />to a reviewed report</h2>
         </div>
         <div className="story-grid">
-          <div className="story-steps" aria-label="CampusGuard workflow stages">
-            {SCENES.map((s, i) => (
-              <button type="button" key={s.id} data-i={i} ref={el => { refs.current[i] = el }} className={`story-step${i === active ? ' is-active' : ''}`} onClick={() => selectScene(i)} aria-pressed={i === active}>
-                <span className="story-time">{s.time} · 0{i + 1}</span>
-                <span className="story-step-title">{s.title}</span>
-                <span className="story-step-body">{s.body}</span>
-                <span className="story-step-meta">{s.meta.map(m => <i key={m}>{m}</i>)}</span>
-              </button>
-            ))}
+          <div className="story-story-copy" aria-live="polite">
+            <span className="story-time">{scene.time}</span>
+            <h3>{scene.title}</h3>
+            <p>{scene.body}</p>
+            <div className="story-step-meta">{scene.meta.map(item => <i key={item}>{item}</i>)}</div>
+            <div className="story-controls">
+              <button type="button" className="story-control story-control-secondary" onClick={() => selectScene(0)} aria-label="Restart walkthrough"><RotateCcw size={14}/> Restart</button>
+              <div className="story-control-center">
+                <button type="button" className="story-control" onClick={() => selectScene(Math.max(0, active - 1))} disabled={active === 0} aria-label="Previous stage"><ArrowLeft size={15}/></button>
+                <button type="button" className="story-control story-play" onClick={() => playing ? setPlaying(false) : play()}>{playing ? <><Pause size={14}/> Pause</> : <><Play size={14}/> {active === SCENES.length - 1 ? 'Replay' : 'Play'}</>}</button>
+                <button type="button" className="story-control" onClick={() => selectScene(Math.min(SCENES.length - 1, active + 1))} disabled={active === SCENES.length - 1} aria-label="Next stage"><ArrowRight size={15}/></button>
+              </div>
+            </div>
           </div>
           <div className="story-stage">
-            <div className={`story-screen tone-${scene.tone}`} aria-live="polite" aria-label={`Walkthrough stage: ${scene.label}`}>
-              <div className="story-bar"><span><i className="story-dot" /> CampusGuard · {scene.label}</span><span>{scene.time}</span></div>
+            <div className={`story-screen tone-${scene.tone}`} aria-live="polite" aria-label={`Illustrative walkthrough stage: ${scene.label}`}>
+              <div className="story-bar"><span><i className="story-dot" /> Camera 04 · Corridor B</span><span>{scene.time}</span></div>
               <div className="story-floor">
                 <span className="story-figure f1" /><span className="story-figure f2" /><span className="story-figure f3" />
                 <span className="story-box" /><span className="story-scan-beam" />
                 <span className="story-event-chip">{scene.label === 'review' ? 'HUMAN REVIEW' : scene.label.toUpperCase()}</span>
               </div>
-              <div className="story-foot"><span>{scene.label}</span><div className="story-meter"><b style={{ width: `${scene.score}%` }} /></div><strong>{scene.id === 'review' ? 'Reviewed' : `${scene.score}% signal`}</strong></div>
+              <div className="story-foot"><span>{scene.label}</span><div className="story-meter"><b style={{ width: `${scene.score}%` }} /></div><strong>{scene.id === 'review' ? 'Reviewed' : `${scene.score}%`}</strong></div>
             </div>
-            <div className="story-live-detail" key={scene.id}><b>{scene.label} / What happens here</b><p>{scene.detail}</p></div>
-            <div className="story-controls">
-              <button type="button" className="story-control story-control-secondary" onClick={() => { setPlaying(false); setActive(0) }} aria-label="Restart walkthrough"><RotateCcw size={15}/> Restart</button>
-              <div className="story-control-center">
-                <button type="button" className="story-control" onClick={() => { setPlaying(false); setActive(current => Math.max(0, current - 1)) }} disabled={active === 0} aria-label="Previous stage"><ArrowLeft size={16}/></button>
-                <button type="button" className="story-control story-play" onClick={() => playing ? setPlaying(false) : play()}>{playing ? <><Pause size={15}/> Pause</> : <><Play size={15}/> {active === SCENES.length - 1 ? 'Replay' : 'Play walkthrough'}</>}</button>
-                <button type="button" className="story-control" onClick={() => { setPlaying(false); setActive(current => Math.min(SCENES.length - 1, current + 1)) }} disabled={active === SCENES.length - 1} aria-label="Next stage"><ArrowRight size={16}/></button>
-              </div>
-            </div>
-            <div className="story-progress" aria-label={`Stage ${active + 1} of ${SCENES.length}`}>{SCENES.map((s, i) => <button key={s.id} type="button" onClick={() => selectScene(i)} className={i <= active ? 'is-complete' : ''} aria-label={`Go to ${s.label}`} />)}</div>
-            <p className="story-caption">Illustrative workflow only — not live footage, a real alert or a prediction about an individual.</p>
+            <p className="story-caption">Illustration of the workflow, not live footage.</p>
+            <div className="story-progress" aria-label={`Stage ${active + 1} of ${SCENES.length}`}>{SCENES.map((item, index) => <button key={item.id} type="button" onClick={() => selectScene(index)} className={index <= active ? 'is-complete' : ''} aria-label={`Go to ${item.label}`} />)}</div>
+            <p className="story-detail">{scene.detail}</p>
           </div>
         </div>
       </div>
