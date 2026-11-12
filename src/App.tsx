@@ -192,14 +192,17 @@ function LoginModal({ close, onApply, onApproved }: { close: () => void; onApply
         await supabase.auth.signOut()
         throw new Error(typeof result.error === 'string' ? result.error : 'We could not verify your access status.')
       }
-      if (result.status !== 'approved') {
+      if (result.access_granted !== true) {
         await supabase.auth.signOut()
         setMessageKind('info')
-        setMessage(result.status === 'pending'
-          ? 'Your application is still pending review. You can sign in after the CampusGuard team approves it.'
-          : result.status === 'rejected'
-            ? 'Your application has not been approved. Please contact the CampusGuard team if you need help.'
-            : 'This account does not have a linked access application. Please request early access.')
+        if (result.status === 'missing') {
+          setMessage('This account does not have a linked access application. Please request early access.')
+        } else if (result.login_status === 'rejected' || result.payment_status === 'rejected') {
+          setMessage('This application was not approved. Please contact the CampusGuard team if you need help.')
+        } else {
+          const waiting = [result.login_status !== 'approved' ? 'login approval' : '', result.payment_status !== 'approved' ? 'payment approval' : ''].filter(Boolean)
+          setMessage('Your application is received. Still awaiting ' + waiting.join(' and ') + '. Both approvals are required before you can sign in and use CampusGuard.')
+        }
         return
       }
       onApproved()
