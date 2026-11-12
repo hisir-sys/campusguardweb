@@ -1,33 +1,54 @@
 # CampusGuard Website
 
-A React + TypeScript + Vite website prototype for CampusGuard, designed around a cinematic dark hero, restrained lime accents, editorial typography, and light explanatory sections.
+React + TypeScript + Vite website and customer portal for CampusGuard, with Supabase authentication, owner-reviewed access applications, and a private Windows installer.
 
-## Current prototype
+## Access approval workflow
 
-- Responsive landing page and navigation
-- Product and workflow explanations
-- Illustrative CSS-built desktop monitoring visual (clearly labelled as illustrative)
-- Expandable FAQ
-- Early-access application form UI
-- Customer portal status modal
-- Accessible labels, focus styles, and reduced-motion support
+- A user submits **one early-access application** and creates one account.
+- The owner reviews that application with two independent decisions: **Login approval** and **Payment approval**.
+- The user can sign in, use the customer portal, sync desktop metadata, and download the installer only after **both** decisions are approved.
+- The installer is served through a short-lived signed URL from the private `campusguard-downloads` storage bucket.
+- The admin console keeps the existing visual design and presents both approval controls on the same application card. There is no second user-facing download application.
 
-## Important prototype limitations
+## Supabase setup
 
-The access form is **frontend-only**. It does not transmit or store applicant data. The customer portal is not authenticated and does not show real incident data. Do not collect real applicant information until a secure backend, server-side approval workflow, email/invitation flow, and organisation-scoped access controls have been implemented.
+Before deploying this version, run `supabase/single-application-approvals.sql` once in the Supabase SQL Editor. It adds the two approval states and reviewer timestamps to `access_applications`, then safely migrates existing decisions:
+- Existing approved/rejected access applications become the initial login decision.
+- Payment becomes approved only when a legacy download request was explicitly approved **and** `payment_confirmed = true`.
+- All other legacy payment states remain pending (or preserve a latest rejection).
 
-## Run locally
+Keep `campusguard-downloads` as a **private** Storage bucket and upload the installer as `CampusGuard.exe`.
+
+Required server environment variables:
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `ADMIN_EMAIL`
+
+Frontend environment variables:
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+The service-role key must never be exposed to the browser.
+
+## Local development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Create a production build with:
+Production build:
 
 ```bash
 npm run build
 ```
+
+## Security boundaries
+
+- Approval is checked server-side for sign-in status, desktop metadata sync, and installer downloads.
+- Website sync stores summary and incident metadata only; video and footage remain on the local desktop/server workflow.
+- The Supabase service role is used only in serverless API routes.
+- Owner actions require a verified Supabase session whose email matches `ADMIN_EMAIL`.
 
 ## Typography
 
@@ -35,13 +56,3 @@ npm run build
 - DM Sans — body copy and controls
 - Instrument Serif — editorial italic accents
 - DM Mono — technical labels and timestamps
-
-Fonts are loaded from Google Fonts. A production deployment should review external font/privacy requirements and can self-host licensed font files if preferred.
-
-## Planned next steps
-
-1. Connect a secure application database and admin review workflow.
-2. Add invitation-based authentication and organisation membership.
-3. Build an incident portal with strict server-side/database tenant isolation.
-4. Add optional, explicitly scoped desktop incident-metadata sync only after the portal security model is reviewed.
-5. Deploy the static frontend on a free-tier host and verify build/hosting limits.
