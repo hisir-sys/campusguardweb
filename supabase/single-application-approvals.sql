@@ -1,5 +1,6 @@
 -- One application, two independent owner approvals.
 -- Run this migration once in the Supabase SQL Editor before deploying the matching website code.
+-- Safe to re-run: existing non-pending decisions are not overwritten.
 
 alter table public.access_applications
   add column if not exists login_status text not null default 'pending'
@@ -11,17 +12,20 @@ alter table public.access_applications
   add column if not exists payment_reviewed_at timestamptz,
   add column if not exists payment_reviewed_by text;
 
--- Preserve existing login decisions.
+-- Carry forward legacy login decisions only where the new decision is still pending.
 update public.access_applications
 set login_status = case
   when status = 'approved' then 'approved'
   when status = 'rejected' then 'rejected'
-  else 'pending'
-end;
+  else login_status
+end
+where login_status = 'pending'
+  and status in ('approved', 'rejected');
 
--- Carry forward only the latest legacy download decision.
+-- Carry forward the latest legacy download decision only when a legacy request exists
+-- and the new payment decision is still pending.
 update public.access_applications a
-set payment_status = coalesce((
+set payment_status = (
   select case
     when d.status = 'approved' and d.payment_confirmed = true then 'approved'
     when d.status = 'rejected' then 'rejected'
@@ -31,9 +35,15 @@ set payment_status = coalesce((
   where d.user_id = a.auth_user_id
   order by d.requested_at desc
   limit 1
-), 'pending');
+)
+where a.payment_status = 'pending'
+  and exists (
+    select 1
+    from public.download_requests d
+    where d.user_id = a.auth_user_id
+  );
 
--- The legacy aggregate status remains in sync for older integrations.
+-- Keep the legacy aggregate status aligned with the two decisions.
 update public.access_applications
 set status = case
   when login_status = 'rejected' or payment_status = 'rejected' then 'rejected'
