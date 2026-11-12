@@ -276,13 +276,12 @@ function AdminPanel() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
-  const [applications, setApplications] = useState<Array<{id:string;name:string;email:string;organisation:string;role:string;purpose:string;status:string;created_at:string}>>([])
+  const [applications, setApplications] = useState<Array<{id:string;name:string;email:string;organisation:string;role:string;purpose:string;status:string;login_status:string;payment_status:string;created_at:string}>>([])
   const [inquiries, setInquiries] = useState<Array<{id:string;name:string;email:string;organisation:string;topic:string;message:string;created_at:string}>>([])
-  const [downloadRequests, setDownloadRequests] = useState<Array<{id:string;user_email:string;user_name:string|null;product:string;status:string;payment_confirmed:boolean;requested_at:string}>>([])
   const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 })
   const [inquiryStats, setInquiryStats] = useState({ total: 0, pilots: 0, deployments: 0, multiSite: 0 })
   const [filter, setFilter] = useState('pending')
-  const [section, setSection] = useState<'all' | 'applications' | 'inquiries' | 'downloads'>('all')
+  const [section, setSection] = useState<'all' | 'applications' | 'inquiries'>('all')
 
   const load = async (token = ownerToken) => {
     if (!token) return
@@ -295,10 +294,6 @@ function AdminPanel() {
       if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Owner access could not be verified.')
       setApplications(result.applications || [])
       setInquiries(result.inquiries || [])
-      const downloadsResponse = await fetch('/api/admin-download-requests', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
-      const downloadsResult = await downloadsResponse.json().catch(() => ({}))
-      if (!downloadsResponse.ok) throw new Error(downloadsResult.error || 'Could not load download requests.')
-      setDownloadRequests(downloadsResult.requests || [])
       setStats(result.stats || { pending: 0, approved: 0, rejected: 0 })
       setInquiryStats(result.inquiryStats || { total: 0, pilots: 0, deployments: 0, multiSite: 0 })
       setAuthenticated(true)
@@ -377,7 +372,7 @@ function AdminPanel() {
     }
   }
 
-  const decide = async (id: string, status: 'approved' | 'rejected') => {
+  const decide = async (id: string, decision: 'login' | 'payment', status: 'approved' | 'rejected') => {
     setBusy(true)
     setError('')
     setNotice('')
@@ -385,11 +380,11 @@ function AdminPanel() {
       const response = await fetch('/api/admin-applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ownerToken}` },
-        body: JSON.stringify({ id, status }),
+        body: JSON.stringify({ id, decision, status }),
       })
       const result = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Could not update application.')
-      setNotice(status === 'approved' ? 'Application approved. The user can now sign in.' : 'Application rejected.')
+      setNotice(`${decision === 'login' ? 'Login' : 'Payment'} approval ${status}. Full app access is granted only when both are approved.`)
       await load(ownerToken)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not update application.')
@@ -436,17 +431,15 @@ function AdminPanel() {
     )
   }
 
-  const visibleApplications = applications.filter(app => filter === 'all' || app.status === filter)
+  const visibleApplications = applications.filter(app => filter === 'all' || (filter === 'pending' ? app.login_status === 'pending' || app.payment_status === 'pending' : filter === 'approved' ? app.login_status === 'approved' && app.payment_status === 'approved' : app.login_status === 'rejected' || app.payment_status === 'rejected'))
   const allNotifications = [
     ...applications.map(item => ({ id: 'application-' + item.id, kind: 'Access application', name: item.name, email: item.email, organisation: item.organisation, detail: [item.role, item.purpose].filter(Boolean).join(' · '), status: item.status, date: item.created_at, subject: 'CampusGuard early access follow-up', body: 'Hello ' + item.name + ',\n\nThank you for your CampusGuard early access application.\n\n[Add your update here: application status and next steps.]\n\nBest regards,\nCampusGuard' })),
     ...inquiries.map(item => ({ id: 'inquiry-' + item.id, kind: 'Pilot inquiry', name: item.name, email: item.email, organisation: item.organisation, detail: [item.topic, item.message].filter(Boolean).join(' · '), status: 'new', date: item.created_at, subject: 'CampusGuard inquiry follow-up: ' + item.topic, body: 'Hello ' + item.name + ',\n\nThank you for contacting CampusGuard about ' + item.topic + '.\n\n[Add your response and next steps here.]\n\nBest regards,\nCampusGuard' })),
-    ...downloadRequests.map(item => ({ id: 'download-' + item.id, kind: 'Download request', name: item.user_name || item.user_email, email: item.user_email, organisation: item.product, detail: 'Payment: ' + (item.payment_confirmed ? 'confirmed' : 'not confirmed'), status: item.status, date: item.requested_at, subject: 'CampusGuard download request update', body: 'Hello ' + (item.user_name || item.user_email) + ',\n\nThank you for your CampusGuard desktop download request.\n\n[Add your update here: request status, payment confirmation, approval, or next steps.]\n\nBest regards,\nCampusGuard' })),
   ].sort((a, b) => (Date.parse(b.date || '') || 0) - (Date.parse(a.date || '') || 0))
   const analyticsCounts = [
     { label: 'Access applications', value: applications.length },
     { label: 'Pilot inquiries', value: inquiries.length },
-    { label: 'Download requests', value: downloadRequests.length },
-    { label: 'Pending items', value: applications.filter(x => x.status === 'pending').length + downloadRequests.filter(x => x.status === 'pending').length },
+    { label: 'Pending approvals', value: applications.filter(x => x.login_status === 'pending' || x.payment_status === 'pending').length },
   ]
   const analyticsMax = Math.max(1, ...analyticsCounts.map(item => item.value))
 
@@ -455,7 +448,7 @@ function AdminPanel() {
       {header}
       <section className="admin-content">
         <div className="admin-title-row">
-          <div><span className="eyebrow">Owner console</span><h1>{section === 'all' ? 'All notifications' : section === 'applications' ? 'Applications' : section === 'inquiries' ? 'Pilot inquiries' : 'Download requests'}</h1><p>Private owner workspace for access requests and pilot/deployment inquiries.</p></div>
+          <div><span className="eyebrow">Owner console</span><h1>{section === 'all' ? 'All notifications' : section === 'applications' ? 'Applications' : 'Pilot inquiries'}</h1><p>Private owner workspace for access requests and pilot/deployment inquiries.</p></div>
           <button className="button button-outline" onClick={() => void logout()}>Log out</button>
         </div>
         <div className="admin-commandline">
@@ -496,8 +489,8 @@ function AdminPanel() {
         <div className="admin-list-heading">
           <h2>Owner workspace</h2>
           <div className="admin-toolbar">
-            <select aria-label="Admin section" value={section} onChange={e => setSection(e.target.value as 'applications' | 'inquiries' | 'downloads')}>
-              <option value="all">All notifications</option><option value="applications">Access applications</option><option value="inquiries">Pilot inquiries</option><option value="downloads">Download requests</option>
+            <select aria-label="Admin section" value={section} onChange={e => setSection(e.target.value as 'all' | 'applications' | 'inquiries')}>
+              <option value="all">All notifications</option><option value="applications">Access applications</option><option value="inquiries">Pilot inquiries</option>
             </select>
             <button className="button button-outline" onClick={() => void load()} disabled={busy}>Refresh</button>
           </div>
@@ -507,7 +500,7 @@ function AdminPanel() {
 
         {section === 'all' && (
           <div className="admin-section">
-            <div className="admin-list-heading"><h2>All incoming activity</h2><p>Applications, pilot inquiries and download requests, newest first.</p></div>
+            <div className="admin-list-heading"><h2>All incoming activity</h2><p>Applications and pilot inquiries, newest first.</p></div>
             <div className="admin-application-list">
               {allNotifications.map(item => (
                 <article className="admin-application" key={item.id}>
@@ -515,8 +508,7 @@ function AdminPanel() {
                   <dl><div><dt>Organisation / product</dt><dd>{item.organisation || '—'}</dd></div><div><dt>Received</dt><dd>{item.date ? new Date(item.date).toLocaleString() : '—'}</dd></div></dl>
                   {item.detail && <p className="admin-purpose">{item.detail}</p>}
                   <div className="admin-actions"><a className="button button-outline" href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(item.email) + '&su=' + encodeURIComponent(item.subject) + '&body=' + encodeURIComponent(item.body)} target="_blank" rel="noopener noreferrer">Reply by email <ArrowUpRight size={15}/></a></div>
-                  {item.status === 'pending' && item.kind === 'Access application' && <div className="admin-actions admin-notification-decisions"><button className="button button-lime" disabled={busy} onClick={() => void decide(item.id.replace('application-', ''), 'approved')}><Check size={15} /> Approve application</button><button className="button button-outline" disabled={busy} onClick={() => void decide(item.id.replace('application-', ''), 'rejected')}><X size={15} /> Reject application</button></div>}
-                  {item.status === 'pending' && item.kind === 'Download request' && <div className="admin-actions admin-notification-decisions"><button className="button button-lime" disabled={busy} onClick={async () => { if (!window.confirm('Confirm that payment has been received separately and approve download access?')) return; setBusy(true); setError(''); setNotice(''); try { const response = await fetch('/api/admin-download-requests', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ownerToken}` }, body: JSON.stringify({ id: item.id.replace('download-', ''), status: 'approved', payment_confirmed: true }) }); const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.error || 'Could not approve download request.'); setNotice('Payment confirmed and download request approved.'); await load(ownerToken) } catch (e) { setError(e instanceof Error ? e.message : 'Could not approve request.') } finally { setBusy(false) } }}><Check size={15}/> Confirm payment &amp; approve</button><button className="button button-outline" disabled={busy} onClick={async () => { setBusy(true); setError(''); setNotice(''); try { const response = await fetch('/api/admin-download-requests', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ownerToken}` }, body: JSON.stringify({ id: item.id.replace('download-', ''), status: 'rejected' }) }); const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.error || 'Could not reject request.'); setNotice('Download request rejected.'); await load(ownerToken) } catch (e) { setError(e instanceof Error ? e.message : 'Could not reject request.') } finally { setBusy(false) } }}><X size={15}/> Reject</button></div>}
+                  {item.kind === 'Access application' && <div className="admin-actions admin-notification-decisions"><span>Login: reviewed in Applications</span><span>Payment: reviewed in Applications</span><a className="button button-outline" href="#admin-applications" onClick={() => setSection('applications')}>Review approvals</a></div>}
                 </article>
               ))}
               {allNotifications.length === 0 && <div className="admin-empty"><BellRing size={25}/><h3>No notifications yet</h3><p>New access applications, pilot inquiries and download requests will appear here.</p></div>}
@@ -534,11 +526,14 @@ function AdminPanel() {
             <div className="admin-application-list">
               {visibleApplications.map(app => (
                 <article className="admin-application" key={app.id}>
-                  <div className="admin-application-main"><div><h3>{app.name}</h3><a href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(app.email)} target="_blank" rel="noopener noreferrer">{app.email}</a></div><span className={'admin-status status-' + app.status}>{app.status}</span></div>
+                  <div className="admin-application-main"><div><h3>{app.name}</h3><a href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(app.email)} target="_blank" rel="noopener noreferrer">{app.email}</a></div><span className={'admin-status status-' + (app.login_status === 'rejected' || app.payment_status === 'rejected' ? 'rejected' : app.login_status === 'approved' && app.payment_status === 'approved' ? 'approved' : 'pending')}>{app.login_status === 'approved' && app.payment_status === 'approved' ? 'access approved' : app.login_status === 'rejected' || app.payment_status === 'rejected' ? 'rejected' : 'awaiting approvals'}</span></div>
                   <dl><div><dt>Organisation</dt><dd>{app.organisation}</dd></div><div><dt>Role</dt><dd>{app.role}</dd></div><div><dt>Submitted</dt><dd>{app.created_at ? new Date(app.created_at).toLocaleString() : '—'}</dd></div></dl>
                   {app.purpose && <p className="admin-purpose">{app.purpose}</p>}
                   <div className="admin-actions"><a className="button button-outline" href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(app.email) + '&su=' + encodeURIComponent('CampusGuard early access follow-up') + '&body=' + encodeURIComponent('Hello ' + app.name + ',\n\nThank you for your CampusGuard early access application. We are following up about your request.\n\nBest regards,\nCampusGuard')} target="_blank" rel="noopener noreferrer">Reply by email <ArrowUpRight size={15} /></a></div>
-                  {app.status === 'pending' && <div className="admin-actions"><button className="button button-lime" disabled={busy} onClick={() => void decide(app.id, 'approved')}><Check size={15} /> Approve</button><button className="button button-outline" disabled={busy} onClick={() => void decide(app.id, 'rejected')}><X size={15} /> Reject</button></div>}
+                  <div className="admin-approval-grid">
+                    <div className="admin-approval-row"><div><b>Login approval</b><span className={'admin-status status-' + app.login_status}>{app.login_status}</span></div><button className="button button-lime" disabled={busy || app.login_status === 'approved'} onClick={() => void decide(app.id, 'login', 'approved')}><Check size={14}/> Approve login</button><button className="button button-outline" disabled={busy || app.login_status === 'rejected'} onClick={() => void decide(app.id, 'login', 'rejected')}><X size={14}/> Reject</button></div>
+                    <div className="admin-approval-row"><div><b>Payment approval</b><span className={'admin-status status-' + app.payment_status}>{app.payment_status}</span></div><button className="button button-lime" disabled={busy || app.payment_status === 'approved'} onClick={() => { if (!window.confirm('Confirm that payment has been received before approving payment?')) return; void decide(app.id, 'payment', 'approved') }}><Check size={14}/> Confirm payment</button><button className="button button-outline" disabled={busy || app.payment_status === 'rejected'} onClick={() => void decide(app.id, 'payment', 'rejected')}><X size={14}/> Reject</button></div>
+                  </div>
                 </article>
               ))}
               {visibleApplications.length === 0 && <div className="admin-empty"><ShieldCheck size={25} /><h3>No applications here</h3><p>New requests will appear here after someone submits the access form.</p></div>}
@@ -546,20 +541,6 @@ function AdminPanel() {
           </div>
         )}
 
-        {section === 'downloads' && (
-          <div className="admin-section">
-            <div className="admin-list-heading"><h2>Desktop download requests</h2><p>Confirm payment separately before approving a request.</p></div>
-            <div className="admin-application-list">
-              {downloadRequests.map(item => <article className="admin-application" key={item.id}>
-                <div className="admin-application-main"><div><h3>{item.user_name || item.user_email}</h3><a href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(item.user_email)} target="_blank" rel="noopener noreferrer">{item.user_email}</a></div><span className={'admin-status status-' + item.status}>{item.status}</span></div>
-                <dl><div><dt>Product</dt><dd>{item.product}</dd></div><div><dt>Requested</dt><dd>{item.requested_at ? new Date(item.requested_at).toLocaleString() : '—'}</dd></div><div><dt>Payment</dt><dd>{item.payment_confirmed ? 'Confirmed' : 'Not confirmed'}</dd></div></dl>
-                <div className="admin-actions"><a className="button button-outline" href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(item.user_email) + '&su=' + encodeURIComponent('CampusGuard download request update') + '&body=' + encodeURIComponent('Hello ' + (item.user_name || item.user_email) + ',\n\nThank you for your CampusGuard desktop download request.\n\n[Add your update here: request status, payment confirmation, approval, or next steps.]\n\nIf you have any questions, feel free to reply to this email.\n\nBest regards,\nCampusGuard')} target="_blank" rel="noopener noreferrer">Reply by email <ArrowUpRight size={15} /></a></div>
-                {item.status === 'pending' && <div className="admin-actions"><button className="button button-lime" disabled={busy} onClick={async () => { if (!window.confirm('Confirm that payment has been received separately and approve download access?')) return; setBusy(true); setError(''); setNotice(''); try { const response = await fetch('/api/admin-download-requests', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ownerToken}` }, body: JSON.stringify({ id: item.id, status: 'approved', payment_confirmed: true }) }); const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.error || 'Could not approve download request.'); setNotice('Payment confirmed and download request approved.'); await load(ownerToken) } catch (e) { setError(e instanceof Error ? e.message : 'Could not approve request.') } finally { setBusy(false) } }}><Check size={15}/> Confirm payment &amp; approve</button><button className="button button-outline" disabled={busy} onClick={async () => { setBusy(true); setError(''); try { const response = await fetch('/api/admin-download-requests', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ownerToken}` }, body: JSON.stringify({ id: item.id, status: 'rejected' }) }); const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.error || 'Could not reject request.'); setNotice('Download request rejected.'); await load(ownerToken) } catch (e) { setError(e instanceof Error ? e.message : 'Could not reject request.') } finally { setBusy(false) } }}><X size={15}/> Reject</button></div>}
-              </article>)}
-              {downloadRequests.length === 0 && <div className="admin-empty"><Monitor size={25}/><h3>No download requests yet</h3><p>Customer requests will appear here after submission.</p></div>}
-            </div>
-          </div>
-        )}
 
         {section === 'inquiries' && (
           <div className="admin-section">
