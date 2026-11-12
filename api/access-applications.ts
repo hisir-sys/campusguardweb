@@ -63,7 +63,7 @@ export default async function handler(req: any, res: any) {
 
     const { error } = await supabase.from('access_applications').insert({
       auth_user_id: authData.user.id,
-      name, email, organisation, role, purpose, status: 'pending',
+      name, email, organisation, role, purpose, status: 'pending', login_status: 'pending', payment_status: 'pending',
     })
     if (error) {
       console.error('Access application insert failed:', JSON.stringify({ code: error.code, message: error.message, hint: error.hint }))
