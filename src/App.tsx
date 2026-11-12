@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import StoryScroll from './StoryScroll'
+import PrivacyPolicy from './PrivacyPolicy'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL || '',
@@ -30,6 +31,7 @@ function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => voi
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [form, setForm] = useState({ name: '', email: '', password: '', organisation: '', role: '', purpose: '' })
+  const [privacyConsent, setPrivacyConsent] = useState(false)
   const update = (key: keyof typeof form, value: string) => setForm(current => ({ ...current, [key]: value }))
   const submitApplication = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -40,7 +42,7 @@ function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => voi
       const response = await fetch('/api/access-applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, privacy_consent: privacyConsent, privacy_notice_version: '2026-11-12' }),
       })
       const result = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'We could not submit your application. Please try again.')
@@ -63,6 +65,7 @@ function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => voi
         <label>Institution / organisation<input required value={form.organisation} onChange={e => update('organisation', e.target.value)} placeholder="Organisation name" /></label>
         <label>Your role<select required value={form.role} onChange={e => update('role', e.target.value)}><option value="">Choose a role</option><option>School / campus leadership</option><option>IT / security team</option><option>Facilities / operations</option><option>Research / evaluation</option><option>Individual / personal use</option><option>Other</option></select></label>
         <label>What are you hoping to evaluate?<textarea value={form.purpose} onChange={e => update('purpose', e.target.value)} placeholder="A short description (optional)" rows={3} /></label>
+        <label className="privacy-consent"><input type="checkbox" required checked={privacyConsent} onChange={e => setPrivacyConsent(e.target.checked)} /><span>I have read the <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and agree to the use of my information for this application and account administration.</span></label>
         <button className="button button-lime form-submit" type="submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit application'} <ArrowUpRight size={16} /></button>
         {submitError && <p className="form-note" role="alert">{submitError}</p>}
         <p className="form-note"><LockKeyhole size={12} /> Your application is sent securely for review. Do not include sensitive personal information.</p>
@@ -236,6 +239,7 @@ function LoginModal({ close, onApply, onApproved }: { close: () => void; onApply
 
 function InquiryModal({ close, initialTopic }: { close: () => void; initialTopic: string }) {
   const [form, setForm] = useState({ name: '', email: '', organisation: '', topic: initialTopic, message: '' })
+  const [privacyConsent, setPrivacyConsent] = useState(false)
   const [busy, setBusy] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
@@ -245,7 +249,7 @@ function InquiryModal({ close, initialTopic }: { close: () => void; initialTopic
     if (busy) return
     setBusy(true); setError('')
     try {
-      const response = await fetch('/api/pilot-inquiries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+      const response = await fetch('/api/pilot-inquiries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, privacy_consent: privacyConsent, privacy_notice_version: '2026-11-12' }) })
       const result = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'We could not send your inquiry. Please try again.')
       setSent(true)
@@ -263,6 +267,7 @@ function InquiryModal({ close, initialTopic }: { close: () => void; initialTopic
         <label>Institution / organisation<input required maxLength={180} value={form.organisation} onChange={e => update('organisation',e.target.value)} placeholder="Organisation name"/></label>
         <label>What would you like to discuss?<select required value={form.topic} onChange={e => update('topic',e.target.value)}><option value="" disabled>Choose a topic</option><option>Request pilot details</option><option>Plan a deployment</option><option>Discuss multi-site needs</option></select></label>
         <label>Anything we should know?<textarea rows={3} maxLength={3000} value={form.message} onChange={e => update('message',e.target.value)} placeholder="Your goals, approximate scale or questions (optional)"/></label>
+        <label className="privacy-consent"><input type="checkbox" required checked={privacyConsent} onChange={e => setPrivacyConsent(e.target.checked)} /><span>I have read the <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and agree to the use of my information to respond to this inquiry.</span></label>
         <button className="button button-lime form-submit" type="submit" disabled={busy}>{busy ? 'Sending…' : 'Send inquiry'} <ArrowUpRight size={16}/></button>
         {error && <p className="form-note" role="alert">{error}</p>}
         <p className="form-note"><LockKeyhole size={12}/> Please do not include sensitive personal or security information.</p>
@@ -812,6 +817,7 @@ function App() {
     window.history.replaceState(null, '', `#${id}`)
     window.scrollTo({ top: Math.max(0, top), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   }
+  if (window.location.pathname.replace(/\/+$/, '') === '/privacy') return <PrivacyPolicy />
   if (window.location.pathname.replace(/\/+$/, '') === '/admin') return <AdminPanel />
   if (window.location.pathname.replace(/\/+$/, '') === '/reset-password') return <PasswordResetPage />
   return <main id="top">
@@ -979,7 +985,7 @@ function App() {
 
 
     <section className="final-cta-section" id="final-cta" data-theme="dark"><div className="section-shell final-cta-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> Early access programme</span><h2>Ready to explore CampusGuard<br /><em>for your campus?</em></h2><p>We’ll understand your needs, discuss scope and pricing directly, and arrange a demo. No online checkout.</p></div><div className="final-cta-actions"><button className="button button-lime" onClick={() => setModal('login')}>WhatsApp about CampusGuard <ArrowUpRight size={16}/></button><button className="button button-outline" onClick={() => setModal('login')}>Email about CampusGuard <ArrowUpRight size={16}/></button><button className="button button-outline" onClick={() => openInquiry("Request pilot details")}>Request a demo <ArrowUpRight size={16}/></button></div></div></section>
-    <footer className="site-footer"><div className="footer-top"><Brand /><p>More context. Better review.<br />People at the centre.</p><div className="footer-links"><a href="#platform">Platform</a><a href="#principles">Our approach</a><a href="#faqs">FAQs</a><a href="#download">Download</a><button onClick={() => setModal('login')}>Email about plans ↗</button><button onClick={() => setModal('login')}>WhatsApp about plans ↗</button><button onClick={openAccess}>Apply for access</button></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} CampusGuard. All rights reserved.</span><span>AI-assisted, human-led, privacy-aware</span><a href="#top">Back to top ↑</a></div></footer>
+    <footer className="site-footer"><div className="footer-top"><Brand /><p>More context. Better review.<br />People at the centre.</p><div className="footer-links"><a href="#platform">Platform</a><a href="#principles">Our approach</a><a href="#faqs">FAQs</a><a href="#download">Download</a><a href="/privacy">Privacy Policy</a><button onClick={() => setModal('login')}>Email about plans ↗</button><button onClick={() => setModal('login')}>WhatsApp about plans ↗</button><button onClick={openAccess}>Apply for access</button></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} CampusGuard. All rights reserved.</span><span>AI-assisted, human-led, privacy-aware</span><a href="#top">Back to top ↑</a></div></footer>
 
     {modal === 'inquiry' && <InquiryModal close={() => setModal(null)} initialTopic={inquiryTopic} />}
     {modal === 'access' && <AccessModal close={() => setModal(null)} onLogin={() => setModal('login')} />}
