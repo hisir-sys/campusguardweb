@@ -1,5 +1,3 @@
-import React from 'react'
-
 const updated = '12 November 2026'
 
 export default function PrivacyPolicy() {
