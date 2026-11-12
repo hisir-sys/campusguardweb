@@ -58,7 +58,7 @@ export default function PrivacyPolicy() {
         <li>Protect the website, investigate misuse, troubleshoot failures, and maintain service security.</li>
         <li>Meet legal obligations and establish, exercise, or defend legal claims where necessary.</li>
       </ul>
-      <p>We do not use the submitted information for targeted advertising. We do not sell personal data. We do not use the website’s sync metadata to identify people through facial recognition.</p>
+      <p>We do not use the submitted information for targeted advertising. We do not sell personal data. We do not use the website’s sync metadata to identify people through facial recognition. The website does not collect card numbers, bank-account credentials, UPI PINs, or payment transaction details; the owner records only a payment approval decision on the application.</p>
 
       <h2>4. CCTV, video and children’s data</h2>
       <p>CampusGuard is designed around local video analysis in the Windows desktop application. The website sync described above is limited to operational summaries and incident metadata; the website does not request or display live camera streams, video files, images, or incident footage. Footage is intended to remain within the customer’s local environment.</p>
@@ -86,6 +86,8 @@ export default function PrivacyPolicy() {
       <h2>8. Retention and deletion</h2>
       <p>We keep application and account records while they are needed to evaluate and administer access, provide the customer account, maintain security, and meet legal obligations. Inquiry records are kept while needed to respond and manage the business relationship. Synced server and incident metadata is associated with the customer account and is intended to be removed when the account and related service records are deleted, subject to legitimate security, dispute, or legal-retention needs.</p>
       <p>The current website repository does not implement an automatic, time-based deletion schedule or a self-service account-erasure control. Until those controls are implemented, deletion requests are handled manually. Contact us using the details below and identify the account or inquiry; we may need to verify your identity before acting. We will explain if any information must be retained by law.</p>
+
+      <p>If we become aware of a personal data breach affecting your data, we will take steps to contain and investigate it and provide notices to affected people and the relevant authority as required by applicable law.</p>
 
       <h2>9. Your privacy rights and requests</h2>
       <p>Subject to applicable law, you may ask us to:</p>
