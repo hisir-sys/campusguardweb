@@ -27,7 +27,7 @@ export default async function handler(req: any, res: any) {
   const privacyNoticeVersion = typeof body.privacy_notice_version === 'string' ? body.privacy_notice_version.slice(0, 32) : ''
   const allowedTopics = new Set(['Request pilot details', 'Plan a deployment', 'Discuss multi-site needs'])
   if (!name || !email || !organisation || !topic || !allowedTopics.has(topic) || !privacyConsent || privacyNoticeVersion !== '2026-11-12' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return res.status(400).json({ error: 'Please check your name, email, organisation and inquiry type.' })
+    return res.status(400).json({ error: 'Please check your details and agree to the Privacy Policy before submitting.' })
   }
   try {
     const supabase = createClient(supabaseUrl, serviceKey, {
