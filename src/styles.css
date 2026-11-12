@@ -3062,3 +3062,38 @@ h1,h2,h3{font-weight:500;letter-spacing:-.02em}
   .privacy-document p, .privacy-document li { font-size: 14px; }
   .privacy-callout { padding: 18px; }
 }
+
+/* CampusGuard identity and premium glass polish */
+.brand-image{display:block;width:clamp(154px,15vw,188px);height:auto;max-height:38px;object-fit:contain}.brand{gap:0}
+.theme-toggle{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;margin-left:18px;border:1px solid #ffffff24;border-radius:50%;color:#f4f5f7;background:#ffffff0b;backdrop-filter:blur(16px);transition:transform .25s ease,background .25s ease,border-color .25s ease}
+.theme-toggle:hover{transform:rotate(12deg) scale(1.06);background:#ffffff18;border-color:#ffffff55}
+.header-light .theme-toggle{color:#191a1d;border-color:#17181a20;background:#ffffff80}
+.header-inner{gap:14px}.site-header{background:rgba(12,13,15,.72);backdrop-filter:blur(24px) saturate(155%);-webkit-backdrop-filter:blur(24px) saturate(155%);border-bottom-color:#ffffff1a;box-shadow:0 8px 32px #00000012}
+.feature-card,.pricing-card,.admin-analytics-card,.workspace-panel,.customer-plan-featured{backdrop-filter:blur(18px) saturate(135%);-webkit-backdrop-filter:blur(18px) saturate(135%)}
+.button,.nav-links a,.nav-login,.footer-links a,.footer-links button{transition:transform .24s cubic-bezier(.2,.75,.25,1),color .24s ease,background .24s ease,border-color .24s ease,box-shadow .24s ease}
+.button:hover{box-shadow:0 12px 28px #00000020}
+.access-modal,.pricing-modal{border-radius:18px;background:rgba(247,248,250,.92);backdrop-filter:blur(28px) saturate(150%);-webkit-backdrop-filter:blur(28px) saturate(150%)}
+.feature-card,.pricing-card,.public-challenge-card,.workspace-learning-card,.customer-pilot-grid article{transition:transform .35s cubic-bezier(.2,.75,.25,1),border-color .3s ease,box-shadow .35s ease}
+.feature-card:hover,.pricing-card:hover,.public-challenge-card:hover,.workspace-learning-card:hover,.customer-pilot-grid article:hover{transform:translateY(-6px);box-shadow:0 24px 55px #00000024}
+.site-footer .brand-image{width:178px}
+@media(max-width:760px){.theme-toggle{margin-left:auto;width:35px;height:35px;flex-basis:35px}.brand-image{width:150px}.header-inner{gap:8px}}
+/* User-selectable light theme */
+main[data-site-theme="light"]{background:#f2f4f7;color:#17191d}
+main[data-site-theme="light"] .site-header{background:rgba(247,248,250,.82);border-bottom-color:#17191d18;box-shadow:0 8px 30px #19202c0b}
+main[data-site-theme="light"] .nav-links{color:#515762}
+main[data-site-theme="light"] .nav-links>a:hover,main[data-site-theme="light"] .nav-login:hover{color:#111318}
+main[data-site-theme="light"] .nav-login,main[data-site-theme="light"] .mobile-menu,main[data-site-theme="light"] .theme-toggle{color:#20232a}
+main[data-site-theme="light"] .theme-toggle{border-color:#20232a22;background:#ffffffb8}
+main[data-site-theme="light"] .public-hero,main[data-site-theme="light"] .platform-section,main[data-site-theme="light"] .public-workflow-section,main[data-site-theme="light"] .neural-section,main[data-site-theme="light"] .download-section,main[data-site-theme="light"] .final-cta-section,main[data-site-theme="light"] .customer-resource-section[data-theme="dark"]{background:#e9edf2;color:#17191d}
+main[data-site-theme="light"] .public-hero p,main[data-site-theme="light"] .platform-section p,main[data-site-theme="light"] .public-workflow-section p,main[data-site-theme="light"] .neural-section p,main[data-site-theme="light"] .download-section p,main[data-site-theme="light"] .final-cta-section p,main[data-site-theme="light"] .customer-resource-section[data-theme="dark"] p{color:#59616d}
+main[data-site-theme="light"] .public-hero h1,main[data-site-theme="light"] .platform-section h2,main[data-site-theme="light"] .public-workflow-section h2,main[data-site-theme="light"] .neural-section h2,main[data-site-theme="light"] .download-section h2,main[data-site-theme="light"] .final-cta-section h2,main[data-site-theme="light"] .customer-resource-section[data-theme="dark"] h2{color:#17191d}
+main[data-site-theme="light"] .site-footer{background:#e9edf2;color:#17191d;border-top-color:#17191d18}
+main[data-site-theme="light"] .site-footer .footer-top>p,main[data-site-theme="light"] .footer-links,main[data-site-theme="light"] .footer-bottom{color:#59616d}
+main[data-site-theme="light"] .site-footer .footer-bottom{border-top-color:#17191d20}
+main[data-site-theme="light"] .site-footer .footer-bottom a{color:#303743}
+main[data-site-theme="light"] .dark-band{background:#dfe5ec;color:#17191d}
+main[data-site-theme="light"] .dark-band-inner>p{color:#59616d}
+main[data-site-theme="light"] .public-hero-note,main[data-site-theme="light"] .eyebrow{color:#59616d}
+main[data-site-theme="light"] .hero-console,main[data-site-theme="light"] .public-value-panel,main[data-site-theme="light"] .download-device{border-color:#aeb8c6}
+main[data-site-theme="light"] .public-workflow-step,main[data-site-theme="light"] .feature-card,main[data-site-theme="light"] .pipeline-node{border-color:#aeb8c6}
+@media(prefers-reduced-motion:reduce){.theme-toggle,.feature-card,.pricing-card,.public-challenge-card{transition:none!important}}
