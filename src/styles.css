@@ -3097,3 +3097,61 @@ main[data-site-theme="light"] .public-hero-note,main[data-site-theme="light"] .e
 main[data-site-theme="light"] .hero-console,main[data-site-theme="light"] .public-value-panel,main[data-site-theme="light"] .download-device{border-color:#aeb8c6}
 main[data-site-theme="light"] .public-workflow-step,main[data-site-theme="light"] .feature-card,main[data-site-theme="light"] .pipeline-node{border-color:#aeb8c6}
 @media(prefers-reduced-motion:reduce){.theme-toggle,.feature-card,.pricing-card,.public-challenge-card{transition:none!important}}
+
+
+/* CampusGuard motion pass: richer, section-by-section interaction */
+@media (prefers-reduced-motion: no-preference) {
+  .cg-reveal { will-change: opacity, transform; }
+  .cg-reveal.cg-is-visible { will-change: auto; }
+  .public-hero .public-hero-copy > * { animation: cg-content-rise .8s cubic-bezier(.2,.75,.25,1) both; }
+  .public-hero .public-hero-copy > *:nth-child(2) { animation-delay: .08s; }
+  .public-hero .public-hero-copy > *:nth-child(3) { animation-delay: .16s; }
+  .public-hero .public-hero-copy > *:nth-child(4) { animation-delay: .24s; }
+  .public-hero-art { animation: cg-art-enter 1.1s .12s cubic-bezier(.2,.75,.25,1) both; }
+  .hero-orbit-one { animation: cg-orbit-breathe 8s ease-in-out infinite; }
+  .hero-orbit-two { animation: cg-orbit-breathe 11s ease-in-out -3s infinite reverse; }
+  .hero-console { transition: transform .45s cubic-bezier(.2,.75,.25,1), box-shadow .45s ease; }
+  .public-hero-art:hover .hero-console { transform: translate3d(0,-8px,0) rotateX(2deg) rotateY(-2deg); box-shadow: 0 35px 90px #0008, inset 0 1px #ffffff25; }
+  .public-value-art:hover .public-value-panel, .download-visual:hover .download-device { transform: translateY(-7px) rotateX(1deg); }
+  .public-value-panel, .download-device { transition: transform .5s cubic-bezier(.2,.75,.25,1), box-shadow .5s ease; }
+  .public-workflow-step .public-step-visual { transition: transform .45s cubic-bezier(.2,.75,.25,1), box-shadow .45s ease; }
+  .public-workflow-step:hover .public-step-visual { transform: translateY(-7px) scale(1.015); box-shadow: 0 22px 50px #0002; }
+  .public-workflow-detail summary { transition: color .25s ease, gap .25s ease; }
+  .public-workflow-detail[open] summary { color: #8ea5c8; }
+  .public-workflow-detail p { animation: cg-content-rise .35s ease both; }
+  .public-value-list li { transition: transform .3s ease, opacity .3s ease; }
+  .public-value-list li:hover { transform: translateX(7px); }
+  .how-steps article { transition: transform .4s cubic-bezier(.2,.75,.25,1), box-shadow .4s ease, border-color .3s ease; }
+  .how-steps article:hover { transform: translateY(-8px) scale(1.015); box-shadow: 0 24px 52px #1112; }
+  .faq-item { transition: background .3s ease, border-color .3s ease, transform .3s ease; }
+  .faq-item:hover { transform: translateX(4px); }
+  .faq-item[open] { background: #ffffffa8; border-color: #8fa6c866; }
+  .faq-item[open] p { animation: cg-content-rise .35s ease both; }
+  .customer-flowchart article, .customer-pilot-grid article, .customer-download-card { transition: transform .4s cubic-bezier(.2,.75,.25,1), box-shadow .4s ease, border-color .3s ease; }
+  .customer-flowchart article:hover, .customer-pilot-grid article:hover, .customer-download-card:hover { transform: translateY(-7px); box-shadow: 0 22px 48px #0002; }
+  .kinetic-step { transition: transform .35s cubic-bezier(.2,.75,.25,1), border-color .3s ease, box-shadow .35s ease; }
+  .kinetic-step:hover { transform: translateY(-6px) scale(1.025); border-color: #a8bbd8; box-shadow: 0 18px 42px #0004; }
+  .pipeline-node { transition: transform .35s ease, border-color .3s ease, box-shadow .35s ease; }
+  .pipeline-node:hover { transform: translateY(-6px); box-shadow: 0 18px 38px #0005; }
+  .final-cta-actions .button { transition: transform .28s cubic-bezier(.2,.75,.25,1), box-shadow .28s ease; }
+  .final-cta-actions .button:hover { transform: translateY(-4px) scale(1.02); }
+  .site-footer .footer-links a, .site-footer .footer-links button { transition: transform .25s ease, color .25s ease; }
+  .site-footer .footer-links a:hover, .site-footer .footer-links button:hover { transform: translateX(4px); }
+  .story-step { transition: opacity .45s ease, transform .45s cubic-bezier(.2,.75,.25,1); }
+  .story-step.is-active { transform: translateX(8px); }
+  .story-screen { transition: filter .5s ease, transform .6s cubic-bezier(.2,.75,.25,1); }
+  .story-stage:hover .story-screen { transform: perspective(900px) rotateY(-2deg) translateY(-5px); }
+}
+@keyframes cg-content-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes cg-art-enter { from { opacity: 0; transform: translate3d(0,24px,0) scale(.97); } to { opacity: 1; transform: translate3d(0,0,0) scale(1); } }
+@keyframes cg-orbit-breathe { 0%,100% { transform: scale(.98) rotate(0deg); opacity: .65; } 50% { transform: scale(1.04) rotate(5deg); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .cg-reveal { opacity: 1 !important; transform: none !important; }
+  .public-hero .public-hero-copy > *, .public-hero-art { animation: none !important; }
+  .hero-orbit-one, .hero-orbit-two { animation: none !important; }
+  .hero-console, .public-value-panel, .download-device, .public-workflow-step .public-step-visual,
+  .public-value-list li, .how-steps article, .faq-item, .customer-flowchart article,
+  .customer-pilot-grid article, .customer-download-card, .kinetic-step, .pipeline-node,
+  .final-cta-actions .button, .site-footer .footer-links a, .site-footer .footer-links button,
+  .story-step, .story-screen { transition: none !important; transform: none !important; }
+}
