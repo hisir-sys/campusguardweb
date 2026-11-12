@@ -10,19 +10,38 @@ React + TypeScript + Vite website and customer portal for CampusGuard, with Supa
 - The installer is served through a short-lived signed URL from the private `campusguard-downloads` storage bucket.
 - The admin console keeps the existing visual design and presents both approval controls on the same application card. There is no second user-facing download application.
 
-## Privacy and Supabase setup
+## Privacy and data protection
 
-- The public privacy notice is available at `/privacy` and linked in the website footer and both data-submission forms.
+- The public, standalone privacy notice is available at `/privacy` and linked in the website footer and both data-submission forms.
 - Access applications and pilot inquiries require an affirmative privacy-notice checkbox. The accepted notice version and timestamp are recorded in Supabase.
-- Run `supabase/privacy-consent.sql` once in the Supabase SQL Editor to add the consent-record columns before deploying this code.
-- The notice documents the fields currently collected by the website, customer sync metadata, providers, browser session storage, and the current manual deletion process. Confirm operator legal identity, provider regions, and retention procedures before treating it as final legal compliance advice.
+- The policy itemizes the data fields currently visible in this website repository, their purposes, the named service providers, browser session storage, rights/request contact and the current manual deletion process.
+- The notice does not claim that all data is stored in India, that footage is uploaded, or that CampusGuard is DPDP-certified.
+- See [DPDP-IMPLEMENTATION.md](./DPDP-IMPLEMENTATION.md) for the engineering inventory, phased commencement note and remaining operational/legal launch tasks.
+- The policy is based on this repository's implementation. Provider-side telemetry, actual data regions and retention settings must be verified in the live provider accounts.
 
-## Supabase setup
+## Supabase database setup
 
-Before deploying this version, run `supabase/single-application-approvals.sql` once in the Supabase SQL Editor. It adds the two approval states and reviewer timestamps to `access_applications`, then safely migrates existing decisions:
-- Existing approved/rejected access applications become the initial login decision.
-- Payment becomes approved only when a legacy download request was explicitly approved **and** `payment_confirmed = true`.
-- All other legacy payment states remain pending (or preserve a latest rejection).
+**Recommended: run one combined script.**
+
+1. Open the correct project at [Supabase](https://supabase.com/dashboard).
+2. In the left sidebar, open **SQL Editor**.
+3. Choose **New query**.
+4. Open `supabase/setup-campusguard.sql` in this repository and copy the complete contents.
+5. Paste the SQL into the editor and click **Run**.
+6. Confirm the query completes without errors.
+
+The combined script is safe to re-run for its column and index additions. It performs the existing migration from legacy download approvals, so run it against the CampusGuard project that already contains `access_applications` and `download_requests`. Do not run it against an unrelated or empty Supabase project.
+
+Alternatively, run the two individual migrations in this order:
+
+1. `supabase/single-application-approvals.sql`
+2. `supabase/privacy-consent.sql`
+
+The approval migration adds independent login/payment decisions and reviewer timestamps to the single application record. Existing approved/rejected login decisions are carried forward. A legacy payment decision is carried forward as approved only when the latest download request was approved and `payment_confirmed = true`; other payment decisions remain pending unless the latest request was rejected.
+
+The privacy migration adds `privacy_notice_version` and `privacy_consent_at` to both `access_applications` and `pilot_inquiries`.
+
+## Supabase Storage and environment
 
 Keep `campusguard-downloads` as a **private** Storage bucket and upload the installer as `CampusGuard.exe`.
 
@@ -53,7 +72,7 @@ npm run build
 ## Security boundaries
 
 - Approval is checked server-side for sign-in status, desktop metadata sync, and installer downloads.
-- Website sync stores summary and incident metadata only; video and footage remain on the local desktop/server workflow.
+- Website sync stores summary and incident metadata only; video and footage remain in the local desktop/server workflow.
 - The Supabase service role is used only in serverless API routes.
 - Owner actions require a verified Supabase session whose email matches `ADMIN_EMAIL`.
 
