@@ -1,8 +1,7 @@
 -- CampusGuard website database setup
--- Run this complete script once in Supabase Dashboard -> SQL Editor.
--- It is safe to re-run: columns and indexes use IF NOT EXISTS.
--- Review the legacy download_requests migration section before running if your
--- project does not have the existing access_applications/download_requests tables.
+-- Run this complete script in Supabase Dashboard -> SQL Editor.
+-- The schema additions and legacy migration are designed to be safe to re-run.
+-- Run against the existing CampusGuard project, not an empty/new project.
 
 -- ---------------------------------------------------------------------------
 -- 1. One application with two independent owner approvals
@@ -18,17 +17,17 @@ alter table public.access_applications
   add column if not exists payment_reviewed_at timestamptz,
   add column if not exists payment_reviewed_by text;
 
--- Preserve existing login decisions.
 update public.access_applications
 set login_status = case
   when status = 'approved' then 'approved'
   when status = 'rejected' then 'rejected'
-  else 'pending'
-end;
+  else login_status
+end
+where login_status = 'pending'
+  and status in ('approved', 'rejected');
 
--- Carry forward only the latest legacy download decision.
 update public.access_applications a
-set payment_status = coalesce((
+set payment_status = (
   select case
     when d.status = 'approved' and d.payment_confirmed = true then 'approved'
     when d.status = 'rejected' then 'rejected'
@@ -38,9 +37,13 @@ set payment_status = coalesce((
   where d.user_id = a.auth_user_id
   order by d.requested_at desc
   limit 1
-), 'pending');
+)
+where a.payment_status = 'pending'
+  and exists (
+    select 1 from public.download_requests d
+    where d.user_id = a.auth_user_id
+  );
 
--- Keep the legacy aggregate status aligned with the two decisions.
 update public.access_applications
 set status = case
   when login_status = 'rejected' or payment_status = 'rejected' then 'rejected'
