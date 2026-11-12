@@ -803,6 +803,68 @@ function App() {
     window.addEventListener('keydown', handleKeyDown)
     return () => { document.body.style.overflow = previousOverflow; window.removeEventListener('keydown', handleKeyDown) }
   }, [modal])
+  useEffect(() => {
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('main > section, main > footer'))
+      .filter(section => !section.classList.contains('public-hero'))
+    if (!sections.length) return
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const observed: HTMLElement[] = []
+    sections.forEach((section, sectionIndex) => {
+      section.classList.add('cg-motion-section')
+      if (!section.querySelector(':scope > .cg-ambient-layer')) {
+        const layer = document.createElement('div')
+        layer.className = 'cg-ambient-layer'
+        layer.setAttribute('aria-hidden', 'true')
+        section.prepend(layer)
+      }
+      const targets = Array.from(section.querySelectorAll<HTMLElement>(
+        '.section-heading, .public-editorial-heading, .public-workflow-heading, .public-value-copy, .feature-card, .public-challenge-card, .public-workflow-step, .public-value-art, .neural-heading, .neural-visual, .dark-band-inner > *, .strip-inner > *, .how-steps > article, .faq-intro, .faq-item, .download-copy, .download-visual, .final-cta-inner > *, .story-head, .story-step, .story-stage, .customer-resource-section .section-shell > *, .customer-pilot-grid > article'
+      ))
+      targets.forEach((target, index) => {
+        target.classList.add('cg-reveal')
+        target.style.setProperty('--cg-reveal-delay', `${Math.min(index % 5, 4) * 85}ms`)
+        observed.push(target)
+      })
+      if (reduceMotion) {
+        section.classList.add('cg-motion-inview')
+        targets.forEach(target => target.classList.add('cg-is-visible'))
+      }
+    })
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+      observed.forEach(target => target.classList.add('cg-is-visible'))
+      return () => sections.forEach(section => {
+        section.classList.remove('cg-motion-section', 'cg-motion-inview')
+        section.querySelectorAll('.cg-ambient-layer').forEach(layer => layer.remove())
+      })
+    }
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const target = entry.target as HTMLElement
+        if (entry.isIntersecting) {
+          target.classList.add('cg-is-visible')
+          target.closest<HTMLElement>('.cg-motion-section')?.classList.add('cg-motion-inview')
+          revealObserver.unobserve(target)
+        }
+      })
+    }, { threshold: 0.12, rootMargin: '0px 0px -7% 0px' })
+    observed.forEach(target => revealObserver.observe(target))
+    const sectionObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => entry.target.classList.toggle('cg-motion-inview', entry.isIntersecting))
+    }, { threshold: 0.02 })
+    sections.forEach(section => sectionObserver.observe(section))
+    return () => {
+      revealObserver.disconnect()
+      sectionObserver.disconnect()
+      sections.forEach(section => {
+        section.classList.remove('cg-motion-section', 'cg-motion-inview')
+        section.querySelectorAll('.cg-ambient-layer').forEach(layer => layer.remove())
+        section.querySelectorAll('.cg-reveal').forEach(target => {
+          target.classList.remove('cg-reveal', 'cg-is-visible')
+          ;(target as HTMLElement).style.removeProperty('--cg-reveal-delay')
+        })
+      })
+    }
+  }, [])
   const [menuOpen, setMenuOpen] = useState(false)
   const [siteTheme, setSiteTheme] = useState<'dark' | 'light'>(() => window.localStorage.getItem('cg-theme') === 'light' ? 'light' : 'dark')
   const toggleSiteTheme = () => setSiteTheme(current => { const next = current === 'dark' ? 'light' : 'dark'; window.localStorage.setItem('cg-theme', next); return next })
