@@ -11,7 +11,7 @@ const supabase = createClient(
 import {
   ArrowRight, ArrowUpRight, Activity, BellRing, Check, ChevronDown,
   Fingerprint, LockKeyhole, Menu,
-  Monitor, ScanEye, ShieldCheck, Sparkles, X,
+  Monitor, ScanEye, ShieldCheck, Sparkles, X, Sun, Moon,
 } from 'lucide-react'
 
 type ModalName = 'access' | 'product' | 'login' | 'pricing' | 'inquiry' | null
@@ -22,8 +22,8 @@ const features = [
   { number: '03', icon: Fingerprint, title: 'Local-first by design', text: 'Video analysis is designed around the Windows desktop application. Website sync, where enabled, should be limited to explicitly selected data.' },
 ]
 
-function Brand() {
-  return <a className="brand" href="#top" aria-label="CampusGuard home"><span className="brand-mark"><svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="bg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#3A3D45"/><stop offset="1" stopColor="#17181B"/></linearGradient><linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#9DB6E8" stopOpacity=".95"/><stop offset=".35" stopColor="#fff" stopOpacity=".35"/><stop offset=".7" stopColor="#E9C99A" stopOpacity=".75"/><stop offset="1" stopColor="#B7A8E6" stopOpacity=".9"/></linearGradient></defs><rect x="8" y="8" width="104" height="104" rx="32" fill="url(#bg1)"/><rect x="9" y="9" width="102" height="102" rx="31" fill="none" stroke="url(#bg2)" strokeWidth="2"/><path d="M80.8 41.3A28 28 0 1 0 80.8 78.7" fill="none" stroke="#ECEEF1" strokeWidth="14" strokeLinecap="round"/><circle cx="76" cy="60" r="6.5" fill="#9DB6E8"/></svg></span><span>Campus<span className="brand-light">Guard</span></span></a>
+function Brand({ light = false }: { light?: boolean }) {
+  return <a className="brand" href="#top" aria-label="CampusGuard home"><img className="brand-image" src={light ? "/campusguard-logo.svg" : "/campusguard-logo-white.svg"} alt="CampusGuard" /></a>
 }
 
 function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => void }) {
@@ -128,7 +128,7 @@ function PasswordResetPage() {
   }
 
   return <main className="admin-page">
-    <header className="admin-header"><a className="brand" href="/"><span className="brand-mark"><svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="bg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#3A3D45"/><stop offset="1" stopColor="#17181B"/></linearGradient><linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#9DB6E8" stopOpacity=".95"/><stop offset=".35" stopColor="#fff" stopOpacity=".35"/><stop offset=".7" stopColor="#E9C99A" stopOpacity=".75"/><stop offset="1" stopColor="#B7A8E6" stopOpacity=".9"/></linearGradient></defs><rect x="8" y="8" width="104" height="104" rx="32" fill="url(#bg1)"/><rect x="9" y="9" width="102" height="102" rx="31" fill="none" stroke="url(#bg2)" strokeWidth="2"/><path d="M80.8 41.3A28 28 0 1 0 80.8 78.7" fill="none" stroke="#ECEEF1" strokeWidth="14" strokeLinecap="round"/><circle cx="76" cy="60" r="6.5" fill="#9DB6E8"/></svg></span><span>Campus<span className="brand-light">Guard</span></span></a><span className="admin-label">ACCOUNT SECURITY</span><a href="/" className="admin-back">Back to website ↗</a></header>
+    <header className="admin-header"><a className="brand" href="/" aria-label="CampusGuard home"><img className="brand-image" src="/campusguard-logo-white.svg" alt="CampusGuard" /></a><span className="admin-label">ACCOUNT SECURITY</span><a href="/" className="admin-back">Back to website ↗</a></header>
     <section className="admin-login access-modal" aria-labelledby="reset-title">
       <span className="eyebrow">Password recovery</span>
       <h1 id="reset-title">{done ? 'Password updated.' : 'Choose a new password.'}</h1>
@@ -413,7 +413,7 @@ function AdminPanel() {
 
   const header = (
     <header className="admin-header">
-      <a className="brand" href="/"><span className="brand-mark"><svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="bg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#3A3D45"/><stop offset="1" stopColor="#17181B"/></linearGradient><linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#9DB6E8" stopOpacity=".95"/><stop offset=".35" stopColor="#fff" stopOpacity=".35"/><stop offset=".7" stopColor="#E9C99A" stopOpacity=".75"/><stop offset="1" stopColor="#B7A8E6" stopOpacity=".9"/></linearGradient></defs><rect x="8" y="8" width="104" height="104" rx="32" fill="url(#bg1)"/><rect x="9" y="9" width="102" height="102" rx="31" fill="none" stroke="url(#bg2)" strokeWidth="2"/><path d="M80.8 41.3A28 28 0 1 0 80.8 78.7" fill="none" stroke="#ECEEF1" strokeWidth="14" strokeLinecap="round"/><circle cx="76" cy="60" r="6.5" fill="#9DB6E8"/></svg></span><span>Campus<span className="brand-light">Guard</span></span></a>
+      <a className="brand" href="/" aria-label="CampusGuard home"><img className="brand-image" src="/campusguard-logo-white.svg" alt="CampusGuard" /></a>
       <span className="admin-label">ADMINISTRATION / PRIVATE</span>
       <a href="/" className="admin-back">Back to website ↗</a>
     </header>
@@ -785,6 +785,8 @@ function App() {
 
   const [modal, setModal] = useState<ModalName>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [siteTheme, setSiteTheme] = useState<'dark' | 'light'>(() => window.localStorage.getItem('cg-theme') === 'light' ? 'light' : 'dark')
+  const toggleSiteTheme = () => setSiteTheme(current => { const next = current === 'dark' ? 'light' : 'dark'; window.localStorage.setItem('cg-theme', next); return next })
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const signOut = async () => { await supabase.auth.signOut(); setIsAuthenticated(false); setModal(null); window.scrollTo({ top: 0, behavior: 'auto' }) }
   useEffect(() => {
@@ -820,15 +822,15 @@ function App() {
   if (window.location.pathname.replace(/\/+$/, '') === '/privacy') return <PrivacyPolicy />
   if (window.location.pathname.replace(/\/+$/, '') === '/admin') return <AdminPanel />
   if (window.location.pathname.replace(/\/+$/, '') === '/reset-password') return <PasswordResetPage />
-  return <main id="top">
+  return <main id="top" data-site-theme={siteTheme}>
     <div className="reading-progress" aria-hidden="true"><span style={{ width: `${scrollProgress}%` }} /></div>
     <header className={headerLight ? "site-header header-light" : "site-header"}>
-      <div className="header-inner"><Brand />
+      <div className="header-inner"><Brand light={siteTheme === "light" || headerLight} />
         <nav className={menuOpen ? 'nav-links nav-open' : 'nav-links'} aria-label="Main navigation">
           {isAuthenticated ? <><a href="#customer-how-it-works" onClick={event => navigateToSection(event, 'customer-how-it-works')}>How it works</a><a href="#customer-ai-pipeline" onClick={event => navigateToSection(event, 'customer-ai-pipeline')}>AI pipeline</a><a href="#customer-downloads" onClick={event => navigateToSection(event, 'customer-downloads')}>Desktop app</a><a href="#customer-pricing" onClick={event => navigateToSection(event, 'customer-pricing')}>Plans &amp; pilots</a></> : <><a href="#pipeline" onClick={event => navigateToSection(event, 'pipeline')}>AI pipeline</a><a href="#principles" onClick={event => navigateToSection(event, 'principles')}>Our approach</a><a href="#platform" onClick={event => navigateToSection(event, 'platform')}>Platform</a><a href="#faqs" onClick={event => navigateToSection(event, 'faqs')}>FAQs</a><a href="#pricing" onClick={event => { event.preventDefault(); setModal('pricing'); setMenuOpen(false) }}>Pricing &amp; pilots</a></>}
           {isAuthenticated ? <button className="button button-lime nav-cta" onClick={() => { void signOut(); setMenuOpen(false) }}>Log out <ArrowUpRight size={15} /></button> : <><button className="nav-login" onClick={() => { setModal('login'); setMenuOpen(false) }}>Log in <ArrowUpRight size={14} /></button><button className="button button-lime nav-cta" onClick={openAccess}>Apply for access <ArrowUpRight size={15} /></button></>}
         </nav>
-        <button className="mobile-menu" aria-label={menuOpen ? 'Close menu' : 'Open menu'} onClick={() => setMenuOpen(v => !v)}>{menuOpen ? <X /> : <Menu />}</button>
+        <button className="theme-toggle" type="button" onClick={toggleSiteTheme} aria-label={siteTheme === "dark" ? "Switch to light theme" : "Switch to dark theme"} title={siteTheme === "dark" ? "Switch to light theme" : "Switch to dark theme"}>{siteTheme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</button><button className="mobile-menu" aria-label={menuOpen ? 'Close menu' : 'Open menu'} onClick={() => setMenuOpen(v => !v)}>{menuOpen ? <X /> : <Menu />}</button>
       </div>
     </header>
 
