@@ -514,7 +514,7 @@ function AdminPanel() {
                   {item.kind === 'Access application' && <div className="admin-actions admin-notification-decisions"><span>Login: reviewed in Applications</span><span>Payment: reviewed in Applications</span><a className="button button-outline" href="#admin-applications" onClick={() => setSection('applications')}>Review approvals</a></div>}
                 </article>
               ))}
-              {allNotifications.length === 0 && <div className="admin-empty"><BellRing size={25}/><h3>No notifications yet</h3><p>New access applications, pilot inquiries and download requests will appear here.</p></div>}
+              {allNotifications.length === 0 && <div className="admin-empty"><BellRing size={25}/><h3>No notifications yet</h3><p>New access applications and pilot inquiries will appear here.</p></div>}
             </div>
           </div>
         )}
