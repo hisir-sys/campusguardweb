@@ -885,7 +885,7 @@ function App() {
   if (window.location.pathname.replace(/\/+$/, '') === '/reset-password') return <PasswordResetPage />
   return <main id="top" data-site-theme="dark">
     <div className="reading-progress" aria-hidden="true"><span style={{ width: `${scrollProgress}%` }} /></div>
-    <header className={headerLight ? "site-header header-light" : "site-header"}>
+    <header className="site-header">
       <div className="header-inner"><Brand />
         <nav className={menuOpen ? 'nav-links nav-open' : 'nav-links'} aria-label="Main navigation">
           {isAuthenticated ? <><a href="#customer-how-it-works" onClick={event => navigateToSection(event, 'customer-how-it-works')}>How it works</a><a href="#customer-ai-pipeline" onClick={event => navigateToSection(event, 'customer-ai-pipeline')}>AI pipeline</a><a href="#customer-downloads" onClick={event => navigateToSection(event, 'customer-downloads')}>Desktop app</a><a href="#customer-pricing" onClick={event => navigateToSection(event, 'customer-pricing')}>Plans &amp; pilots</a></> : <><a href="#pipeline" onClick={event => navigateToSection(event, 'pipeline')}>AI pipeline</a><a href="#principles" onClick={event => navigateToSection(event, 'principles')}>Our approach</a><a href="#platform" onClick={event => navigateToSection(event, 'platform')}>Platform</a><a href="#faqs" onClick={event => navigateToSection(event, 'faqs')}>FAQs</a><a href="#pricing" onClick={event => { event.preventDefault(); setModal('pricing'); setMenuOpen(false) }}>Pricing &amp; pilots</a></>}
@@ -1009,22 +1009,22 @@ function App() {
       </div>
     </section>
 
-    <section className="dark-band" id="principles" data-theme="light"><div className="section-shell dark-band-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> A more thoughtful approach</span><h2>Technology should<br />support <em>people</em></h2></div><p>CampusGuard is designed as an aid to awareness and review—not a substitute for trained staff, established safety procedures or human judgement.</p><div className="dark-band-mark"><ShieldCheck size={35} strokeWidth={1} /></div></div></section>
+    <section className="dark-band" id="principles" data-theme="dark"><div className="section-shell dark-band-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> A more thoughtful approach</span><h2>Technology should<br />support <em>people</em></h2></div><p>CampusGuard is designed as an aid to awareness and review—not a substitute for trained staff, established safety procedures or human judgement.</p><div className="dark-band-mark"><ShieldCheck size={35} strokeWidth={1} /></div></div></section>
 
-    <section className="principle-strip" data-theme="light"><div className="strip-inner"><span className="strip-label">A DIFFERENT KIND OF MONITORING</span><span><ShieldCheck size={17} /> Human-led decisions</span><span><Monitor size={17} /> Desktop-first workflow</span><span><LockKeyhole size={17} /> Privacy-aware by design</span></div></section>
-
-
+    <section className="principle-strip" data-theme="dark"><div className="strip-inner"><span className="strip-label">A DIFFERENT KIND OF MONITORING</span><span><ShieldCheck size={17} /> Human-led decisions</span><span><Monitor size={17} /> Desktop-first workflow</span><span><LockKeyhole size={17} /> Privacy-aware by design</span></div></section>
 
 
 
 
 
-    <section className="how-it-works-section" id="how-it-works" data-theme="light">
+
+
+    <section className="how-it-works-section" id="how-it-works" data-theme="dark">
       <div className="section-shell"><div className="section-heading"><div><span className="eyebrow"><span className="eyebrow-line" /> A clearer workflow</span><h2>From connection<br />to <em>considered action</em></h2></div><p>CampusGuard is designed to support a team’s existing safety process, not replace it.</p></div>
         <div className="how-steps"><article><span>01</span><h3>Connect</h3><p>Set up compatible cameras in the Windows desktop application.</p></article><article><span>02</span><h3>Understand</h3><p>Local AI analysis can surface a potential event for attention.</p></article><article><span>03</span><h3>Review</h3><p>Trained staff check the context and decide what to do next.</p></article></div>
       </div>
     </section>
-    <section className="faq-section" id="faqs" data-theme="light">
+    <section className="faq-section" id="faqs" data-theme="dark">
       <div className="section-shell faq-shell">
         <div className="faq-intro"><span className="eyebrow"><span className="eyebrow-line" /> Common questions</span><h2>Good questions.<br /><em>Clear answers</em></h2><p>A quick guide to what CampusGuard is designed to do—and what it is not.</p></div>
         <div className="faq-list">
