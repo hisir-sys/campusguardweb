@@ -3155,3 +3155,59 @@ main[data-site-theme="light"] .public-workflow-step,main[data-site-theme="light"
   .final-cta-actions .button, .site-footer .footer-links a, .site-footer .footer-links button,
   .story-step, .story-screen { transition: none !important; transform: none !important; }
 }
+
+
+/* Interactive walkthrough: selectable stages, playback and animated visual feedback. */
+.story-intro{max-width:620px;margin:14px 0 0;color:#a5a8b0;font-size:14px;line-height:1.75}
+.story-steps{display:grid;gap:12px}
+.story-step{display:grid;width:100%;gap:10px;text-align:left;color:inherit;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:20px 22px;cursor:pointer;opacity:.62;transform:translateX(0);transition:opacity .35s ease,transform .35s ease,border-color .35s ease,background .35s ease,box-shadow .35s ease}
+.story-step:hover,.story-step.is-active{opacity:1;transform:translateX(7px);border-color:#8fa6c8aa;background:linear-gradient(110deg,#8fa6c81c,rgba(255,255,255,.025));box-shadow:0 18px 45px #0003}
+.story-step-title{font:500 clamp(18px,2vw,23px)/1.2 var(--display);letter-spacing:-.025em;color:#f2f2f3}
+.story-step-body{font-size:13px;line-height:1.7;color:#a5a8b0}
+.story-step-meta{display:flex;flex-wrap:wrap;gap:6px}
+.story-step-meta i{font-style:normal;font-size:10px;color:#c4c9d2;border:1px solid #ffffff20;border-radius:99px;padding:5px 8px}
+.story-stage{min-width:0}.story-floor{isolation:isolate}
+.story-scan-beam{position:absolute;z-index:1;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,#9db3d8,transparent);box-shadow:0 0 18px #9db3d877;animation:cg-story-scan 3.2s linear infinite;pointer-events:none}
+.story-event-chip{position:absolute;z-index:2;top:16px;right:16px;padding:7px 10px;border:1px solid #9db3d866;border-radius:7px;background:#11151cdd;color:#d9e4f6;font:9px var(--mono);letter-spacing:.1em;animation:cg-story-chip .45s cubic-bezier(.2,.75,.25,1) both}
+.story-live-detail{margin-top:15px;padding:16px 18px;border:1px solid #ffffff18;border-radius:12px;background:linear-gradient(135deg,#ffffff0b,#ffffff03);animation:cg-story-detail .38s cubic-bezier(.2,.75,.25,1) both}
+.story-live-detail b{font:10px var(--mono);letter-spacing:.08em;color:#9db3d8;text-transform:uppercase}
+.story-live-detail p{margin:8px 0 0;color:#c0c3cb;font-size:13px;line-height:1.7}
+.story-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px}
+.story-control-center{display:flex;align-items:center;gap:8px}
+.story-control{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:8px 12px;border:1px solid #ffffff24;border-radius:9px;background:#ffffff0a;color:#f2f2f3;font:500 11px var(--mono);cursor:pointer;transition:transform .2s ease,background .2s ease,border-color .2s ease}
+.story-control:hover:not(:disabled){transform:translateY(-2px);background:#8fa6c826;border-color:#9db3d8aa}
+.story-control:disabled{opacity:.35;cursor:not-allowed}
+.story-play{background:#9db3d8;color:#101319;border-color:#9db3d8;font-weight:700}
+.story-play:hover:not(:disabled){background:#b8c9e4}
+.story-progress{display:flex;gap:6px;margin-top:14px}
+.story-progress button{height:5px;flex:1;border:0;border-radius:99px;background:#ffffff20;cursor:pointer;transition:background .3s ease,transform .3s ease}
+.story-progress button:hover{transform:scaleY(1.8)}
+.story-progress button.is-complete{background:#9db3d8;box-shadow:0 0 12px #9db3d844}
+.story-caption{line-height:1.6}
+@keyframes cg-story-scan{from{transform:translateY(0)}to{transform:translateY(340px)}}
+@keyframes cg-story-chip{from{opacity:0;transform:translateY(-6px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes cg-story-detail{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+
+/* Consistent dark pricing cards in both the public pricing overlay and signed-in plans. */
+.public-site-content .pricing-modal,.public-site-content .pricing-modal .pricing-card,
+.customer-pilot-section .customer-pilot-grid article{background:#0b0c0e!important;color:#f4f5f7!important;border-color:#343840!important}
+.public-site-content .pricing-modal .pricing-card.pricing-featured,
+.customer-pilot-section .customer-pilot-grid article.customer-plan-featured{background:linear-gradient(150deg,#171a20,#0b0c0e)!important;border-color:#91a7c9!important;box-shadow:0 18px 55px #0006}
+.public-site-content .pricing-modal .pricing-card h3,.customer-pilot-section .customer-pilot-grid article h3{color:#f4f5f7!important}
+.public-site-content .pricing-modal .pricing-summary,.customer-pilot-section .customer-pilot-grid article p{color:#b5bbc5!important}
+.public-site-content .pricing-modal .pricing-price,.customer-pilot-section .customer-plan-price{color:#b8c9e4!important}
+.public-site-content .pricing-modal .pricing-card li,.customer-pilot-section .customer-pilot-grid article li{color:#d0d4dc!important}
+.public-site-content .pricing-modal .pricing-kicker,.customer-pilot-section .customer-pilot-grid article>span{color:#a9b1bf!important}
+.customer-pilot-section .customer-pilot-grid article>b{color:#dce2ec!important}
+.customer-pilot-section .customer-pilot-grid article .button-outline{color:#f4f5f7!important;border-color:#657083!important}
+.customer-pilot-section .customer-pilot-grid article .button-outline:hover{background:#ffffff12!important}
+
+/* Contact actions open the actual email composer or WhatsApp chat, not the login dialog. */
+.public-site-content .final-cta-actions a,.public-site-content .footer-links a{cursor:pointer}
+.public-site-content .final-cta-actions a:hover{transform:translateY(-3px)}
+
+/* Dialog usability: keyboard close, focus visibility and scroll containment. */
+[role="dialog"]{overscroll-behavior:contain}
+[role="dialog"] :focus-visible{outline:2px solid #9db3d8;outline-offset:3px}
+@media(max-width:860px){.story-steps{gap:9px}.story-step{padding:16px}.story-controls{flex-wrap:wrap}.story-control-center{flex:1;justify-content:center}}
+@media(prefers-reduced-motion:reduce){.story-step,.story-control,.story-progress button{transition:none!important}.story-scan-beam,.story-event-chip,.story-live-detail{animation:none!important}.story-step:hover,.story-step.is-active,.story-control:hover:not(:disabled){transform:none}}
