@@ -19,25 +19,19 @@ set login_status = case
   else 'pending'
 end;
 
--- Carry forward only an explicitly approved and payment-confirmed legacy download.
+-- Carry forward only the latest legacy download decision.
 update public.access_applications a
-set payment_status = case
-  when exists (
-    select 1 from public.download_requests d
-    where d.user_id = a.auth_user_id
-      and d.status = 'approved'
-      and d.payment_confirmed = true
-  ) then 'approved'
-  when exists (
-    select 1 from public.download_requests d
-    where d.user_id = a.auth_user_id
-      and d.status = 'rejected'
-      and d.requested_at = (
-        select max(d2.requested_at) from public.download_requests d2 where d2.user_id = a.auth_user_id
-      )
-  ) then 'rejected'
-  else 'pending'
-end;
+set payment_status = coalesce((
+  select case
+    when d.status = 'approved' and d.payment_confirmed = true then 'approved'
+    when d.status = 'rejected' then 'rejected'
+    else 'pending'
+  end
+  from public.download_requests d
+  where d.user_id = a.auth_user_id
+  order by d.requested_at desc
+  limit 1
+), 'pending');
 
 -- The legacy aggregate status remains in sync for older integrations.
 update public.access_applications
