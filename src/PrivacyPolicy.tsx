@@ -2,7 +2,7 @@ const updated = '12 November 2026'
 
 export default function PrivacyPolicy() {
   return <main className="privacy-page" id="top">
-    <header className="privacy-header"><a className="brand" href="/"><span className="brand-mark"><span className="privacy-brand-mark">C</span></span><span>Campus<span className="brand-light">Guard</span></span></a><a className="button button-outline" href="/">Back to website <span aria-hidden="true">↗</span></a></header>
+    <header className="privacy-header"><a className="brand" href="/" aria-label="CampusGuard home"><img className="brand-image" src="/campusguard-logo.svg" alt="CampusGuard" /></a><a className="button button-outline" href="/">Back to website <span aria-hidden="true">↗</span></a></header>
     <article className="privacy-document">
       <span className="eyebrow">PRIVACY &amp; DATA PROTECTION</span>
       <h1>Privacy Policy</h1>
