@@ -33,7 +33,7 @@ export default async function handler(req: any, res: any) {
   const privacyNoticeVersion = typeof body.privacy_notice_version === 'string' ? body.privacy_notice_version.slice(0, 32) : ''
 
   if (!name || !email || !organisation || !role || !password || !privacyConsent || privacyNoticeVersion !== '2026-11-12') {
-    return res.status(400).json({ error: 'Please complete all required fields.' })
+    return res.status(400).json({ error: 'Please complete all required fields and agree to the Privacy Policy.' })
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Please enter a valid email address.' })
