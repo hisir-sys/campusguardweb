@@ -17,13 +17,14 @@ export default function StoryScroll() {
   useEffect(() => {
     if (!playing) return
     const timer = window.setInterval(() => {
-      setActive(current => {
-        if (current >= SCENES.length - 1) { setPlaying(false); return current }
-        return current + 1
-      })
+      setActive(current => Math.min(SCENES.length - 1, current + 1))
     }, 3200)
     return () => window.clearInterval(timer)
   }, [playing])
+
+  useEffect(() => {
+    if (active === SCENES.length - 1) setPlaying(false)
+  }, [active])
 
   useEffect(() => {
     if (!('IntersectionObserver' in window)) return
