@@ -1,0 +1,158 @@
+/* ==========================================================================
+   Final layer: section order, strict dark/light rhythm and scroll-linked motion.
+   Imported after styles.css so it is the single source of truth for the page rhythm.
+   Sequence (dark / light alternate, footer closes dark):
+   hero D · platform L · story D · challenge L · workflow D · designed-for L ·
+   pipeline D · principles L · how-it-works D · FAQ L · app D · closing CTA L · footer D
+   ========================================================================== */
+
+/* ---- Order is DOM order; earlier passes used flex `order`, which buried the hero ---- */
+.public-site-content > section,
+.public-site-content > footer { order: 0 !important; }
+
+/* ---- Hero owns the thin principle strip at its foot ---- */
+.public-site-content > .public-hero { padding-bottom: 0 !important; }
+.public-hero .principle-strip {
+  margin-top: 72px; background: #0d0f13; color: #e2e3e6; border-top: 1px solid #ffffff14; border-bottom: 0;
+}
+.public-hero .principle-strip .strip-label { color: #8f939c; }
+.public-hero .principle-strip .strip-inner > span:not(.strip-label) { color: #d3d5da; }
+
+/* ---- FAQ (light): readable summaries, quiet hairlines, no dark boxes ---- */
+.public-site-content > .faq-section { background: #f5f6f7; color: #17181a; }
+.public-site-content > .faq-section .faq-intro h2 { color: #17181a; }
+.public-site-content > .faq-section .faq-intro h2 em { color: #565961; }
+.public-site-content > .faq-section .faq-intro > p { color: #6b6d74; }
+.public-site-content > .faq-section .eyebrow { color: #636670; }
+.public-site-content > .faq-section .faq-list { background: transparent; border-top: 1px solid #d9dbe0; }
+.public-site-content > .faq-section .faq-item { background: transparent; border-bottom: 1px solid #d9dbe0; color: #17181a; box-shadow: none; }
+.public-site-content > .faq-section .faq-item summary { color: #1f2024; background: transparent; }
+.public-site-content > .faq-section .faq-item summary span { color: #5f626c; border: 1px solid #cfd1d6; background: transparent; }
+.public-site-content > .faq-section .faq-item[open] summary span { background: #e6e8ec; }
+.public-site-content > .faq-section .faq-item p { color: #5d6069; }
+.public-site-content > .faq-section .faq-item:hover summary { color: #000; }
+
+/* ---- Closing call to action (light): proper two-column layout and readable buttons ---- */
+.public-site-content > .final-cta-section { background: #f5f6f7; color: #17181a; padding: 96px 0; }
+.public-site-content > .final-cta-section .final-cta-inner {
+  max-width: 1172px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr); gap: 56px; align-items: center;
+}
+.public-site-content > .final-cta-section h2 { color: #17181a; max-width: 14ch; }
+.public-site-content > .final-cta-section h2 em { color: #565961; }
+.public-site-content > .final-cta-section .eyebrow { color: #636670; }
+.public-site-content > .final-cta-section p { color: #6b6d74; max-width: 46ch; }
+.public-site-content > .final-cta-section .final-cta-actions { display: grid; gap: 12px; max-width: none; justify-items: stretch; }
+.public-site-content > .final-cta-section .final-cta-actions .button { width: 100%; opacity: 1; }
+.public-site-content > .final-cta-section .button-outline { color: #26272a; border-color: #c4c6cc; background: transparent; }
+.public-site-content > .final-cta-section .button-outline:hover { border-color: #17181a; background: #17181a08; }
+@media (max-width: 860px) {
+  .public-site-content > .final-cta-section { padding: 72px 0; }
+  .public-site-content > .final-cta-section .final-cta-inner { grid-template-columns: 1fr; gap: 32px; }
+  .public-site-content > .final-cta-section h2 { max-width: none; }
+}
+
+/* ---- Desktop app section is part of the page again (dark) ---- */
+.public-site-content > section.download-section { display: block; }
+.download-section .download-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 56px; align-items: center; }
+.download-section .download-visual { position: relative; min-height: 540px; display: grid; place-items: center; }
+.app-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 26px 0 18px; }
+.app-fact { position: relative; padding: 16px 16px 14px; border: 1px solid #ffffff17; background: linear-gradient(145deg, #131519, #0d0f12); border-radius: 6px; overflow: hidden; transition: transform .3s cubic-bezier(.2,.8,.2,1), border-color .3s; }
+.app-fact:hover { transform: translateY(-3px); border-color: #8397b966; }
+.app-fact b { display: block; font: 600 30px/1 var(--display); letter-spacing: -.04em; color: #f3f4f5; margin-bottom: 8px; }
+.app-fact > span { display: block; font-size: 12px; line-height: 1.6; color: #a5a8b0; }
+.app-fact b span { font: inherit; color: inherit; display: inline; }
+.app-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.app-chips span { font: 10px var(--mono); letter-spacing: .04em; text-transform: uppercase; color: #b9bdc6; border: 1px solid #ffffff1c; border-radius: 99px; padding: 7px 11px; transition: border-color .25s, color .25s, background .25s; }
+.app-chips span:hover { border-color: #8397b9; color: #fff; background: #8397b914; }
+@media (max-width: 900px) { .download-section .download-inner { grid-template-columns: 1fr; } .download-section .download-visual { min-height: 420px; } }
+@media (max-width: 520px) { .app-facts { grid-template-columns: 1fr; } }
+
+/* ---- Product window mock ---- */
+.app-mock { position: relative; width: min(100%, 560px); border-radius: 14px; background: linear-gradient(160deg, #15171b, #0b0c0f); border: 1px solid #ffffff1c; box-shadow: 0 50px 120px #000000aa, 0 0 80px #8397b91c, inset 0 1px 0 #ffffff12; overflow: visible; }
+.app-mock-bar { display: flex; align-items: center; gap: 6px; padding: 11px 14px; border-bottom: 1px solid #ffffff12; font: 10px var(--mono); color: #8f939c; }
+.app-mock-bar i { width: 9px; height: 9px; border-radius: 50%; background: #ffffff22; }
+.app-mock-bar span { margin-left: 10px; letter-spacing: .04em; }
+.app-mock-bar em { margin-left: auto; font-style: normal; display: inline-flex; align-items: center; gap: 6px; color: #b9bdc6; }
+.app-mock-bar em u { width: 6px; height: 6px; border-radius: 50%; background: #8397b9; box-shadow: 0 0 10px #8397b9; animation: cg-blink 2.4s ease-in-out infinite; }
+.app-mock-body { display: grid; grid-template-columns: 44px 1fr; min-height: 330px; }
+.app-mock-rail { border-right: 1px solid #ffffff10; padding: 14px 0; display: grid; gap: 12px; justify-items: center; align-content: start; }
+.app-mock-rail i { width: 22px; height: 22px; border-radius: 7px; border: 1px solid #ffffff1c; }
+.app-mock-rail i.on { background: #8397b926; border-color: #8397b9; box-shadow: 0 0 16px #8397b955; }
+.app-mock-main { padding: 14px; display: grid; gap: 12px; }
+.app-mock-cams { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.app-mock-cam { position: relative; aspect-ratio: 16 / 10; border-radius: 6px; overflow: hidden; border: 1px solid #ffffff12; background: linear-gradient(180deg, #202228, #101114); }
+.app-mock-cam > span { position: absolute; left: 8px; top: 7px; font: 8px var(--mono); letter-spacing: .05em; color: #9da1ab; z-index: 2; }
+.app-mock-cam .fig { position: absolute; bottom: 8%; width: 9%; height: 46%; border-radius: 40% 40% 12% 12%; background: #4a4d56; }
+.app-mock-cam .fig::before { content: ""; position: absolute; left: 50%; top: -34%; width: 120%; aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%; background: inherit; }
+.app-mock-cam .fig.a { left: 34%; } .app-mock-cam .fig.b { left: 56%; height: 40%; background: #5a5e68; }
+.app-mock-cam.alert { border-color: #8397b9; box-shadow: 0 0 24px #8397b933; }
+.app-mock-box { position: absolute; left: 26%; top: 24%; width: 46%; height: 62%; border: 1px solid #8397b9; border-radius: 3px; box-shadow: 0 0 14px #8397b955; animation: cg-box 3.4s ease-in-out infinite; }
+.app-mock-cam.off { display: grid; place-items: center; background: repeating-linear-gradient(135deg, #14151a 0 8px, #101114 8px 16px); }
+.app-mock-cam.off small { font: 9px var(--mono); color: #6f737d; letter-spacing: .08em; text-transform: uppercase; }
+.app-mock-chart { border: 1px solid #ffffff12; border-radius: 6px; padding: 10px 12px 8px; background: #0d0f12; }
+.app-mock-chart > span { font: 9px var(--mono); letter-spacing: .06em; color: #8f939c; text-transform: uppercase; }
+.app-mock-chart svg { display: block; width: 100%; height: 64px; margin-top: 6px; overflow: visible; }
+.app-mock-chart .area { fill: url(#none); fill: #8397b91a; stroke: none; }
+.app-mock-chart .line { fill: none; stroke: #8397b9; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.app-mock-toast { position: absolute; right: -22px; bottom: 36px; display: flex; align-items: center; gap: 11px; padding: 11px 12px; border-radius: 10px; background: #181a1ff0; border: 1px solid #ffffff22; box-shadow: 0 18px 44px #000000aa; backdrop-filter: blur(10px); animation: cg-toast 6s ease-in-out infinite; }
+.app-mock-toast i { width: 9px; height: 9px; border-radius: 50%; background: #8397b9; box-shadow: 0 0 12px #8397b9; }
+.app-mock-toast span { display: grid; gap: 2px; } .app-mock-toast b { font: 600 12px var(--display); color: #f3f4f5; } .app-mock-toast small { font: 9px var(--mono); color: #9da1ab; }
+.app-mock-toast em { font: 600 10px var(--display); font-style: normal; color: #0e0f10; background: #8397b9; padding: 6px 10px; border-radius: 6px; }
+@media (max-width: 600px) { .app-mock-toast { right: 6px; } .app-mock-body { grid-template-columns: 34px 1fr; } }
+@keyframes cg-blink { 50% { opacity: .35; } }
+@keyframes cg-box { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(6%, 3%); } }
+@keyframes cg-toast { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+
+/* ==========================================================================
+   Scroll-linked motion (only when JS adds .cg-motion; reduced motion never gets it)
+   ========================================================================== */
+.cg-motion h2.cg-split .cg-word { display: inline-block; overflow: hidden; vertical-align: top; padding: 0 .05em .14em; margin: 0 -.05em -.14em; }
+.cg-motion h2.cg-split .cg-word > span { display: inline-block; transform: translateY(108%); transition: transform .85s cubic-bezier(.2,.8,.2,1); transition-delay: calc(var(--i, 0) * 45ms); will-change: transform; }
+.cg-motion h2.cg-split.cg-split-in .cg-word > span { transform: none; }
+
+/* Parallax art, spinning rings, drawing lines */
+.cg-motion [data-scroll="parallax"] { translate: 0 calc(var(--pc, 0) * var(--depth, -30) * 1px); }
+.cg-motion [data-scroll="spin"] { rotate: calc(var(--p, 0) * 220deg); }
+.cg-motion .cg-draw { stroke-dasharray: var(--len) !important; stroke-dashoffset: calc(var(--len) * (1 - var(--draw, 1))) !important; animation: none !important; }
+.cg-motion .app-mock[data-scroll="tilt"] {
+  --k: min(1, calc(var(--p, 1) * 1.5));
+  transform: perspective(1500px) rotateX(calc((1 - var(--k)) * 14deg)) rotateY(calc((1 - var(--k)) * -9deg)) translateY(calc((1 - var(--k)) * 46px)); opacity: calc(.3 + var(--k) * .7);
+}
+.cg-motion .cg-ambient-layer { translate: 0 calc((var(--sp, .5) - .5) * -140px); }
+
+/* Pointer-following light on cards */
+.cg-glow { position: relative; }
+.cg-glow::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .35s ease; background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(131, 151, 185, .16), transparent 62%); z-index: 0; }
+.cg-glow:hover::before { opacity: 1; }
+[data-theme="light"] .cg-glow::before { background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(96, 116, 151, .13), transparent 62%); }
+
+/* ---- Story: pinned, scroll-driven walkthrough ---- */
+.story-section.is-pinned { padding: 0; }
+.story-section.is-pinned .story-pin { position: sticky; top: 78px; min-height: calc(100vh - 78px); display: flex; align-items: center; padding: 20px 0; }
+.story-section.is-pinned .story-pin > .section-shell { width: 100%; }
+.story-section.is-pinned .story-head { margin-bottom: 28px; }
+.story-section.is-pinned .story-stage { position: static; }
+.story-scroll-hint { margin: 12px 0 0; font: 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #7f8490; display: flex; align-items: center; gap: 10px; }
+.story-scroll-hint::before { content: ""; width: 1px; height: 22px; background: linear-gradient(#8397b9, transparent); animation: cg-hint 1.8s ease-in-out infinite; }
+@keyframes cg-hint { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+.story-section.is-pinned::after { content: ""; position: absolute; right: 22px; top: 50%; width: 2px; height: 120px; margin-top: -60px; border-radius: 2px; background: linear-gradient(#8397b9 calc(var(--story-p, 0) * 100%), #ffffff18 0); pointer-events: none; }
+.story-section { position: relative; }
+.story-swap { animation: cg-story-swap .55s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes cg-story-swap { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.story-time { font-variant-numeric: tabular-nums; }
+
+/* Buttons: a little life */
+.public-site-content .button { position: relative; overflow: hidden; }
+.public-site-content .button::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.28) 50%, transparent 65%); transform: translateX(-120%); transition: transform .7s cubic-bezier(.2,.8,.2,1); pointer-events: none; }
+.public-site-content .button:hover::after { transform: translateX(120%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cg-glow::before, .story-swap, .app-mock-toast, .app-mock-box, .app-mock-bar em u, .story-scroll-hint::before { animation: none !important; transition: none !important; }
+}
+
+/* FAQ: earlier dark-era rules painted a gradient behind every item; the FAQ is a light section now */
+main[data-site-theme] .public-site-content > .faq-section .faq-item { background: none !important; background-color: transparent !important; border-color: #d5d8de !important; box-shadow: none !important; }
+main[data-site-theme] .public-site-content > .faq-section .faq-item > summary { color: #20242b !important; background: none !important; }
+main[data-site-theme] .public-site-content > .faq-section .faq-item > summary > span { color: #5f626c !important; border-color: #cfd1d6 !important; background: transparent !important; }
+main[data-site-theme] .public-site-content > .faq-section .faq-item > p { color: #5d6069 !important; }
+main[data-site-theme] .public-site-content > .faq-section .faq-item[open] { background: #ffffffb8 !important; border-color: #b9c4d8 !important; }

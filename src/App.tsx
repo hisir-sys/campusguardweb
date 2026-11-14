@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import StoryScroll from './StoryScroll'
 import PrivacyPolicy from './PrivacyPolicy'
+import { initScrollMotion } from './motion'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL || '',
@@ -866,6 +867,7 @@ function App() {
     void restoreSession()
     return () => { cancelled = true }
   }, [])
+  useEffect(() => initScrollMotion(), [isAuthenticated])
   const openAccess = () => { setModal('access'); setMenuOpen(false) }
   const [inquiryTopic, setInquiryTopic] = useState('Request pilot details')
   const openInquiry = (topic: string) => { setInquiryTopic(topic); setModal('inquiry'); setMenuOpen(false) }
@@ -901,17 +903,20 @@ function App() {
     <section className="public-hero" id="overview" data-theme="dark">
       <div className="section-shell public-hero-inner">
         <div className="public-hero-copy"><span className="eyebrow"><span className="eyebrow-line" /> Campus safety, with more context</span><h1>See the signal.<br /><em>Support the people</em></h1><p>CampusGuard is a desktop-first, AI-assisted safety workflow designed to help campus teams notice potential incidents, review context and make informed decisions.</p><div className="hero-actions"><button className="button button-lime" onClick={openAccess}>Apply for a pilot <ArrowUpRight size={15} /></button><a className="text-link" href="#pipeline" onClick={event => navigateToSection(event, 'pipeline')}>Explore the AI pipeline <ArrowRight size={15} /></a></div><p className="public-hero-note"><LockKeyhole size={13} /> Human-led review. The AI signal is not a conclusion.</p></div>
-        <div className="public-hero-art" aria-label="Interactive 3D-style illustration of the CampusGuard desktop monitoring workflow" onMouseMove={event => { const rect = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty('--tilt-x', ((event.clientY - rect.top) / rect.height - .5).toFixed(3)); event.currentTarget.style.setProperty('--tilt-y', ((event.clientX - rect.left) / rect.width - .5).toFixed(3)) }} onMouseLeave={event => { event.currentTarget.style.setProperty('--tilt-x', '0'); event.currentTarget.style.setProperty('--tilt-y', '0') }}><div className="hero-orbit hero-orbit-one"></div><div className="hero-orbit hero-orbit-two"></div><div className="hero-console"><div className="hero-console-top"><span><i></i> CAMPUSGUARD / DESKTOP</span><small>LOCAL WORKFLOW</small></div><div className="hero-console-screen"><div className="hero-console-grid"></div><div className="hero-scan-ring"><ScanEye size={38}/></div><span className="hero-console-tag">AI-ASSISTED SIGNAL</span><div className="hero-console-bars"><i></i><i></i><i></i><i></i><i></i></div></div><div className="hero-console-bottom"><span>01 / CAPTURE</span><span>02 / REVIEW</span><span>03 / RESPOND</span></div></div><span className="hero-float-tag">HUMAN REVIEW REQUIRED</span></div>
+        <div className="public-hero-art" data-scroll="parallax" data-depth="-46" aria-label="Interactive 3D-style illustration of the CampusGuard desktop monitoring workflow" onMouseMove={event => { const rect = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty('--tilt-x', ((event.clientY - rect.top) / rect.height - .5).toFixed(3)); event.currentTarget.style.setProperty('--tilt-y', ((event.clientX - rect.left) / rect.width - .5).toFixed(3)) }} onMouseLeave={event => { event.currentTarget.style.setProperty('--tilt-x', '0'); event.currentTarget.style.setProperty('--tilt-y', '0') }}><div className="hero-orbit hero-orbit-one"></div><div className="hero-orbit hero-orbit-two"></div><div className="hero-console"><div className="hero-console-top"><span><i></i> CAMPUSGUARD / DESKTOP</span><small>LOCAL WORKFLOW</small></div><div className="hero-console-screen"><div className="hero-console-grid"></div><div className="hero-scan-ring"><ScanEye size={38}/></div><span className="hero-console-tag">AI-ASSISTED SIGNAL</span><div className="hero-console-bars"><i></i><i></i><i></i><i></i><i></i></div></div><div className="hero-console-bottom"><span>01 / CAPTURE</span><span>02 / REVIEW</span><span>03 / RESPOND</span></div></div><span className="hero-float-tag">HUMAN REVIEW REQUIRED</span></div>
       </div>
+      <div className="principle-strip"><div className="strip-inner"><span className="strip-label">A DIFFERENT KIND OF MONITORING</span><span><ShieldCheck size={17} /> Human-led decisions</span><span><Monitor size={17} /> Desktop-first workflow</span><span><LockKeyhole size={17} /> Privacy-aware by design</span></div></div>
     </section>
-    <StoryScroll />
-    <section className="section platform-section" id="platform" data-theme="dark"><div className="section-shell">
+
+    <section className="section platform-section" id="platform" data-theme="light"><div className="section-shell">
       <div className="section-heading"><div><span className="eyebrow"><span className="eyebrow-line" /> The platform</span><h2>From camera feeds to<br /><em>clearer decisions</em></h2></div><p>Security teams already have a lot to watch. CampusGuard is being built to help make the important moments easier to find, review and document.</p></div>
       <div className="feature-grid">{features.map(({ number, icon: Icon, title, text }) => <article className="feature-card" key={number}><div className="feature-top"><span>{number}</span><Icon size={21} strokeWidth={1.5} /></div><h3>{title}</h3><p>{text}</p><span className="feature-arrow"><ArrowUpRight size={17} /></span></article>)}</div>
       <div className="platform-note"><Sparkles size={17} /><p><b>Built around a desktop application.</b> CampusGuard’s Windows app remains the primary place for camera capture and local analysis. A future web workspace may support account and incident-review experiences once secure authentication and data services are connected.</p></div>
     </div></section>
 
-    <section className="public-problem-section" id="challenges" data-theme="dark">
+    <StoryScroll />
+
+    <section className="public-problem-section" id="challenges" data-theme="light">
       <div className="section-shell">
         <div className="public-editorial-heading">
           <span className="eyebrow"><span className="eyebrow-line" /> The challenge</span>
@@ -947,10 +952,10 @@ function App() {
       </div>
     </section>
 
-    <section className="public-value-section" id="designed-for" data-theme="dark">
+    <section className="public-value-section" id="designed-for" data-theme="light">
       <div className="section-shell public-value-layout">
         <div className="public-value-copy"><span className="eyebrow"><span className="eyebrow-line" /> Designed for real-world teams</span><h2>Useful technology.<br /><em>Clear boundaries</em></h2><p>CampusGuard is being developed for schools and educational environments that want an additional way to surface potential safety events while keeping people responsible for interpretation and response.</p><ul className="public-value-list"><li><ShieldCheck size={17}/><span><b>Human review stays central</b><small>AI output is a prompt to review, not proof that something happened.</small></span></li><li><LockKeyhole size={17}/><span><b>Desktop-first by design</b><small>Camera configuration and the core workflow remain in the Windows application.</small></span></li><li><Activity size={17}/><span><b>A more structured process</b><small>Bring detection signals, review and incident documentation into a consistent workflow.</small></span></li></ul><button className="button button-lime" onClick={openAccess}>Explore a campus pilot <ArrowUpRight size={15}/></button></div>
-        <div className="public-value-art" aria-label="Illustration of a potential alert being reviewed by a staff member"><div className="public-value-orbit orbit-a"/><div className="public-value-orbit orbit-b"/><div className="public-value-panel"><div className="public-value-panel-top"><span><i/> CAMPUSGUARD / REVIEW</span><span>CONCEPTUAL UI</span></div><div className="public-value-preview"><div className="public-value-scan"/><div className="public-value-person person-a"/><div className="public-value-person person-b"/><div className="public-value-box"/><span>REVIEW MOMENT</span></div><div className="public-value-alert"><span className="public-value-alert-icon"><Activity size={16}/></span><span><b>Potential event flagged</b><small>Staff review required</small></span><span className="public-value-status">TO REVIEW</span></div><div className="public-value-footer"><span><LockKeyhole size={12}/> Illustrative interface</span><span>NOT LIVE FOOTAGE</span></div></div><div className="public-value-float"><ShieldCheck size={17}/><span><b>Human-led</b><small>Decision workflow</small></span></div></div>
+        <div className="public-value-art" data-scroll="parallax" data-depth="-34" aria-label="Illustration of a potential alert being reviewed by a staff member"><div className="public-value-orbit orbit-a"/><div className="public-value-orbit orbit-b"/><div className="public-value-panel"><div className="public-value-panel-top"><span><i/> CAMPUSGUARD / REVIEW</span><span>CONCEPTUAL UI</span></div><div className="public-value-preview"><div className="public-value-scan"/><div className="public-value-person person-a"/><div className="public-value-person person-b"/><div className="public-value-box"/><span>REVIEW MOMENT</span></div><div className="public-value-alert"><span className="public-value-alert-icon"><Activity size={16}/></span><span><b>Potential event flagged</b><small>Staff review required</small></span><span className="public-value-status">TO REVIEW</span></div><div className="public-value-footer"><span><LockKeyhole size={12}/> Illustrative interface</span><span>NOT LIVE FOOTAGE</span></div></div><div className="public-value-float"><ShieldCheck size={17}/><span><b>Human-led</b><small>Decision workflow</small></span></div></div>
       </div>
     </section>
 
@@ -965,7 +970,7 @@ function App() {
           <div className="neural-visual-top"><span><i className="neural-live-dot" /> CONCEPTUAL AI PIPELINE</span><span>CG / MODEL FLOW 01</span></div>
           <svg className="neural-network" viewBox="0 0 900 300" role="img" aria-label="Animated connected network nodes">
             <defs><radialGradient id="nodeGlow"><stop offset="0%" stopColor="#d6ff78" stopOpacity=".95" /><stop offset="100%" stopColor="#c8ff52" stopOpacity=".12" /></radialGradient></defs>
-            <g className="network-links">
+            <g className="network-links" data-scroll="draw-group">
               <path d="M70 150 L205 65 L340 115 L470 45 L610 100 L755 65 L835 150" />
               <path d="M70 150 L205 145 L340 115 L470 150 L610 100 L755 150 L835 150" />
               <path d="M70 150 L205 235 L340 195 L470 250 L610 200 L755 235 L835 150" />
@@ -1009,21 +1014,14 @@ function App() {
       </div>
     </section>
 
-    <section className="dark-band" id="principles" data-theme="light"><div className="section-shell dark-band-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> A more thoughtful approach</span><h2>Technology should<br />support <em>people</em></h2></div><p>CampusGuard is designed as an aid to awareness and review—not a substitute for trained staff, established safety procedures or human judgement.</p><div className="dark-band-mark"><ShieldCheck size={35} strokeWidth={1} /></div></div></section>
-
-    <section className="principle-strip" data-theme="dark"><div className="strip-inner"><span className="strip-label">A DIFFERENT KIND OF MONITORING</span><span><ShieldCheck size={17} /> Human-led decisions</span><span><Monitor size={17} /> Desktop-first workflow</span><span><LockKeyhole size={17} /> Privacy-aware by design</span></div></section>
-
-
-
-
-
-
+    <section className="dark-band" id="principles" data-theme="light"><div className="section-shell dark-band-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> A more thoughtful approach</span><h2>Technology should<br />support <em>people</em></h2></div><p>CampusGuard is designed as an aid to awareness and review—not a substitute for trained staff, established safety procedures or human judgement.</p><div className="dark-band-mark" data-scroll="spin"><ShieldCheck size={35} strokeWidth={1} /></div></div></section>
 
     <section className="how-it-works-section" id="how-it-works" data-theme="dark">
       <div className="section-shell"><div className="section-heading"><div><span className="eyebrow"><span className="eyebrow-line" /> A clearer workflow</span><h2>From connection<br />to <em>considered action</em></h2></div><p>CampusGuard is designed to support a team’s existing safety process, not replace it.</p></div>
         <div className="how-steps"><article><span>01</span><h3>Connect</h3><p>Set up compatible cameras in the Windows desktop application.</p></article><article><span>02</span><h3>Understand</h3><p>Local AI analysis can surface a potential event for attention.</p></article><article><span>03</span><h3>Review</h3><p>Trained staff check the context and decide what to do next.</p></article></div>
       </div>
     </section>
+
     <section className="faq-section" id="faqs" data-theme="light">
       <div className="section-shell faq-shell">
         <div className="faq-intro"><span className="eyebrow"><span className="eyebrow-line" /> Common questions</span><h2>Good questions.<br /><em>Clear answers</em></h2><p>A quick guide to what CampusGuard is designed to do—and what it is not.</p></div>
@@ -1041,13 +1039,46 @@ function App() {
     <section className="download-section" id="download" data-theme="dark">
       <div className="download-grid" aria-hidden="true"></div>
       <div className="section-shell download-inner">
-        <div className="download-copy"><span className="eyebrow"><span className="eyebrow-line" /> The desktop application</span><h2>Keep the full workflow<br /><em>where it belongs</em></h2><p>Camera setup, live monitoring and incident footage stay in CampusGuard for Windows. The website remains a lightweight companion for account access and, once connected, read-only status and alerts.</p><div className="download-actions"><a className="button button-lime" href="https://github.com/hisir-sys/campusguard/releases" target="_blank" rel="noreferrer">Check desktop releases <ArrowUpRight size={15} /></a><a className="download-secondary" href="https://github.com/hisir-sys/campusguard" target="_blank" rel="noreferrer">View desktop project <ArrowRight size={14} /></a></div><small className="download-note"><LockKeyhole size={12} /> Opens the desktop project’s official GitHub page. A direct installer link will be added when a public release is available.</small></div>
-        <div className="download-visual" aria-hidden="true"><div className="download-orbit download-orbit-a"></div><div className="download-orbit download-orbit-b"></div><div className="download-device"><div className="download-device-top"><span>CG / DESKTOP</span><span className="download-device-status"><i/> LOCAL</span></div><div className="download-device-body"><div className="download-device-mark"><ShieldCheck size={35}/></div><span>CAMPUSGUARD</span><small>WINDOWS APPLICATION</small><div className="download-progress"><i/></div></div><div className="download-device-bottom">CAMERAS · AI ANALYSIS · INCIDENT REVIEW</div></div><span className="download-visual-label">DESKTOP-FIRST / READ-ONLY WEB</span></div>
+        <div className="download-copy">
+          <span className="eyebrow"><span className="eyebrow-line" /> The desktop application</span>
+          <h2>Keep the full workflow<br /><em>where it belongs</em></h2>
+          <p>Camera setup, live monitoring and incident footage stay in CampusGuard for Windows. The website remains a lightweight companion for account access and, once connected, read-only status and alerts.</p>
+          <div className="app-facts">
+            <div className="app-fact"><b><span data-count="0">0</span></b><span>new cameras needed. It reads the CCTV you already have.</span></div>
+            <div className="app-fact"><b><span data-count="2">2</span></b><span>alert tiers, so a possible event is never treated like an emergency.</span></div>
+            <div className="app-fact"><b><span data-count="4">4</span></b><span>stages from watching to a reviewed record.</span></div>
+            <div className="app-fact"><b>You</b><span>make the final call. The app only points to the moment.</span></div>
+          </div>
+          <div className="app-chips" aria-label="What the Windows app includes"><span>Live camera grid</span><span>Tiered alerts</span><span>Incident timeline</span><span>Saved clips</span><span>Floor map</span><span>Light and dark themes</span></div>
+          <div className="download-actions"><button className="button button-lime" onClick={openAccess}>Apply for early access <ArrowUpRight size={15} /></button><a className="download-secondary" href="#faqs" onClick={event => navigateToSection(event, 'faqs')}>How approval works <ArrowRight size={14} /></a></div>
+          <small className="download-note"><LockKeyhole size={12} /> The Windows installer is shared through a private, time-limited link once your application is approved.</small>
+        </div>
+        <div className="download-visual" aria-hidden="true">
+          <div className="download-orbit download-orbit-a" data-scroll="spin"></div><div className="download-orbit download-orbit-b" data-scroll="spin"></div>
+          <div className="app-mock" data-scroll="tilt">
+            <div className="app-mock-bar"><i /><i /><i /><span>CampusGuard · Dashboard</span><em><u /> 3 online</em></div>
+            <div className="app-mock-body">
+              <div className="app-mock-rail"><i className="on" /><i /><i /><i /></div>
+              <div className="app-mock-main">
+                <div className="app-mock-cams">
+                  <div className="app-mock-cam"><span>CAM 01 · Entrance</span><b className="fig a" /><b className="fig b" /></div>
+                  <div className="app-mock-cam alert"><span>CAM 02 · Corridor B</span><b className="fig a" /><b className="fig b" /><b className="app-mock-box" /></div>
+                  <div className="app-mock-cam"><span>CAM 03 · Courtyard</span><b className="fig a" /></div>
+                  <div className="app-mock-cam off"><span>CAM 04 · Gate</span><small>No signal</small></div>
+                </div>
+                <div className="app-mock-chart"><span>Signals this week</span>
+                  <svg viewBox="0 0 300 70" preserveAspectRatio="none"><path className="area" d="M0 62 L30 52 L60 56 L90 38 L120 44 L150 24 L180 34 L210 18 L240 30 L270 12 L300 20 L300 70 L0 70Z" /><path className="line" data-scroll="draw" d="M0 62 L30 52 L60 56 L90 38 L120 44 L150 24 L180 34 L210 18 L240 30 L270 12 L300 20" /></svg>
+                </div>
+              </div>
+            </div>
+            <div className="app-mock-toast"><i /><span><b>Possible fight</b><small>Corridor B · for review</small></span><em>Review</em></div>
+          </div>
+        </div>
       </div>
     </section>
 
+    <section className="final-cta-section" id="final-cta" data-theme="light"><div className="section-shell final-cta-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> Early access programme</span><h2>Ready to explore CampusGuard<br /><em>for your campus?</em></h2><p>We’ll understand your needs, discuss scope and pricing directly, and arrange a demo. No online checkout.</p></div><div className="final-cta-actions"><a className="button button-lime" href="https://wa.me/917003276998?text=Hello%20CampusGuard%2C%20I%27d%20like%20to%20learn%20more%20about%20the%20platform." target="_blank" rel="noopener noreferrer">WhatsApp about CampusGuard <ArrowUpRight size={16}/></a><a className="button button-outline" href="mailto:campusguard43@gmail.com?subject=CampusGuard%20product%20enquiry">Email about CampusGuard <ArrowUpRight size={16}/></a><button className="button button-outline" onClick={() => openInquiry("Request pilot details")}>Request a demo <ArrowUpRight size={16}/></button></div></div></section>
 
-    <section className="final-cta-section" id="final-cta" data-theme="dark"><div className="section-shell final-cta-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> Early access programme</span><h2>Ready to explore CampusGuard<br /><em>for your campus?</em></h2><p>We’ll understand your needs, discuss scope and pricing directly, and arrange a demo. No online checkout.</p></div><div className="final-cta-actions"><a className="button button-lime" href="https://wa.me/917003276998?text=Hello%20CampusGuard%2C%20I%27d%20like%20to%20learn%20more%20about%20the%20platform." target="_blank" rel="noopener noreferrer">WhatsApp about CampusGuard <ArrowUpRight size={16}/></a><a className="button button-outline" href="mailto:campusguard43@gmail.com?subject=CampusGuard%20product%20enquiry">Email about CampusGuard <ArrowUpRight size={16}/></a><button className="button button-outline" onClick={() => openInquiry("Request pilot details")}>Request a demo <ArrowUpRight size={16}/></button></div></div></section>
     <footer className="site-footer"><div className="footer-top"><Brand /><p>More context. Better review.<br />People at the centre.</p><div className="footer-links"><a href="#platform">Platform</a><a href="#principles">Our approach</a><a href="#faqs">FAQs</a><a href="#download">Download</a><a href="/privacy">Privacy Policy</a><a href="mailto:campusguard43@gmail.com?subject=CampusGuard%20pricing%20enquiry">Email about plans ↗</a><a href="https://wa.me/917003276998?text=Hello%20CampusGuard%2C%20I%27d%20like%20to%20discuss%20plans." target="_blank" rel="noopener noreferrer">WhatsApp about plans ↗</a><button onClick={openAccess}>Apply for access</button></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} CampusGuard. All rights reserved.</span><span>AI-assisted, human-led, privacy-aware</span><a href="#top">Back to top ↑</a></div></footer>
 
     {modal === 'inquiry' && <InquiryModal close={() => setModal(null)} initialTopic={inquiryTopic} />}

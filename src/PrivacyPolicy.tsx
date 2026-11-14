@@ -1,4 +1,4 @@
-const updated = '12 November 2026'
+const updated = '14 November 2026'
 
 export default function PrivacyPolicy() {
   return <main className="privacy-page" id="top">
@@ -75,7 +75,7 @@ export default function PrivacyPolicy() {
         <li><a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a></li>
         <li><a href="https://www.whatsapp.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">WhatsApp Privacy Policy</a></li>
       </ul>
-      <p>These providers may process information on infrastructure located outside India, depending on project configuration and their service operations. The exact Supabase project region, Vercel deployment region, and any cross-border access must be checked in the live account settings. We do not publish a claim that all website data is stored only in India.</p>
+      <p>The CampusGuard Supabase project is configured in the Asia Pacific (Mumbai) region, ap-south-1. These providers may still process information on infrastructure located outside India, depending on their service operations, support access, backups and the Vercel deployment region, which must be checked in the live account settings. We do not publish a claim that all website data is stored only in India.</p>
       <p>We may disclose information to authorised personnel who need it to review applications, administer accounts, respond to inquiries, or provide support; to service providers acting on our instructions; or where disclosure is required by law. We do not make customer records publicly accessible.</p>
 
       <h2>7. Security</h2>

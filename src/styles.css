@@ -3655,16 +3655,20 @@ main[data-site-theme="dark"] .how-it-works-section .how-steps p {
   color: #a8b0bf !important;
 }
 main[data-site-theme="dark"] .final-cta-section {
-  background: #090b10 !important;
-  color: #f1f3f7 !important;
+  background: #f5f6f7 !important;
+  color: #17181a !important;
 }
 main[data-site-theme="dark"] .final-cta-section h2 {
-  color: #f1f3f7 !important;
+  color: #17181a !important;
 }
 main[data-site-theme="dark"] .final-cta-section h2 em {
-  color: #a8b8d1 !important;
+  color: #565961 !important;
 }
 main[data-site-theme="dark"] .final-cta-section .eyebrow,
 main[data-site-theme="dark"] .final-cta-section p {
-  color: #a8b0bf !important;
+  color: #636670 !important;
+}
+main[data-site-theme="dark"] .final-cta-section .button-outline {
+  color: #26272a !important;
+  border-color: #c4c6cc !important;
 }
