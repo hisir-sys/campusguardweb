@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { looksLikeBot, tooManyRequests, withinLimit } from './_guard'
 
 function clean(value: unknown, max: number): string | null {
   if (typeof value !== 'string') return null
@@ -18,6 +19,7 @@ export default async function handler(req: any, res: any) {
   if (!supabaseUrl || !serviceKey) return res.status(503).json({ error: 'Inquiry submission is not configured right now.' })
 
   const body = req.body && typeof req.body === 'object' ? req.body : {}
+  if (looksLikeBot(body)) return res.status(201).json({ ok: true })
   const name = clean(body.name, 120)
   const email = clean(body.email, 254)
   const organisation = clean(body.organisation, 180)
@@ -25,7 +27,7 @@ export default async function handler(req: any, res: any) {
   const message = typeof body.message === 'string' ? body.message.trim().slice(0, 3000) : ''
   const privacyConsent = body.privacy_consent === true
   const privacyNoticeVersion = typeof body.privacy_notice_version === 'string' ? body.privacy_notice_version.slice(0, 32) : ''
-  const allowedTopics = new Set(['Request pilot details', 'Plan a deployment', 'Discuss multi-site needs'])
+  const allowedTopics = new Set(['Request pilot details', 'Plan a deployment', 'Discuss multi-site needs', 'Book a demo'])
   if (!name || !email || !organisation || !topic || !allowedTopics.has(topic) || !privacyConsent || privacyNoticeVersion !== '2026-11-12' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Please check your details and agree to the Privacy Policy before submitting.' })
   }
@@ -33,6 +35,7 @@ export default async function handler(req: any, res: any) {
     const supabase = createClient(supabaseUrl, serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     })
+    if (!await withinLimit(supabase, req, 'pilot-inquiries', 8, 3600)) return tooManyRequests(res)
     const { error } = await supabase.from('pilot_inquiries').insert({ name, email, organisation, topic, message, privacy_notice_version: privacyNoticeVersion, privacy_consent_at: new Date().toISOString() })
     if (error) {
       console.error('Pilot inquiry insert failed:', JSON.stringify({ code: error.code, message: error.message }))

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { tooManyRequests, withinLimit } from './_guard'
 
 const SEVERITIES = new Set(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'])
 const text = (value: unknown, max: number) => (typeof value === 'string' ? value.trim().slice(0, max) : '')
@@ -30,6 +31,7 @@ export default async function handler(req: any, res: any) {
     const loginApproved = access?.login_status === 'approved' || (!access?.login_status && access?.status === 'approved')
     if (!loginApproved || access?.payment_status !== 'approved') return res.status(403).json({ error: 'Both login and payment approvals are required for CampusGuard access.' })
 
+    if (!await withinLimit(db, req, 'sync-push', 1500, 3600, auth.user.id)) return tooManyRequests(res, 600)
     const now = new Date().toISOString()
     const online = server?.cameras_online
     const { error: serverError } = await db.from('account_servers').upsert({

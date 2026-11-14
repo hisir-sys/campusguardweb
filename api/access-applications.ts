@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { looksLikeBot, tooManyRequests, withinLimit } from './_guard'
 
 function textField(value: unknown, maxLength: number): string | null {
   if (typeof value !== 'string') return null
@@ -23,8 +24,9 @@ export default async function handler(req: any, res: any) {
   }
 
   const body = req.body && typeof req.body === 'object' ? req.body : {}
+  if (looksLikeBot(body)) return res.status(201).json({ ok: true })
   const name = textField(body.name, 120)
-  const email = textField(body.email, 254)
+  const email = textField(body.email, 254)?.toLowerCase() ?? null
   const organisation = textField(body.organisation, 180)
   const role = textField(body.role, 100)
   const purpose = typeof body.purpose === 'string' ? body.purpose.trim().slice(0, 2000) : ''
@@ -38,6 +40,15 @@ export default async function handler(req: any, res: any) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Please enter a valid email address.' })
   }
+  // The server enforces what the form promises: 12 to 72 characters (72 is the most the hashing accepts).
+  if (password.length < 12 || password.length > 72) {
+    return res.status(400).json({ error: 'Please choose a password between 12 and 72 characters.' })
+  }
+  // Nobody can apply using the owner address, so the admin account can never be claimed through this form.
+  const ownerEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase()
+  if (ownerEmail && email === ownerEmail) {
+    return res.status(400).json({ error: 'We could not create an account with these details. If you already applied, try logging in.' })
+  }
   const allowedRoles = new Set([
     'School / campus leadership', 'IT / security team', 'Facilities / operations',
     'Research / evaluation', 'Individual / personal use', 'Other',
@@ -50,6 +61,7 @@ export default async function handler(req: any, res: any) {
     const supabase = createClient(supabaseUrl, secretKey, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     })
+    if (!await withinLimit(supabase, req, 'access-applications', 5, 3600)) return tooManyRequests(res)
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
@@ -59,7 +71,7 @@ export default async function handler(req: any, res: any) {
     if (authError || !authData.user) {
       console.error('Access application account creation failed:', authError?.message ?? 'No user returned')
       return res.status(400).json({
-        error: 'We could not create an account for this email. It may already be registered; try logging in or use another email address.',
+        error: 'We could not create an account with these details. If you already applied, try logging in.',
       })
     }
 
