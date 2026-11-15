@@ -46,36 +46,49 @@ function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => voi
     if (!mounted.current) { mounted.current = true; return }
     firstField.current?.focus({ preventScroll: true })
   }, [step])
-  const checkStep = (current: number): string => {
+  const checkStep = (current: number, values: typeof form = form): string => {
     if (current === 0) {
-      if (form.name.trim().length < 2) return 'Please tell us your name.'
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return 'Please enter a work email we can reach you on.'
+      if (values.name.trim().length < 2) return 'Please tell us your name.'
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) return 'Please enter a work email we can reach you on.'
     }
     if (current === 1) {
-      if (form.organisation.trim().length < 2) return 'Please tell us your school, college or organisation.'
-      if (!form.role) return 'Please choose the role that fits you best.'
+      if (values.organisation.trim().length < 2) return 'Please tell us your school, college or organisation.'
+      if (!values.role) return 'Please choose the role that fits you best.'
     }
-    if (current === 2 && (form.password.length < 12 || form.password.length > 72)) return 'Please choose a password between 12 and 72 characters.'
+    if (current === 2 && (values.password.length < 12 || values.password.length > 72)) return 'Please choose a password between 12 and 72 characters.'
     return ''
   }
-  const nextStep = (event: React.FormEvent) => {
+  // Browser autofill can fill a box without React hearing about it, so read what is really in the fields.
+  const readFields = (formElement: HTMLFormElement): typeof form => {
+    const next = { ...form }
+    const ids: Record<'name' | 'email' | 'organisation' | 'role' | 'password' | 'purpose', string> = { name: 'ap-name', email: 'ap-email', organisation: 'ap-org', role: 'ap-role', password: 'ap-pw', purpose: 'ap-purpose' }
+    ;(Object.keys(ids) as Array<keyof typeof ids>).forEach(key => {
+      const field = formElement.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('#' + ids[key])
+      if (field) next[key] = field.value
+    })
+    return next
+  }
+  const nextStep = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const problem = checkStep(step)
+    const values = readFields(event.currentTarget)
+    setForm(values)
+    const problem = checkStep(step, values)
     if (problem) { setSubmitError(problem); return }
     setSubmitError(''); setStep(current => Math.min(3, current + 1))
   }
-  const submitApplication = async (event: React.FormEvent) => {
+  const submitApplication = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (submitting) return
+    const values = readFields(event.currentTarget)
     if (!privacyConsent) { setSubmitError('Please agree to the Privacy Policy so we can process your application.'); return }
-    for (const earlier of [0, 1, 2]) { const problem = checkStep(earlier); if (problem) { setSubmitError(problem); setStep(earlier); return } }
+    for (const earlier of [0, 1, 2]) { const problem = checkStep(earlier, values); if (problem) { setSubmitError(problem); setStep(earlier); return } }
     setSubmitting(true)
     setSubmitError('')
     try {
       const response = await fetch('/api/access-applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, privacy_consent: privacyConsent, privacy_notice_version: '2026-11-15' }),
+        body: JSON.stringify({ ...values, privacy_consent: privacyConsent, privacy_notice_version: '2026-11-15' }),
       })
       const result = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'We could not submit your application. Please try again.')
@@ -225,8 +238,9 @@ function LoginModal({ close, onApply, onApproved }: { close: () => void; onApply
   }, [step, resetMode])
   const goToPassword = (event: React.FormEvent) => {
     event.preventDefault()
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setProblem('Please enter the email address you applied with.'); return }
-    setProblem(''); setMessage(''); setStep(1)
+    const typed = (firstField.current?.value ?? email).trim() || email.trim()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(typed)) { setProblem('Please enter the email address you applied with.'); return }
+    setEmail(typed); setProblem(''); setMessage(''); setStep(1)
   }
 
   const requestPasswordReset = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -252,6 +266,8 @@ function LoginModal({ close, onApply, onApproved }: { close: () => void; onApply
   const signIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (checking) return
+    const typedPassword = firstField.current?.value || password
+    if (!typedPassword) { setMessageKind('error'); setMessage('Please enter your password.'); return }
     setChecking(true)
     setMessage('')
     if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
@@ -261,7 +277,7 @@ function LoginModal({ close, onApply, onApproved }: { close: () => void; onApply
       return
     }
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: typedPassword })
       if (error || !data.session) throw new Error('Email or password is incorrect. If you have not applied yet, request early access first.')
       const response = await fetch('/api/access-status', {
         headers: { Authorization: `Bearer ${data.session.access_token}` },
@@ -320,7 +336,7 @@ function LoginModal({ close, onApply, onApproved }: { close: () => void; onApply
             <PasswordField id="lg-pw" ref={firstField} value={password} onChange={setPassword} autoComplete="current-password" placeholder="Enter your password" />
             <div className="cf-actions">
               <button type="button" className="cf-back" onClick={() => { setStep(0); setMessage('') }}><ArrowLeft size={14} /> Back</button>
-              <button type="submit" className="button button-lime" disabled={checking || !password}>{checking ? 'Checking…' : 'Log in'} <ArrowUpRight size={15} /></button>
+              <button type="submit" className="button button-lime" disabled={checking}>{checking ? 'Checking…' : 'Log in'} <ArrowUpRight size={15} /></button>
             </div>
           </form>
         )}

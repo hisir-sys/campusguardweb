@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { NOTICE_VERSIONS, looksLikeBot, tooManyRequests, withinLimit } from './_guard'
+import { NOTICE_VERSIONS, looksLikeBot, tooManyRequests, withinLimit } from './_guard.js'
 
 function clean(value: unknown, max: number): string | null {
   if (typeof value !== 'string') return null

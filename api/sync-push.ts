@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { tooManyRequests, withinLimit } from './_guard'
+import { tooManyRequests, withinLimit } from './_guard.js'
 
 const SEVERITIES = new Set(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'])
 const text = (value: unknown, max: number) => (typeof value === 'string' ? value.trim().slice(0, max) : '')

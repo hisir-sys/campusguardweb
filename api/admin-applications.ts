@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 
-async function verifiedOwner(req: any, res: any, db: ReturnType<typeof createClient>) {
+async function verifiedOwner(req: any, res: any, db: any) {
   const ownerEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase()
   if (!ownerEmail) { res.status(503).json({ error: 'Admin access is not configured.' }); return false }
   const token = typeof req.headers.authorization === 'string' && req.headers.authorization.startsWith('Bearer ') ? req.headers.authorization.slice(7) : ''
