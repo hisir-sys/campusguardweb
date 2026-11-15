@@ -13,7 +13,7 @@ const clamp = (n: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, n))
 
 const GLOW_TARGETS = '.feature-card, .public-challenge-card, .public-workflow-step, .how-steps article, .faq-item, .app-fact'
 
-function splitWords(heading: HTMLElement) {
+export function splitWords(heading: HTMLElement) {
   if (heading.dataset.split) return
   heading.dataset.split = '1'
   let index = 0

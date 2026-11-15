@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import StoryScroll from './StoryScroll'
 import PrivacyPolicy from './PrivacyPolicy'
 import { initScrollMotion } from './motion'
+import { initExperience } from './experience'
+import HeroField from './HeroField'
 import ContactFlow from './ContactFlow'
+import { FlowProgress, PasswordField, PasswordMeter } from './flow-ui'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL || '',
@@ -11,8 +14,8 @@ const supabase = createClient(
   { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } },
 )
 import {
-  ArrowRight, ArrowUpRight, Activity, BellRing, Check, ChevronDown,
-  Fingerprint, LockKeyhole, Menu,
+  ArrowLeft, ArrowRight, ArrowUpRight, Activity, BellRing, Check, ChevronDown,
+  Eye, Fingerprint, HardDrive, Layers, LockKeyhole, Menu,
   Monitor, ScanEye, ShieldCheck, Sparkles, X,
 } from 'lucide-react'
 
@@ -34,10 +37,38 @@ function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => voi
   const [submitError, setSubmitError] = useState('')
   const [form, setForm] = useState({ name: '', email: '', password: '', organisation: '', role: '', purpose: '', website: '' })
   const [privacyConsent, setPrivacyConsent] = useState(false)
-  const update = (key: keyof typeof form, value: string) => setForm(current => ({ ...current, [key]: value }))
-  const submitApplication = async (event: React.FormEvent<HTMLFormElement>) => {
+  const [step, setStep] = useState(0)
+  const firstField = useRef<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null>(null)
+  const mounted = useRef(false)
+  const update = (key: keyof typeof form, value: string) => { setForm(current => ({ ...current, [key]: value })); setSubmitError('') }
+  // Move focus to the new question so keyboard and screen-reader users follow along.
+  useEffect(() => {
+    if (!mounted.current) { mounted.current = true; return }
+    firstField.current?.focus({ preventScroll: true })
+  }, [step])
+  const checkStep = (current: number): string => {
+    if (current === 0) {
+      if (form.name.trim().length < 2) return 'Please tell us your name.'
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return 'Please enter a work email we can reach you on.'
+    }
+    if (current === 1) {
+      if (form.organisation.trim().length < 2) return 'Please tell us your school, college or organisation.'
+      if (!form.role) return 'Please choose the role that fits you best.'
+    }
+    if (current === 2 && (form.password.length < 12 || form.password.length > 72)) return 'Please choose a password between 12 and 72 characters.'
+    return ''
+  }
+  const nextStep = (event: React.FormEvent) => {
+    event.preventDefault()
+    const problem = checkStep(step)
+    if (problem) { setSubmitError(problem); return }
+    setSubmitError(''); setStep(current => Math.min(3, current + 1))
+  }
+  const submitApplication = async (event: React.FormEvent) => {
     event.preventDefault()
     if (submitting) return
+    if (!privacyConsent) { setSubmitError('Please agree to the Privacy Policy so we can process your application.'); return }
+    for (const earlier of [0, 1, 2]) { const problem = checkStep(earlier); if (problem) { setSubmitError(problem); setStep(earlier); return } }
     setSubmitting(true)
     setSubmitError('')
     try {
@@ -56,23 +87,53 @@ function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => voi
     }
   }
   return <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) close() }}>
-    <section className="access-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <section className="access-modal flow-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <button className="modal-close" onClick={close} aria-label="Close application"><X size={18} /></button>
       {submitted ? <div className="success-state"><span className="success-icon"><Check size={25} /></span><span className="eyebrow">Application received</span><h2 id="modal-title">You’re on our radar</h2><p>Thanks! Your application has been received. Please check your inbox and spam/junk folder—we’ll follow up by email with next steps. We aim to contact you within 24 hours. You can also reach us directly:</p><div className="success-contact-actions"><a className="button button-lime" href="https://wa.me/917003276998?text=Hello%20CampusGuard%2C%20I%20submitted%20an%20early%20access%20application%20and%27d%20like%20to%20discuss%20a%20demo." target="_blank" rel="noopener noreferrer">WhatsApp: +91 70032 76998 <ArrowUpRight size={15}/></a><a className="button button-outline" href="https://mail.google.com/mail/?view=cm&fs=1&to=campusguard43%40gmail.com&su=CampusGuard%20early%20access%20follow-up" target="_blank" rel="noopener noreferrer">Email: campusguard43@gmail.com <ArrowUpRight size={15}/></a></div><button className="button button-dark" onClick={close}>Back to CampusGuard <ArrowRight size={16} /></button></div> :
-      <><span className="eyebrow">Early access</span><h2 id="modal-title">Let’s make your campus more aware</h2><p className="modal-intro">Tell us a little about your institution. Applications are intended to be reviewed before access is granted.</p>
-      <form onSubmit={submitApplication}>
-        <label>Your name<input required value={form.name} onChange={e => update('name', e.target.value)} placeholder="Full name" /></label>
-        <label>Work email<input required type="email" value={form.email} onChange={e => update('email', e.target.value)} placeholder="you@institution.org" /></label>
-        <label>Create password<input required type="password" autoComplete="new-password" minLength={12} maxLength={72} value={form.password} onChange={e => update('password', e.target.value)} placeholder="At least 12 characters" /></label>
-        <label>Institution / organisation<input required value={form.organisation} onChange={e => update('organisation', e.target.value)} placeholder="Organisation name" /></label>
-        <label>Your role<select required value={form.role} onChange={e => update('role', e.target.value)}><option value="">Choose a role</option><option>School / campus leadership</option><option>IT / security team</option><option>Facilities / operations</option><option>Research / evaluation</option><option>Individual / personal use</option><option>Other</option></select></label>
-        <input className="cf-hp" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website" value={form.website} onChange={e => update('website', e.target.value)} />
-        <label>What are you hoping to evaluate?<textarea value={form.purpose} onChange={e => update('purpose', e.target.value)} placeholder="A short description (optional)" rows={3} /></label>
-        <label className="privacy-consent"><input type="checkbox" required checked={privacyConsent} onChange={e => setPrivacyConsent(e.target.checked)} /><span>I have read the <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and agree to the use of my information for this application and account administration.</span></label>
-        <button className="button button-lime form-submit" type="submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit application'} <ArrowUpRight size={16} /></button>
-        {submitError && <p className="form-note" role="alert">{submitError}</p>}
-        <p className="form-note"><LockKeyhole size={12} /> Your application is sent securely for review. Do not include sensitive personal information.</p>
-      </form><p className="account-prompt">Already have an account? <button type="button" onClick={onLogin}>Log in <ArrowUpRight size={13} /></button></p></>}
+      <div className="cf cf-modal">
+        <FlowProgress step={step} total={4} />
+        <h2 id="modal-title" className="cf-title">{['Who are we speaking to?', 'Where do you work?', 'Create a password.', 'One last thing.'][step]}</h2>
+        <p className="cf-lede">{[
+          'Applications are reviewed by a person before access is granted.',
+          'Tell us a little about your institution.',
+          'You will use this to log in once your application is approved.',
+          'Tell us what you hope to evaluate, then send your application.',
+        ][step]}</p>
+        <form onSubmit={step === 3 ? submitApplication : nextStep} noValidate key={step}>
+          {step === 0 && <>
+            <label htmlFor="ap-name">Your name</label>
+            <input id="ap-name" ref={el => { firstField.current = el }} autoComplete="name" maxLength={120} value={form.name} onChange={e => update('name', e.target.value)} placeholder="Full name" />
+            <label htmlFor="ap-email">Work email</label>
+            <input id="ap-email" type="email" inputMode="email" autoComplete="email" maxLength={254} value={form.email} onChange={e => update('email', e.target.value)} placeholder="you@institution.org" />
+          </>}
+          {step === 1 && <>
+            <label htmlFor="ap-org">School, college or organisation</label>
+            <input id="ap-org" ref={el => { firstField.current = el }} autoComplete="organization" maxLength={180} value={form.organisation} onChange={e => update('organisation', e.target.value)} placeholder="Where do you work?" />
+            <label htmlFor="ap-role">Your role</label>
+            <select id="ap-role" value={form.role} onChange={e => update('role', e.target.value)}><option value="">Choose a role</option><option>School / campus leadership</option><option>IT / security team</option><option>Facilities / operations</option><option>Research / evaluation</option><option>Individual / personal use</option><option>Other</option></select>
+          </>}
+          {step === 2 && <>
+            <label htmlFor="ap-pw">Password</label>
+            <PasswordField id="ap-pw" ref={el => { firstField.current = el }} value={form.password} onChange={value => update('password', value)} autoComplete="new-password" minLength={12} maxLength={72} placeholder="At least 12 characters" />
+            <PasswordMeter length={form.password.length} />
+          </>}
+          {step === 3 && <>
+            <label htmlFor="ap-purpose">What are you hoping to evaluate? <em>Optional</em></label>
+            <textarea id="ap-purpose" ref={el => { firstField.current = el }} rows={3} maxLength={2000} value={form.purpose} onChange={e => update('purpose', e.target.value)} placeholder="A short description" />
+            <input className="cf-hp" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website" value={form.website} onChange={e => update('website', e.target.value)} />
+            <label className="cf-consent" htmlFor="ap-consent"><input id="ap-consent" type="checkbox" checked={privacyConsent} onChange={e => { setPrivacyConsent(e.target.checked); setSubmitError('') }} /><span>I have read the <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and agree to the use of my information for this application and account administration.</span></label>
+          </>}
+          {submitError && <p className="cf-error" role="alert">{submitError}</p>}
+          <div className="cf-actions">
+            {step > 0 ? <button type="button" className="cf-back" onClick={() => { setSubmitError(''); setStep(step - 1) }}><ArrowLeft size={14} /> Back</button> : <span />}
+            {step < 3
+              ? <button type="submit" className="button button-lime">Continue <ArrowRight size={15} /></button>
+              : <button type="submit" className="button button-lime" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit application'} <ArrowUpRight size={15} /></button>}
+          </div>
+          {step === 3 && <p className="cf-note"><LockKeyhole size={12} /> Your application is sent securely for review. Please do not include sensitive personal information.</p>}
+        </form>
+        <p className="cf-alt">Already have an account? <button type="button" onClick={onLogin}>Log in <ArrowUpRight size={13} /></button></p>
+      </div>}
     </section>
   </div>
 }
@@ -154,6 +215,19 @@ function LoginModal({ close, onApply, onApproved }: { close: () => void; onApply
   const [message, setMessage] = useState('')
   const [messageKind, setMessageKind] = useState<'error' | 'info' | 'success'>('info')
   const [resetMode, setResetMode] = useState(false)
+  const [step, setStep] = useState(0)
+  const [problem, setProblem] = useState('')
+  const firstField = useRef<HTMLInputElement | null>(null)
+  const mounted = useRef(false)
+  useEffect(() => {
+    if (!mounted.current) { mounted.current = true; return }
+    firstField.current?.focus({ preventScroll: true })
+  }, [step, resetMode])
+  const goToPassword = (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setProblem('Please enter the email address you applied with.'); return }
+    setProblem(''); setMessage(''); setStep(1)
+  }
 
   const requestPasswordReset = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -221,19 +295,37 @@ function LoginModal({ close, onApply, onApproved }: { close: () => void; onApply
   }
 
   return <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) close() }}>
-    <section className="access-modal login-modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
+    <section className="access-modal login-modal flow-modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
       <button className="modal-close" onClick={close} aria-label="Close login"><X size={18} /></button>
-      <span className="eyebrow">Customer sign in</span>
-      <h2 id="login-title">{resetMode ? "Reset your password." : "Welcome back."}</h2>
-      <p className="modal-intro">{resetMode ? "Enter your account email and we’ll send a secure reset link if the account exists." : "Sign in with the email and password you used when requesting early access."}</p>
-      {message && <div className="login-prototype-note" role={messageKind === 'error' ? 'alert' : 'status'}><LockKeyhole size={16} /><span><b>{messageKind === 'success' ? 'Access approved' : messageKind === 'error' ? 'Could not sign in' : 'Access status'}</b><small>{message}</small></span></div>}
-      <form onSubmit={resetMode ? requestPasswordReset : signIn}>
-        <label>Email address<input required type="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@institution.org" /></label>
-        {!resetMode && <label>Password<input required type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" /></label>}
-        <button className="button button-lime form-submit" type="submit" disabled={checking}>{checking ? (resetMode ? 'Sending…' : 'Checking…') : (resetMode ? 'Send reset link' : 'Log in')} <ArrowUpRight size={16} /></button>
-        {!resetMode && <p className="form-note"><LockKeyhole size={12} /> Account approval is checked on the server before access is granted.</p>}
-      </form>
-      <p className="account-prompt">{resetMode ? <button type="button" onClick={() => { setResetMode(false); setMessage('') }}>Back to log in</button> : <><button type="button" onClick={() => { setResetMode(true); setMessage('') }}>Forgot password?</button> · New to CampusGuard? <button type="button" onClick={onApply}>Request early access <ArrowUpRight size={13} /></button></>}</p>
+      <div className="cf cf-modal">
+        {!resetMode && <FlowProgress step={step} total={2} />}
+        <h2 id="login-title" className="cf-title">{resetMode ? 'Reset your password.' : step === 0 ? 'What’s your email?' : 'Enter your password.'}</h2>
+        <p className="cf-lede">{resetMode ? 'We’ll send a secure reset link if an account exists for that email.' : step === 0 ? 'Use the email you gave when you requested early access.' : 'Your account is checked on the server before access is granted.'}</p>
+        {message && <div className="login-prototype-note" role={messageKind === 'error' ? 'alert' : 'status'}><LockKeyhole size={16} /><span><b>{messageKind === 'success' ? 'Access approved' : messageKind === 'error' ? 'Could not sign in' : 'Access status'}</b><small>{message}</small></span></div>}
+        {(resetMode || step === 0) && (
+          <form onSubmit={resetMode ? requestPasswordReset : goToPassword} noValidate key={resetMode ? 'reset' : 'email'}>
+            <label htmlFor="lg-email">Email address</label>
+            <input id="lg-email" ref={firstField} type="email" inputMode="email" autoComplete="username" maxLength={254} value={email} onChange={e => { setEmail(e.target.value); setProblem('') }} placeholder="you@institution.org" />
+            {problem && <p className="cf-error" role="alert">{problem}</p>}
+            <div className="cf-actions">
+              {resetMode ? <button type="button" className="cf-back" onClick={() => { setResetMode(false); setMessage(''); setProblem('') }}><ArrowLeft size={14} /> Back to log in</button> : <span />}
+              <button type="submit" className="button button-lime" disabled={checking}>{resetMode ? (checking ? 'Sending…' : 'Send reset link') : 'Continue'} {resetMode ? <ArrowUpRight size={15} /> : <ArrowRight size={15} />}</button>
+            </div>
+          </form>
+        )}
+        {!resetMode && step === 1 && (
+          <form onSubmit={signIn} noValidate key="password">
+            <button type="button" className="cf-chip" onClick={() => { setStep(0); setMessage('') }} aria-label="Change email address">{email.trim()}<span>Change</span></button>
+            <label htmlFor="lg-pw">Password</label>
+            <PasswordField id="lg-pw" ref={firstField} value={password} onChange={setPassword} autoComplete="current-password" placeholder="Enter your password" />
+            <div className="cf-actions">
+              <button type="button" className="cf-back" onClick={() => { setStep(0); setMessage('') }}><ArrowLeft size={14} /> Back</button>
+              <button type="submit" className="button button-lime" disabled={checking || !password}>{checking ? 'Checking…' : 'Log in'} <ArrowUpRight size={15} /></button>
+            </div>
+          </form>
+        )}
+        <p className="cf-alt">{resetMode ? null : <>{step === 1 && <><button type="button" onClick={() => { setResetMode(true); setMessage(''); setProblem('') }}>Forgot password?</button> · </>}New to CampusGuard? <button type="button" onClick={onApply}>Request early access <ArrowUpRight size={13} /></button></>}</p>
+      </div>
     </section>
   </div>
 }
@@ -695,7 +787,7 @@ function CustomerResources() {
     finally { setDownloadBusy(false) }
   }
   return <div className="customer-resources">
-    <section className="customer-resource-section" id="customer-how-it-works" data-theme="dark"><div className="section-shell"><span className="eyebrow"><span className="eyebrow-line" /> Customer guide</span><h2>How CampusGuard works</h2><p className="customer-resource-lead">A desktop-first workflow, with people making the decisions at every step.</p><div className="how-steps"><article><span>01</span><h3>Connect cameras</h3><p>Configure compatible cameras in the Windows app. Camera setup remains desktop-only.</p></article><article><span>02</span><h3>Analyse locally</h3><p>The installed AI model analyses video sequences and may flag a potential event.</p></article><article><span>03</span><h3>Review and respond</h3><p>Staff check context, follow campus procedures and decide the appropriate next action.</p></article></div></div></section>
+    <section className="customer-resource-section" id="customer-how-it-works" data-theme="dark"><div className="section-shell"><span className="eyebrow"><span className="eyebrow-line" /> Customer guide</span><h2>How CampusGuard works</h2><p className="customer-resource-lead">A desktop-first workflow, with people making the decisions at every step.</p><div className="how-steps" data-scroll="progress"><article><span>01</span><h3>Connect cameras</h3><p>Configure compatible cameras in the Windows app. Camera setup remains desktop-only.</p></article><article><span>02</span><h3>Analyse locally</h3><p>The installed AI model analyses video sequences and may flag a potential event.</p></article><article><span>03</span><h3>Review and respond</h3><p>Staff check context, follow campus procedures and decide the appropriate next action.</p></article></div></div></section>
     <section className="customer-resource-section customer-ai-section" id="customer-ai-pipeline" data-theme="dark"><div className="section-shell"><span className="eyebrow"><span className="eyebrow-line" /> Detailed AI pipeline</span><h2>From camera input to a<br /><em>human-reviewed alert</em></h2><p className="customer-resource-lead">This is a conceptual flowchart of the intended workflow, not live model telemetry. Actual implementation depends on the installed model and configuration.</p><div className="customer-flowchart"><article><b>01</b><h3>Capture</h3><p>Camera frames enter the desktop workflow.</p></article><span>→</span><article><b>02</b><h3>Prepare</h3><p>Frames are sampled and shaped into model input.</p></article><span>→</span><article><b>03</b><h3>Analyse</h3><p>Temporal patterns are evaluated by the installed model.</p></article><span>→</span><article><b>04</b><h3>Flag</h3><p>A candidate event can trigger an alert for review.</p></article><span>→</span><article className="customer-flow-human"><b>05</b><h3>Human review</h3><p>Staff assess context and decide what action is appropriate.</p></article></div><p className="customer-resource-note"><LockKeyhole size={14}/> AI alerts can be wrong. They support staff review and must not be treated as proof of an incident.</p></div></section>
     <section className="customer-resource-section customer-neural-section" id="customer-neural-network" data-theme="dark"><div className="section-shell"><span className="eyebrow"><span className="eyebrow-line" /> Neural network / conceptual view</span><h2>The neural network</h2><p className="customer-resource-lead">A visual explanation of how connected processing stages can learn patterns across a sequence. This graphic is illustrative—not a live view of model internals or performance.</p><div className="customer-neural-visual"><div className="customer-neural-meta"><span><i/> CONCEPTUAL NETWORK</span><span>SEQUENCE → SIGNAL</span></div><svg className="customer-neural-svg" viewBox="0 0 900 270" role="img" aria-label="Illustrative neural network with connected input, hidden and output nodes"><g className="customer-neural-links"><path d="M70 135L220 48L390 85L560 40L730 92L830 135M70 135L220 135L390 85L560 135L730 92L830 135M70 135L220 222L390 185L560 230L730 178L830 135M220 48L220 135L220 222M390 85L390 185M560 40L560 135L560 230M730 92L730 178"/></g><g className="customer-neural-nodes"><circle cx="70" cy="135" r="15"/><circle cx="220" cy="48" r="10"/><circle cx="220" cy="135" r="13"/><circle cx="220" cy="222" r="10"/><circle cx="390" cy="85" r="13"/><circle cx="390" cy="185" r="11"/><circle cx="560" cy="40" r="9"/><circle cx="560" cy="135" r="16"/><circle cx="560" cy="230" r="9"/><circle cx="730" cy="92" r="12"/><circle cx="730" cy="178" r="10"/><circle cx="830" cy="135" r="15"/></g><path className="customer-neural-pulse" d="M70 135L220 48L390 85L560 135L730 92L830 135"/></svg><div className="customer-neural-labels"><span>INPUT SEQUENCE</span><span>LEARNED FEATURES</span><span>MODEL OUTPUT</span></div></div><p className="customer-resource-note"><LockKeyhole size={14}/> Network visualisation is explanatory only. It does not expose actual weights, activations, confidence values or live inference.</p></div></section>
     <section className="customer-resource-section customer-download-section" id="customer-downloads" data-theme="dark"><div className="section-shell customer-download-inner"><div><span className="eyebrow"><span className="eyebrow-line" /> Desktop application</span><h2>Get the full CampusGuard workflow</h2><p>Your application is reviewed once. Login access and payment are approved separately by the CampusGuard owner; both approvals are required before the installer is available.</p><div className="download-actions"><span className={'admin-status status-' + approval.login_status}>Login: {approval.login_status}</span><span className={'admin-status status-' + approval.payment_status}>Payment: {approval.payment_status}</span>{approval.login_status === 'approved' && approval.payment_status === 'approved' && <button className="button button-lime" disabled={downloadBusy || !approval.downloadAvailable} onClick={() => void getApprovedDownload()}>{downloadBusy ? 'Preparing secure download…' : 'Download CampusGuard for Windows'} <ArrowUpRight size={15}/></button>}</div>{approval.login_status !== 'approved' || approval.payment_status !== 'approved' ? <small className="download-note"><LockKeyhole size={12}/> Both approvals are still required. You do not need to submit another request.</small> : !approval.downloadAvailable ? <small className="download-note"><LockKeyhole size={12}/> Your access is approved, but the private installer has not been uploaded yet. Contact the owner.</small> : <small className="download-note">Both approvals are complete. Your secure installer is ready.</small>}{downloadError && <p className="form-note" role="alert">{downloadError}</p>}</div><div className="customer-download-card"><Monitor size={34}/><b>CampusGuard for Windows</b><span>CAMERAS · LOCAL AI · INCIDENT REVIEW</span><small>Two approvals required</small></div></div></section><section className="customer-resource-section customer-pilot-section" id="customer-pricing" data-theme="dark"><div className="section-shell"><div className="section-heading"><div><span className="eyebrow"><span className="eyebrow-line" /> PRICING &amp; PILOTS</span><h2>Plan the right-sized<br /><em>evaluation</em></h2></div><p>Contact us to discuss a plan that fits your campus. We’ll understand your needs and agree on scope and pricing directly.</p></div><div className="customer-pilot-grid"><article><span>01 / STARTER</span><h3>Starter</h3><p>Perfect for a focused pilot to explore the workflow and understand the impact on your campus.</p><div className="customer-plan-price">₹2,500–8,000<span>/month</span></div><ul><li>4–10 cameras</li><li>2 team members</li><li>Monthly billing</li><li>Email support only</li><li>Installation visit included</li><li>Incident logging &amp; review</li></ul><b>Pricing based on camera count</b><a className="button button-outline" href="https://wa.me/917003276998?text=Hello%20CampusGuard%2C%20I%27d%20like%20to%20request%20Starter%20pilot%20details%20for%20the%20%E2%82%B92500%E2%80%938000%2Fmonth%20plan." target="_blank" rel="noopener noreferrer">Request pilot details <ArrowUpRight size={15}/></a></article><article className="customer-plan-featured"><span>02 / PROFESSIONAL</span><h3>Professional</h3><p>Active deployment across your campus with priority support and on-site assistance for daily operations.</p><div className="customer-plan-price">₹8,000–15,000<span>/month</span></div><ul><li>10–20 cameras</li><li>5–7 team members</li><li>Monthly billing</li><li>Email + WhatsApp support</li><li>Installation visit + emergency support</li><li>Staff training &amp; onboarding</li></ul><b>Most popular · Pricing based on camera count</b><a className="button button-lime" href="https://wa.me/917003276998?text=Hello%20CampusGuard%2C%20I%27d%20like%20to%20discuss%20the%20Professional%20plan%20for%20my%20campus." target="_blank" rel="noopener noreferrer">Discuss your campus <ArrowUpRight size={15}/></a></article><article><span>03 / ENTERPRISE</span><h3>Enterprise</h3><p>Multi-site coordination with on-site support and custom integration for large educational groups.</p><div className="customer-plan-price">₹15,000–30,000<span>/month</span></div><ul><li>20–40 cameras</li><li>10–15 team members</li><li>Monthly billing</li><li>Email + WhatsApp + on-site support</li><li>Installation visit + emergency support</li><li>Dedicated account manager</li></ul><b>Pricing based on camera count</b><a className="button button-outline" href="https://wa.me/917003276998?text=Hello%20CampusGuard%2C%20I%27d%20like%20to%20discuss%20the%20Enterprise%20plan%20for%20our%20educational%20group." target="_blank" rel="noopener noreferrer">Talk to our team <ArrowUpRight size={15}/></a></article></div><p className="customer-resource-note"><LockKeyhole size={14}/> Contact us to discuss a plan that fits your campus. We’ll understand your needs and agree on scope and pricing directly.</p></div></section>
@@ -841,7 +933,11 @@ function App() {
     void restoreSession()
     return () => { cancelled = true }
   }, [])
-  useEffect(() => initScrollMotion(), [isAuthenticated])
+  useLayoutEffect(() => {
+    const stopMotion = initScrollMotion()
+    const stopExperience = initExperience()
+    return () => { stopExperience(); stopMotion() }
+  }, [isAuthenticated])
   const openAccess = () => { setModal('access'); setMenuOpen(false) }
   const [inquiryTopic, setInquiryTopic] = useState('Request pilot details')
   const openInquiry = (topic: string) => { setInquiryTopic(topic); setModal('inquiry'); setMenuOpen(false) }
@@ -875,11 +971,12 @@ function App() {
     {!isAuthenticated && <div className="public-site-content">
 
     <section className="public-hero" id="overview" data-theme="dark">
+      <HeroField />
       <div className="section-shell public-hero-inner">
         <div className="public-hero-copy"><span className="eyebrow"><span className="eyebrow-line" /> Campus safety, with more context</span><h1>See the signal.<br /><em>Support the people</em></h1><p>CampusGuard is a desktop-first, AI-assisted safety workflow designed to help campus teams notice potential incidents, review context and make informed decisions.</p><div className="hero-actions"><button className="button button-lime" onClick={openAccess}>Apply for a pilot <ArrowUpRight size={15} /></button><a className="text-link" href="#pipeline" onClick={event => navigateToSection(event, 'pipeline')}>Explore the AI pipeline <ArrowRight size={15} /></a></div><p className="public-hero-note"><LockKeyhole size={13} /> Human-led review. The AI signal is not a conclusion.</p></div>
-        <div className="public-hero-art" data-scroll="parallax" data-depth="-46" aria-label="Interactive 3D-style illustration of the CampusGuard desktop monitoring workflow" onMouseMove={event => { const rect = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty('--tilt-x', ((event.clientY - rect.top) / rect.height - .5).toFixed(3)); event.currentTarget.style.setProperty('--tilt-y', ((event.clientX - rect.left) / rect.width - .5).toFixed(3)) }} onMouseLeave={event => { event.currentTarget.style.setProperty('--tilt-x', '0'); event.currentTarget.style.setProperty('--tilt-y', '0') }}><div className="hero-orbit hero-orbit-one"></div><div className="hero-orbit hero-orbit-two"></div><div className="hero-console"><div className="hero-console-top"><span><i></i> CAMPUSGUARD / DESKTOP</span><small>LOCAL WORKFLOW</small></div><div className="hero-console-screen"><div className="hero-console-grid"></div><div className="hero-scan-ring"><ScanEye size={38}/></div><span className="hero-console-tag">AI-ASSISTED SIGNAL</span><div className="hero-console-bars"><i></i><i></i><i></i><i></i><i></i></div></div><div className="hero-console-bottom"><span>01 / CAPTURE</span><span>02 / REVIEW</span><span>03 / RESPOND</span></div></div><span className="hero-float-tag">HUMAN REVIEW REQUIRED</span></div>
+        <div className="public-hero-art" data-scroll="parallax" data-depth="-46" aria-label="Interactive 3D-style illustration of the CampusGuard desktop monitoring workflow" onMouseMove={event => { const rect = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty('--tilt-x', ((event.clientY - rect.top) / rect.height - .5).toFixed(3)); event.currentTarget.style.setProperty('--tilt-y', ((event.clientX - rect.left) / rect.width - .5).toFixed(3)) }} onMouseLeave={event => { event.currentTarget.style.setProperty('--tilt-x', '0'); event.currentTarget.style.setProperty('--tilt-y', '0') }}><div className="hero-orbit hero-orbit-one"></div><div className="hero-orbit hero-orbit-two"></div><div className="hero-console"><div className="hero-console-top"><span><i></i> CAMPUSGUARD / DESKTOP</span><small>LOCAL WORKFLOW</small></div><div className="hero-console-screen"><div className="hero-console-grid"></div><div className="hc-sweep"></div><div className="hc-scene" aria-hidden="true"><span className="hc-fig hc-a"></span><span className="hc-fig hc-b"></span><span className="hc-box"><b>POSSIBLE EVENT</b></span></div><div className="hero-scan-ring"><ScanEye size={20}/></div><span className="hero-console-tag">AI-ASSISTED SIGNAL</span><div className="hero-console-bars"><i></i><i></i><i></i><i></i><i></i></div></div><div className="hero-console-bottom"><span>01 / CAPTURE</span><span>02 / REVIEW</span><span>03 / RESPOND</span></div></div><span className="hero-float-tag">HUMAN REVIEW REQUIRED</span></div>
       </div>
-      <div className="principle-strip"><div className="strip-inner"><span className="strip-label">A DIFFERENT KIND OF MONITORING</span><span><ShieldCheck size={17} /> Human-led decisions</span><span><Monitor size={17} /> Desktop-first workflow</span><span><LockKeyhole size={17} /> Privacy-aware by design</span></div></div>
+      <div className="principle-strip"><div className="strip-marquee"><div className="strip-track">{[0, 1].map(copy => <div className="strip-group" key={copy} aria-hidden={copy === 1 ? true : undefined}><span className="strip-label">A DIFFERENT KIND OF MONITORING</span><span><ShieldCheck size={17} /> Human-led decisions</span><span><Monitor size={17} /> Desktop-first workflow</span><span><LockKeyhole size={17} /> Privacy-aware by design</span><span><Eye size={17} /> Works with the cameras you already have</span><span><Layers size={17} /> Two alert levels, so staff are not flooded</span><span><HardDrive size={17} /> Footage stays on your own PC</span></div>)}</div></div></div>
     </section>
 
     <section className="section platform-section" id="platform" data-theme="light"><div className="section-shell">
@@ -912,7 +1009,7 @@ function App() {
           <div><span className="eyebrow"><span className="eyebrow-line" /> A workflow built around people</span><h2>From a possible signal<br />to a <em>considered response</em></h2></div>
           <p>The goal is not to automate judgement. It is to make a potential moment easier to surface, examine and handle through a human-led process.</p>
         </div>
-        <div className="public-animated-workflow">
+        <div className="public-animated-workflow" data-scroll="progress">
           <div className="public-workflow-track" aria-hidden="true"><span/><span/><span/><span/></div>
           <article className="public-workflow-step"><div className="public-step-visual public-step-capture"><div className="public-frame-grid"/><div className="public-frame-person"/><span className="public-frame-tag">CAMERA INPUT</span></div><span className="public-step-number">01 / CAPTURE</span><h3>Use the cameras you have.</h3><p>Start from compatible camera feeds configured in the CampusGuard Windows application.</p>
           <details className="public-workflow-detail"><summary>Explore this stage <ChevronDown size={14}/></summary><p>Confirm the camera is configured in the desktop app and that its location is clearly named for the team.</p></details></article>
@@ -992,7 +1089,7 @@ function App() {
 
     <section className="how-it-works-section" id="how-it-works" data-theme="dark">
       <div className="section-shell"><div className="section-heading"><div><span className="eyebrow"><span className="eyebrow-line" /> A clearer workflow</span><h2>From connection<br />to <em>considered action</em></h2></div><p>CampusGuard is designed to support a team’s existing safety process, not replace it.</p></div>
-        <div className="how-steps"><article><span>01</span><h3>Connect</h3><p>Set up compatible cameras in the Windows desktop application.</p></article><article><span>02</span><h3>Understand</h3><p>Local AI analysis can surface a potential event for attention.</p></article><article><span>03</span><h3>Review</h3><p>Trained staff check the context and decide what to do next.</p></article></div>
+        <div className="how-steps" data-scroll="progress"><article><span>01</span><h3>Connect</h3><p>Set up compatible cameras in the Windows desktop application.</p></article><article><span>02</span><h3>Understand</h3><p>Local AI analysis can surface a potential event for attention.</p></article><article><span>03</span><h3>Review</h3><p>Trained staff check the context and decide what to do next.</p></article></div>
       </div>
     </section>
 

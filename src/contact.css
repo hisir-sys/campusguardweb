@@ -66,3 +66,32 @@
 .access-modal.inquiry-modal { background: #f7f8fa; -webkit-backdrop-filter: none; backdrop-filter: none; }
 .inquiry-modal .cf-title { font-size: 24px; }
 .inquiry-modal .modal-intro { margin-bottom: 20px; }
+
+/* Login and application flows (same look as the contact flow, inside the modal) */
+.access-modal.flow-modal { background: #f7f8fa; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.cf-modal { padding-top: 6px; }
+.cf-modal .cf-progress { margin-right: 46px; }
+.access-modal .cf-title { margin: 0 0 8px; max-width: none; font: 600 clamp(24px, 2.6vw, 30px)/1.15 var(--display); letter-spacing: -.03em; }
+.cf-lede { margin: 0 0 18px; color: var(--muted); font-size: 13px; line-height: 1.7; }
+.cf input[type="password"], .cf select {
+  width: 100%; border: 1px solid #cfd2d8; border-radius: 8px; background: #fff; color: #17181a; padding: 13px 14px; font: 14px var(--sans, inherit); outline: none; transition: border-color .2s, box-shadow .2s;
+}
+.cf select { appearance: none; padding-right: 38px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%236b6d74' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; cursor: pointer; }
+.cf input:focus, .cf select:focus { border-color: var(--accent); box-shadow: 0 0 0 4px #8397b926; }
+.cf-pw { position: relative; }
+.cf-pw input { padding-right: 48px !important; }
+.cf-pw-toggle { position: absolute; right: 6px; top: 50%; translate: 0 -50%; display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 6px; background: none; color: #6b6d74; cursor: pointer; transition: color .2s, background .2s; }
+.cf-pw-toggle:hover { color: #17181a; background: #eceef2; }
+.cf-meter { display: grid; gap: 7px; margin-top: 4px; }
+.cf-meter > span { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.cf-meter i { display: block; height: 3px; border-radius: 3px; background: var(--line); transition: background .35s ease; }
+.cf-meter[data-level="1"] i:nth-child(1) { background: #c0564c; }
+.cf-meter[data-level="2"] i:nth-child(-n+2) { background: #c9a24a; }
+.cf-meter[data-level="3"] i { background: #3f8f6b; }
+.cf-meter small { font-size: 11px; color: var(--muted); }
+.cf-alt { margin: 18px 0 0; text-align: center; font-size: 12px; color: var(--muted); }
+.cf-alt button { display: inline-flex; align-items: center; gap: 3px; border: 0; background: none; padding: 0; color: #17181a; font: 600 12px var(--display); text-decoration: underline; text-decoration-color: #c4c6cc; text-underline-offset: 3px; cursor: pointer; transition: text-decoration-color .2s; }
+.cf-alt button:hover { text-decoration-color: #17181a; }
+.cf-modal .login-prototype-note { margin: 0 0 14px; }
+.cf-chip { max-width: 100%; }
+.cf-chip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
