@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { looksLikeBot, tooManyRequests, withinLimit } from './_guard'
+import { NOTICE_VERSIONS, looksLikeBot, tooManyRequests, withinLimit } from './_guard'
 
 function clean(value: unknown, max: number): string | null {
   if (typeof value !== 'string') return null
@@ -28,7 +28,7 @@ export default async function handler(req: any, res: any) {
   const privacyConsent = body.privacy_consent === true
   const privacyNoticeVersion = typeof body.privacy_notice_version === 'string' ? body.privacy_notice_version.slice(0, 32) : ''
   const allowedTopics = new Set(['Request pilot details', 'Plan a deployment', 'Discuss multi-site needs', 'Book a demo'])
-  if (!name || !email || !organisation || !topic || !allowedTopics.has(topic) || !privacyConsent || privacyNoticeVersion !== '2026-11-12' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!name || !email || !organisation || !topic || !allowedTopics.has(topic) || !privacyConsent || !NOTICE_VERSIONS.has(privacyNoticeVersion) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Please check your details and agree to the Privacy Policy before submitting.' })
   }
   try {

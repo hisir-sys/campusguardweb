@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { looksLikeBot, tooManyRequests, withinLimit } from './_guard'
+import { NOTICE_VERSIONS, looksLikeBot, tooManyRequests, withinLimit } from './_guard'
 
 function textField(value: unknown, maxLength: number): string | null {
   if (typeof value !== 'string') return null
@@ -34,7 +34,7 @@ export default async function handler(req: any, res: any) {
   const privacyConsent = body.privacy_consent === true
   const privacyNoticeVersion = typeof body.privacy_notice_version === 'string' ? body.privacy_notice_version.slice(0, 32) : ''
 
-  if (!name || !email || !organisation || !role || !password || !privacyConsent || privacyNoticeVersion !== '2026-11-12') {
+  if (!name || !email || !organisation || !role || !password || !privacyConsent || !NOTICE_VERSIONS.has(privacyNoticeVersion)) {
     return res.status(400).json({ error: 'Please complete all required fields and agree to the Privacy Policy.' })
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {

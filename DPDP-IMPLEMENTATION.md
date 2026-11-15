@@ -1,8 +1,8 @@
 # CampusGuard — DPDP implementation status
 
-Last reviewed: 12 November 2026
+Last reviewed: 15 November 2026 (notice version `2026-11-15`)
 
-This document records what the current **website repository** implements and what still requires operational or legal decisions. It is an engineering checklist, not legal advice or a compliance certificate.
+This document records what the **website and the Windows app** implement and what still requires operational or legal decisions. It is an engineering checklist, not legal advice or a compliance certificate.
 
 ## What the website currently collects
 
@@ -25,10 +25,20 @@ The website sync endpoint is intended for metadata only. It is not intended to r
 - Passwords are handled through Supabase Auth rather than stored as an application-table profile field.
 - The website does not claim India-only data storage; actual Supabase and Vercel regions must be checked in the live projects.
 - The policy says deletion requests are currently manual; it does not falsely claim automated retention or self-service erasure.
+- The API accepts notice versions `2026-11-12` and `2026-11-15` (`NOTICE_VERSIONS` in `api/_guard.ts`) so a page that was open during the change still works; the stored version records what the person actually agreed to. Add a new version there whenever the policy changes materially.
+- Abuse protection: per-route rate limits (Postgres `rate_limit_hit`), a hidden honeypot field, input length caps, a 12 to 72 character password rule enforced on the server, and CSP/HSTS/framing headers in `vercel.json`.
+
+## Implemented in the Windows app (repo `hisir-sys/campusguard`)
+
+- **Opt-in account sync.** Nothing is sent to the website until the school says yes. Existing installs are asked once. The notice lists what is sent (PC name, app version, camera counts, incident camera name/time/label/confidence/severity/status, whether a clip exists) and what is never sent (video, images, file locations, faces or identities). The default button is "Not now"; Enter and closing the window both mean no.
+- **Withdrawal is one click** in Settings → Storage → Privacy and data, and takes effect immediately for anything new.
+- **Retention the school controls**: incident clips can be removed automatically after 7 days up to 1 year, and incident records after 90 days up to 2 years. The default is to keep them until the school deletes them, and the app asks for confirmation before it starts deleting.
+- **Server edition** sends nothing to the cloud unless `cloud_sync` is `true` in `server.json`.
+- Covered by `tests/test_privacy_controls.py` (17 tests).
 
 ## DPDP commencement context
 
-The Digital Personal Data Protection Act, 2023 and the DPDP Rules, 2025 have phased commencement under the Gazette notifications. Some institutional and administrative provisions commenced on publication; the one-year and eighteen-month tranches have separate dates. The main notice, consent, rights and processing obligations in the eighteen-month tranche are scheduled from **13 May 2027**, calculated from the 13 November 2025 publication. Do not describe CampusGuard as “DPDP certified” or claim that every provision is already in force. Re-check the Gazette and applicable amendments before launch or legal reliance.
+The Digital Personal Data Protection Act, 2023 and the DPDP Rules, 2025 have phased commencement under the Gazette notifications of 13 November 2025: the Board and definitions (Rules 1, 2, 17 to 21) took effect on publication; consent managers (Rule 4) follow on **13 November 2026**; and the notice, security, breach, erasure, children and rights rules (Rules 3, 5 to 16, 22, 23) together with the Act's Data Fiduciary duties and penalties are scheduled from **13 May 2027**. A proposal to shorten the 18 months to 12 was published in January 2026; as of this review it had not been confirmed in the Gazette, so check the Gazette before relying on either date. Do not describe CampusGuard as “DPDP certified” or claim that every provision is already in force. Re-check the Gazette and applicable amendments before launch or legal reliance.
 
 The Rules' notice framework calls for a clear, standalone notice that identifies the personal data and the specific purposes, and explains how consent can be withdrawn and rights/grievances can be exercised. The website policy is structured to provide those particulars for the data visible in this repository.
 
@@ -38,12 +48,14 @@ These items need real operational decisions and/or owner-provided details:
 
 1. **Legal operator identity:** publish the actual legal entity / proprietor name and a valid postal address. The repository currently identifies the operator only as “CampusGuard”.
 2. **Provider locations:** verify the configured Supabase project region, Vercel deployment region, backup location and any relevant cross-border support access. Update the notice only with verified facts.
-3. **Retention schedule:** choose and implement retention periods for unapproved applications, inquiries, account records, synced metadata, security logs and backups. The current code has no automatic deletion job.
+3. **Website retention schedule:** choose and implement retention periods for unapproved applications, inquiries, account records, synced metadata, security logs and backups. The desktop app now has school-controlled retention, but the website still has no automatic deletion job. Suggested starting point for you to confirm: rejected or abandoned applications 12 months, inquiries 24 months, synced incident metadata 12 months after the school stops using the account, with deletion done by a scheduled Supabase job.
 4. **Rights/deletion workflow:** define who receives requests, how identity is verified, how requests are tracked, and how deletion propagates to Auth, database rows, storage and backups. The current policy accurately says requests are manual.
 5. **School/customer contracts:** document whether each school is the Data Fiduciary and CampusGuard acts as a Data Processor, or whether roles differ. Put instructions, permitted purposes, security, retention, breach escalation and deletion obligations in the agreement.
-6. **Desktop sync choice:** add a separate, clear notice and affirmative enable/disable control in the Windows desktop app before it sends customer/server/incident metadata to the website. The website form checkbox is only for the application or inquiry; it is not a substitute for this desktop choice.
-7. **Incident response:** define an owner, escalation path, evidence handling and notification procedure for personal-data breaches.
-8. **Contact details:** confirm that `campusguard43@gmail.com` is monitored for privacy requests and publish the legal entity/address alongside it.
+6. ~~Desktop sync choice~~ — **done** (see above).
+7. **Incident response:** define an owner, escalation path, evidence handling and notification procedure for personal-data breaches. Rule 7 needs notice to each affected person without delay, and to the Data Protection Board immediately plus full details within 72 hours.
+8. **Contact details:** confirm that `campusguard43@gmail.com` is monitored for privacy requests and publish the legal entity/address alongside it. Rule 9 asks the Data Fiduciary to publish the title and contact details of a person who answers questions about processing; the policy currently names the role "privacy contact" only, so add the person's title once decided.
+9. **Rights timelines:** the policy promises a reply to requests within 30 days and to a grievance within 90 days at the latest (Rule 14). Make sure someone is actually watching the inbox.
+10. **Children's data and schools:** the Fourth Schedule exemption covers an educational institution's monitoring for educational activities or the safety of enrolled children, to the extent necessary. Put that in each school contract and keep the app's retention period short.
 
 ## Before production use
 

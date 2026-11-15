@@ -44,7 +44,7 @@ function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => voi
       const response = await fetch('/api/access-applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, privacy_consent: privacyConsent, privacy_notice_version: '2026-11-12' }),
+        body: JSON.stringify({ ...form, privacy_consent: privacyConsent, privacy_notice_version: '2026-11-15' }),
       })
       const result = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'We could not submit your application. Please try again.')

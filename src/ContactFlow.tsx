@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, ArrowUpRight, Check, LockKeyhole } from 'lucide-react'
 
-export const PRIVACY_NOTICE_VERSION = '2026-11-12'
+export const PRIVACY_NOTICE_VERSION = '2026-11-15'
 const WHATSAPP_URL = 'https://wa.me/917003276998?text=Hello%20CampusGuard%2C%20I%20just%20sent%20an%20enquiry%20from%20the%20website.'
 
 /** Topics must match the list the API accepts (api/pilot-inquiries.ts). */

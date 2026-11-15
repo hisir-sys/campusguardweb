@@ -11,6 +11,10 @@ function header(req: any, name: string): string {
 }
 
 /** Best-effort caller address. Vercel overwrites these headers, so a visitor cannot forge them. */
+// Notice versions a visitor may have consented to. The previous one stays valid for a page that was
+// already open when the notice changed; the stored version records exactly what they agreed to.
+export const NOTICE_VERSIONS = new Set(['2026-11-12', '2026-11-15'])
+
 export function callerAddress(req: any): string {
   return (
     header(req, 'x-vercel-forwarded-for') ||
