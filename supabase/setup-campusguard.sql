@@ -71,3 +71,19 @@ create index if not exists access_applications_privacy_consent_idx
 
 create index if not exists pilot_inquiries_privacy_consent_idx
   on public.pilot_inquiries (privacy_consent_at);
+
+-- ---------------------------------------------------------------------------
+-- 3. Keep the inquiry topic constraint aligned with the live contact form
+-- ---------------------------------------------------------------------------
+
+alter table public.pilot_inquiries
+  drop constraint if exists pilot_inquiries_topic_check;
+
+alter table public.pilot_inquiries
+  add constraint pilot_inquiries_topic_check
+  check (topic in (
+    'Request pilot details',
+    'Plan a deployment',
+    'Discuss multi-site needs',
+    'Book a demo'
+  ));
