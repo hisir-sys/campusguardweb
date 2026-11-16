@@ -91,7 +91,10 @@ function AccessModal({ close, onLogin }: { close: () => void; onLogin: () => voi
         body: JSON.stringify({ ...values, privacy_consent: privacyConsent, privacy_notice_version: '2026-11-15' }),
       })
       const result = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'We could not submit your application. Please try again.')
+      if (!response.ok) {
+        if (result.field === 'password') setStep(2) // send them back to choose another password
+        throw new Error(typeof result.error === 'string' ? result.error : 'We could not submit your application. Please try again.')
+      }
       setSubmitted(true)
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Network error. Please check your connection and try again.')

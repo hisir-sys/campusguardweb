@@ -70,6 +70,17 @@ export default async function handler(req: any, res: any) {
     })
     if (authError || !authData.user) {
       console.error('Access application account creation failed:', authError?.message ?? 'No user returned')
+      // Supabase rejects passwords that are too weak or that appear in known data breaches
+      // (Authentication > Sign In / Providers > Email > leaked password protection).
+      if ((authError as { code?: string } | null)?.code === 'weak_password') {
+        const reasons = (authError as { reasons?: string[] }).reasons ?? []
+        return res.status(400).json({
+          field: 'password',
+          error: reasons.includes('pwned')
+            ? 'That password has appeared in a public data breach, so it cannot be used. Please choose a different one.'
+            : 'That password is too easy to guess. Please choose a longer, less common one.',
+        })
+      }
       return res.status(400).json({
         error: 'We could not create an account with these details. If you already applied, try logging in.',
       })
