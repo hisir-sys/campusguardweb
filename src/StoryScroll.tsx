@@ -7,74 +7,41 @@ const SCENES = [
   { id: 'review', time: '10:58:02', label: 'Reviewing', title: 'People review the evidence and decide', body: 'Staff inspect the available timeline and footage, then record the outcome. The system flags a moment; people make the decision.', meta: ['Timeline and saved clip', 'Human review first', 'Documented follow-up'], score: 0, tone: 'done', detail: 'The incident record supports a consistent follow-up while keeping the final judgement with trained people.' },
 ]
 
-const PIN_TOP = 78
-const clamp = (n: number) => Math.min(1, Math.max(0, n))
+const STEP_MS = 2600
 
 export default function StoryScroll() {
   const sectionRef = useRef<HTMLElement>(null)
-  const activeRef = useRef(0)
   const [active, setActive] = useState(0)
-  const [pinned, setPinned] = useState(false)
+  const [inView, setInView] = useState(false)
+  const [paused, setPaused] = useState(false)
   const scene = SCENES[active]
+  const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  useEffect(() => { activeRef.current = active }, [active])
-
-  // Pin the walkthrough on larger screens; fall back to buttons on small or reduced-motion setups.
+  // The walkthrough plays by itself once it is on screen (no scroll-jacking, no long pinned section).
   useEffect(() => {
-    const query = window.matchMedia('(min-width: 901px) and (min-height: 640px) and (prefers-reduced-motion: no-preference)')
-    const sync = () => setPinned(query.matches)
-    sync()
-    query.addEventListener('change', sync)
-    return () => query.removeEventListener('change', sync)
+    const el = sectionRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting && entry.intersectionRatio > 0.45), { threshold: [0, 0.45, 0.7] })
+    observer.observe(el.querySelector('.story-grid') || el)
+    return () => observer.disconnect()
   }, [])
 
-  // While pinned, the scroll position chooses the scene.
   useEffect(() => {
-    if (!pinned) return
-    const el = sectionRef.current
-    if (!el) return
-    let frame = 0
-    const measure = () => {
-      frame = 0
-      const rect = el.getBoundingClientRect()
-      const travel = rect.height - (window.innerHeight - PIN_TOP)
-      const progress = travel > 0 ? clamp((PIN_TOP - rect.top) / travel) : 0
-      el.style.setProperty('--story-p', progress.toFixed(4))
-      const next = Math.min(SCENES.length - 1, Math.floor(progress * SCENES.length))
-      if (next !== activeRef.current) { activeRef.current = next; setActive(next) }
-    }
-    const onScroll = () => { if (!frame) frame = requestAnimationFrame(measure) }
-    measure()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll)
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-      if (frame) cancelAnimationFrame(frame)
-    }
-  }, [pinned])
+    if (!inView || paused || reduced || active >= SCENES.length - 1) return
+    const timer = window.setTimeout(() => setActive(index => Math.min(SCENES.length - 1, index + 1)), STEP_MS)
+    return () => window.clearTimeout(timer)
+  }, [inView, paused, reduced, active])
 
-  const goTo = (index: number) => {
-    const target = Math.max(0, Math.min(SCENES.length - 1, index))
-    if (!pinned) { setActive(target); return }
-    const el = sectionRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const travel = rect.height - (window.innerHeight - PIN_TOP)
-    const top = window.scrollY + rect.top - PIN_TOP + ((target + 0.5) / SCENES.length) * travel
-    window.scrollTo({ top, behavior: 'smooth' })
-  }
-
-  const selectScene = (index: number) => goTo(index)
+  const selectScene = (index: number) => { setPaused(true); setActive(index) }
 
   return (
-    <section ref={sectionRef} className={'story-section' + (pinned ? ' is-pinned' : '')} id="story" data-theme="dark" aria-labelledby="story-title" style={pinned ? { height: `${SCENES.length * 80 + 45}vh` } : undefined}>
+    <section ref={sectionRef} className="story-section" id="story" data-theme="dark" aria-labelledby="story-title">
       <div className="story-pin">
         <div className="section-shell">
           <div className="story-head">
             <span className="eyebrow"><span className="eyebrow-line" /> One incident, start to finish</span>
             <h2 id="story-title">From a quiet corridor<br />to a reviewed report</h2>
-            <p className="story-scroll-hint">{pinned ? 'Keep scrolling. The story moves with you.' : 'Tap a step below to follow the story.'}</p>
+            <p className="story-scroll-hint">Plays automatically. Pick any step below to jump to it.</p>
           </div>
           <div className="story-grid">
             <div className="story-story-copy" aria-live="polite">

@@ -1,0 +1,42 @@
+/* Polish layer: progress bar, hover depth, button shine, heading rules, gentle float. */
+.cg-progress { position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 200; transform: scaleX(0); transform-origin: 0 50%; background: linear-gradient(90deg, #6f86ad, #cfd9ea, #6f86ad); pointer-events: none; will-change: transform; }
+
+/* header settles once you scroll */
+html[data-scrolled] header, html[data-scrolled] .site-header, html[data-scrolled] .navbar { box-shadow: 0 10px 30px -18px #0009; }
+
+/* buttons: lift and a light sweep */
+.button { position: relative; overflow: hidden; transition: transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s ease, background-color .2s ease, border-color .2s ease, color .2s ease; }
+.button::after { content: ""; position: absolute; inset: 0; transform: translateX(-120%) skewX(-18deg); background: linear-gradient(90deg, transparent, #ffffff40, transparent); transition: transform .7s ease; pointer-events: none; }
+.button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 26px -14px #000a; }
+.button:hover:not(:disabled)::after { transform: translateX(120%) skewX(-18deg); }
+.button:active:not(:disabled) { transform: translateY(0) scale(.98); }
+
+/* cards: lift plus a spotlight that follows the pointer */
+@media (hover: hover) {
+  .feature-card, .pricing-card, .public-challenge-card, .public-workflow-step, .workspace-stat, .workspace-panel, .workspace-learning-card, .customer-pilot-grid article, .how-steps > article { position: relative; transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s ease, border-color .35s ease; }
+  .feature-card:hover, .pricing-card:hover, .public-challenge-card:hover, .public-workflow-step:hover, .workspace-stat:hover, .workspace-panel:hover, .workspace-learning-card:hover, .customer-pilot-grid article:hover, .how-steps > article:hover { transform: translateY(-5px); box-shadow: 0 26px 50px -30px #000b; }
+  [data-spot]::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .3s ease; background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), #8fa6cf26, transparent 70%); }
+  [data-spot]:hover::before { opacity: 1; }
+}
+
+/* section headings: a rule that draws itself in */
+.section-heading h2::after, .public-editorial-heading h2::after, .neural-heading h2::after { content: ""; display: block; width: 0; height: 2px; margin-top: 18px; background: linear-gradient(90deg, #8fa6cf, transparent); transition: width .9s cubic-bezier(.2,.7,.2,1) .25s; }
+.cg-is-visible h2::after, .cg-is-visible.section-heading h2::after { width: 72px; }
+
+/* links in the nav: underline grows from the left */
+nav a:not(.button) { background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size .3s ease, color .2s ease; }
+nav a:not(.button):hover { background-size: 100% 1px; }
+
+/* soft float on illustrations */
+@keyframes cg-float { 50% { transform: translateY(-8px); } }
+.neural-visual, .interface-art, .public-value-art { animation: cg-float 7s ease-in-out infinite; }
+
+/* keyboard focus is always visible */
+:focus-visible { outline: 2px solid #8fa6cf; outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cg-progress { display: none; }
+  .button, .button::after, .feature-card, .pricing-card, .public-challenge-card, .public-workflow-step, .workspace-stat, .workspace-panel, .workspace-learning-card, .how-steps > article { transition: none !important; }
+  .neural-visual, .interface-art, .public-value-art { animation: none; }
+  .section-heading h2::after, .public-editorial-heading h2::after, .neural-heading h2::after { transition: none; width: 72px; }
+}
