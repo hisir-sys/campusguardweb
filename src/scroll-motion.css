@@ -156,3 +156,11 @@ main[data-site-theme] .public-site-content > .faq-section .faq-item > summary { 
 main[data-site-theme] .public-site-content > .faq-section .faq-item > summary > span { color: #5f626c !important; border-color: #cfd1d6 !important; background: transparent !important; }
 main[data-site-theme] .public-site-content > .faq-section .faq-item > p { color: #5d6069 !important; }
 main[data-site-theme] .public-site-content > .faq-section .faq-item[open] { background: #ffffffb8 !important; border-color: #b9c4d8 !important; }
+
+/* Story steps: the dots are the only manual control, so their labels stay for screen readers only. */
+.story-progress button > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.story-progress button { position: relative; }
+.story-progress button.is-current { animation: cg-step-pulse 1.6s ease-in-out infinite; }
+@keyframes cg-step-pulse { 50% { box-shadow: 0 0 0 4px #9db3d822, 0 0 14px #9db3d866; } }
+@media (prefers-reduced-motion: reduce) { .story-progress button.is-current { animation: none; } }
+.story-progress button::after { content: ""; position: absolute; inset: -14px 0; }

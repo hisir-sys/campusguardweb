@@ -3235,51 +3235,36 @@ h1,h2,h3{font-weight:500;letter-spacing:-.02em}
 
 /* Dark is the single site theme. Former light sections now alternate between
    deep charcoal surfaces so the visual rhythm remains without a light-mode switch. */
-main[data-site-theme="dark"] .public-problem-section,
-main[data-site-theme="dark"] .customer-ai-section {
+main[data-site-theme="dark"] .public-problem-section {
   background: #11151d !important;
   color: #eef1f6 !important;
 }
-main[data-site-theme="dark"] .public-value-section,
-main[data-site-theme="dark"] .customer-download-section {
+main[data-site-theme="dark"] .public-value-section {
   background: #0b0e14 !important;
   color: #eef1f6 !important;
 }
 main[data-site-theme="dark"] .public-problem-section h2,
 main[data-site-theme="dark"] .public-value-section h2,
-main[data-site-theme="dark"] .customer-ai-section h2,
-main[data-site-theme="dark"] .customer-download-section h2,
 main[data-site-theme="dark"] .public-problem-section h3,
 main[data-site-theme="dark"] .public-value-section h3,
-main[data-site-theme="dark"] .customer-ai-section h3,
-main[data-site-theme="dark"] .customer-download-section h3,
 main[data-site-theme="dark"] .public-problem-section b,
-main[data-site-theme="dark"] .public-value-section b,
-main[data-site-theme="dark"] .customer-ai-section b,
-main[data-site-theme="dark"] .customer-download-section b {
+main[data-site-theme="dark"] .public-value-section b {
   color: #f1f3f7 !important;
 }
 main[data-site-theme="dark"] .public-problem-section p,
 main[data-site-theme="dark"] .public-value-section p,
-main[data-site-theme="dark"] .customer-ai-section p,
-main[data-site-theme="dark"] .customer-download-section p,
 main[data-site-theme="dark"] .public-problem-section small,
-main[data-site-theme="dark"] .public-value-section small,
-main[data-site-theme="dark"] .customer-ai-section small,
-main[data-site-theme="dark"] .customer-download-section small {
+main[data-site-theme="dark"] .public-value-section small {
   color: #a8b0bf !important;
 }
 main[data-site-theme="dark"] .public-problem-section .eyebrow,
 main[data-site-theme="dark"] .public-value-section .eyebrow,
-main[data-site-theme="dark"] .customer-ai-section .eyebrow,
-main[data-site-theme="dark"] .customer-download-section .eyebrow,
 main[data-site-theme="dark"] .public-card-index,
 main[data-site-theme="dark"] .public-section-footnote,
 main[data-site-theme="dark"] .public-value-list small {
   color: #9ba7ba !important;
 }
-main[data-site-theme="dark"] .public-challenge-card,
-main[data-site-theme="dark"] .customer-ai-section .customer-flowchart article {
+main[data-site-theme="dark"] .public-challenge-card {
   background: linear-gradient(145deg, #1a202b, #131821) !important;
   border-color: #343e4e !important;
   color: #eef1f6 !important;
@@ -3320,11 +3305,7 @@ main[data-site-theme="dark"] .customer-download-card {
   border-color: #3a465a !important;
   color: #eef1f6 !important;
 }
-main[data-site-theme="dark"] .customer-ai-section .customer-flowchart article p,
-main[data-site-theme="dark"] .customer-ai-section .customer-resource-note,
-main[data-site-theme="dark"] .customer-download-section .download-note {
-  color: #a8b0bf !important;
-}
+
 
 
 /* Remaining alternating content bands use the same dark-only palette. */
@@ -3672,3 +3653,10 @@ main[data-site-theme="dark"] .final-cta-section .button-outline {
   color: #26272a !important;
   border-color: #c4c6cc !important;
 }
+
+/* Customer page rhythm: workspace light, guide dark, pipeline light, network dark, download light, plans dark. */
+main[data-site-theme="dark"] .customer-download-section { background: #f2f2f3; color: var(--ink); }
+main[data-site-theme="dark"] .customer-download-section .customer-download-card { box-shadow: 0 24px 60px -34px #16171933; }
+main[data-site-theme="dark"] .customer-download-section .customer-download-card b { color: #f3f4f5 !important; }
+main[data-site-theme="dark"] .customer-download-section .customer-download-card span { color: #9ba7ba !important; }
+main[data-site-theme="dark"] .customer-download-section .customer-download-card small { color: #c9d1de !important; }
