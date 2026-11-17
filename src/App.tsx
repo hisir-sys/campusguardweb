@@ -377,6 +377,18 @@ function AdminPanel() {
   const [filter, setFilter] = useState('pending')
   const [section, setSection] = useState<'all' | 'applications' | 'inquiries'>('all')
 
+  const applyAdminData = (result: any) => {
+    setApplications(result.applications || [])
+    setInquiries(result.inquiries || [])
+    setStats(result.stats || { pending: 0, approved: 0, rejected: 0 })
+    setInquiryStats(result.inquiryStats || { total: 0, pilots: 0, deployments: 0, multiSite: 0 })
+  }
+  // The newest token, so a long-open admin page never acts on an expired one.
+  const freshToken = async () => {
+    const { data } = await supabase.auth.getSession()
+    return data.session?.access_token || ownerToken
+  }
+
   const load = async (token = ownerToken) => {
     if (!token) return
     setBusy(true)
@@ -386,10 +398,7 @@ function AdminPanel() {
       const response = await fetch('/api/admin-applications', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
       const result = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Owner access could not be verified.')
-      setApplications(result.applications || [])
-      setInquiries(result.inquiries || [])
-      setStats(result.stats || { pending: 0, approved: 0, rejected: 0 })
-      setInquiryStats(result.inquiryStats || { total: 0, pilots: 0, deployments: 0, multiSite: 0 })
+      applyAdminData(result)
       setAuthenticated(true)
     } catch (e) {
       setAuthenticated(false)
@@ -467,19 +476,28 @@ function AdminPanel() {
   }
 
   const decide = async (id: string, decision: 'login' | 'payment', status: 'approved' | 'rejected') => {
+    if (busy) return
     setBusy(true)
     setError('')
     setNotice('')
     try {
+      const token = await freshToken()
+      if (!token) throw new Error('Your owner session has ended. Please sign in again.')
       const response = await fetch('/api/admin-applications', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ownerToken}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ id, decision, status }),
       })
       const result = await response.json().catch(() => ({}))
+      if (response.status === 401 || response.status === 403) {
+        setAuthenticated(false); setOwnerToken('')
+        throw new Error(typeof result.error === 'string' ? result.error + ' Please sign in again.' : 'Your owner session has ended. Please sign in again.')
+      }
       if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Could not update application.')
-      setNotice(`${decision === 'login' ? 'Login' : 'Payment'} approval ${status}. Full app access is granted only when both are approved.`)
-      await load(ownerToken)
+      // The server answers with the refreshed lists, so there is no second request to fail or to wipe this message.
+      applyAdminData(result)
+      const who = applications.find(item => item.id === id)
+      setNotice(`${decision === 'login' ? 'Login' : 'Payment'} ${status === 'approved' ? 'approved' : 'rejected'}${who ? ` for ${who.name}` : ''}. App access starts only when both login and payment are approved.`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not update application.')
     } finally {
