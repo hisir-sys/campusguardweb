@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { tooManyRequests, withinLimit } from './_guard.js'
+import { buildMessages, sendPush } from './_push.js'
 
 const SEVERITIES = new Set(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'])
 const text = (value: unknown, max: number) => (typeof value === 'string' ? value.trim().slice(0, max) : '')
@@ -57,9 +58,20 @@ export default async function handler(req: any, res: any) {
         source_seq: count(item?.seq), updated_at: now,
       }]
     })
+    let fresh: typeof rows = []
     if (rows.length) {
+      // Which of these has the cloud never seen? Only those trigger a phone notification.
+      const { data: known } = await db.from('account_incidents').select('incident_id').eq('user_id', auth.user.id).eq('server_id', serverId).in('incident_id', rows.map(r => r.incident_id))
+      const seen = new Set((known ?? []).map((r: any) => r.incident_id))
+      const cutoff = Date.now() - 15 * 60 * 1000   // an old backlog synced later must not buzz the phone
+      fresh = rows.filter(r => !seen.has(r.incident_id) && r.status === 'NEW' && new Date(r.happened_at).getTime() > cutoff)
       const { error } = await db.from('account_incidents').upsert(rows, { onConflict: 'user_id,server_id,incident_id' })
       if (error) { console.error('Incident upsert failed:', error.message); return res.status(500).json({ error: 'Could not save incidents.' }) }
+    }
+    if (fresh.length) {
+      const { data: devices } = await db.from('push_devices').select('token').eq('user_id', auth.user.id).limit(20)
+      const dead = await sendPush(buildMessages((devices ?? []).map((d: any) => d.token), fresh))
+      if (dead.length) await db.from('push_devices').delete().in('token', dead)
     }
     return res.status(200).json({ ok: true, accepted: rows.length })
   } catch (error) {
