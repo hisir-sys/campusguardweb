@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "674094870857",
+    "project_id": "campusguard-c44dc",
+    "storage_bucket": "campusguard-c44dc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674094870857:android:21bc1fc9731ac943c6ea98",
+        "android_client_info": {
+          "package_name": "com.campusguard.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTpsNxrCVW3eWCl0nohysZ3buEHW4H5ZU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

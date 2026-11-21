@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 import { tooManyRequests, withinLimit } from './_guard.js'
 
-const TOKEN = /^(Expo|Exponent)PushToken\[[A-Za-z0-9_-]{10,60}\]$/
+// A Firebase (FCM) registration token.
+const TOKEN = /^[A-Za-z0-9_:.-]{50,4096}$/
 
 export default async function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 'no-store')

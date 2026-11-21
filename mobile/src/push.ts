@@ -1,7 +1,6 @@
 import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
 import { registerPushToken } from './api';
 
 Notifications.setNotificationHandler({
@@ -40,14 +39,15 @@ export async function setupAlerts(): Promise<AlertSetup> {
     const granted = current.granted || (await Notifications.requestPermissionsAsync()).granted;
     if (!granted) return { allowed: false, token: null, message: 'Notifications are off for CampusGuard. Turn them on in the phone settings.' };
 
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
-    if (!Device.isDevice || !projectId) return { allowed: true, token: null, message: WHILE_OPEN };
+    if (!Device.isDevice || Platform.OS !== 'android') return { allowed: true, token: null, message: WHILE_OPEN };
     try {
-      const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
-      await registerPushToken(data, Platform.OS);
-      return { allowed: true, token: data, message: 'On. You will be notified of new alerts even when the app is closed.' };
+      // The phone's own Firebase token: the website sends alerts to it even when the app is closed.
+      const { data } = await Notifications.getDevicePushTokenAsync();
+      const token = String(data);
+      await registerPushToken(token, 'android');
+      return { allowed: true, token, message: 'On. You will be notified of new alerts even when the app is closed.' };
     } catch {
-      // No Firebase key in this build (or no connection): local alerts still work.
+      // No connection or no Firebase in this build: local alerts still work.
       return { allowed: true, token: null, message: WHILE_OPEN };
     }
   } catch (error) {
