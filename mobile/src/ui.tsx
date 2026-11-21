@@ -31,6 +31,7 @@ export function Frost({ style, intensity = 50, blur = true, tint, onLayout, chil
         />
       ) : null}
       <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: tint ?? p.glass }]} />
+      <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 24, right: 24, height: 1, backgroundColor: p.spec }} />
       {children}
     </View>
   );
@@ -136,29 +137,40 @@ export function PulseDot({ color, size = 7 }: { color: string; size?: number }) 
 }
 
 // ------------------------------------------------------------------ ambient background
-/** Soft colour blobs that drift slowly behind everything, so the glass has something to refract. */
+/** One soft glowing orb: stacked discs fade out towards the edge, which fakes the blur a web page gets for free. */
+function Orb({ size, color, opacity, style }: { size: number; color: string; opacity: number; style?: any }) {
+  const layers = [1, 0.82, 0.64, 0.46, 0.3];
+  return (
+    <Animated.View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, alignItems: 'center', justifyContent: 'center' }, style]}>
+      {layers.map((k) => (
+        <View key={k} style={{ position: 'absolute', width: size * k, height: size * k, borderRadius: (size * k) / 2, backgroundColor: color, opacity: opacity / layers.length }} />
+      ))}
+    </Animated.View>
+  );
+}
+
+/** Three slow-drifting orbs (green, amber, indigo) behind everything so the glass has colour to pick up. Kept quiet on purpose. */
 export function Backdrop() {
   const p = useTheme();
   const a = useRef(new Animated.Value(0)).current;
   const b = useRef(new Animated.Value(0)).current;
+  const c = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     const drift = (value: Animated.Value, ms: number) => Animated.loop(Animated.sequence([
       Animated.timing(value, { toValue: 1, duration: ms, easing: Easing.inOut(Easing.sin), useNativeDriver: native }),
       Animated.timing(value, { toValue: 0, duration: ms, easing: Easing.inOut(Easing.sin), useNativeDriver: native }),
     ]));
-    const x = drift(a, 9000), y = drift(b, 12000);
-    x.start(); y.start();
-    return () => { x.stop(); y.stop(); };
-  }, [a, b]);
+    const loops = [drift(a, 11000), drift(b, 13000), drift(c, 15000)];
+    loops.forEach((l) => l.start());
+    return () => loops.forEach((l) => l.stop());
+  }, [a, b, c]);
   const dark = p.name === 'dark';
+  const move = (v: Animated.Value, x: number, y: number) => ({ transform: [{ translateX: v.interpolate({ inputRange: [0, 1], outputRange: [0, x] }) }, { translateY: v.interpolate({ inputRange: [0, 1], outputRange: [0, y] }) }] });
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Animated.View style={{ position: 'absolute', top: -120, right: -110, width: 360, height: 360, borderRadius: 180,
-        backgroundColor: p.lens, opacity: dark ? 0.2 : 0.2,
-        transform: [{ translateX: a.interpolate({ inputRange: [0, 1], outputRange: [0, -40] }) }, { translateY: a.interpolate({ inputRange: [0, 1], outputRange: [0, 30] }) }] }} />
-      <Animated.View style={{ position: 'absolute', bottom: 60, left: -150, width: 320, height: 320, borderRadius: 160,
-        backgroundColor: p.good, opacity: dark ? 0.13 : 0.16,
-        transform: [{ translateX: b.interpolate({ inputRange: [0, 1], outputRange: [0, 50] }) }, { translateY: b.interpolate({ inputRange: [0, 1], outputRange: [0, -36] }) }] }} />
+      <Orb size={420} color="#34A873" opacity={dark ? 0.3 : 0.3} style={[{ top: 40, right: -170 }, move(a, -50, 70)]} />
+      <Orb size={380} color="#D6A046" opacity={dark ? 0.22 : 0.26} style={[{ top: 430, left: -190 }, move(b, 60, -50)]} />
+      <Orb size={440} color="#4C4CD2" opacity={dark ? 0.26 : 0.24} style={[{ bottom: -190, right: -140 }, move(c, -60, -40)]} />
     </View>
   );
 }

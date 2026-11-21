@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import {
-  ActivityIndicator, Animated, AppState, StyleSheet, FlatList, KeyboardAvoidingView, Linking, Platform, Pressable as RNPressable, RefreshControl, SafeAreaView,
+  ActivityIndicator, Animated, AppState, StyleSheet, FlatList, KeyboardAvoidingView, Linking, Modal, PanResponder, Platform, Pressable as RNPressable, RefreshControl, SafeAreaView,
   ScrollView, StatusBar as RNStatusBar, Text, TextInput, View, useColorScheme,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -9,9 +9,9 @@ import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
 import { BlurTargetView } from 'expo-blur';
-import { Backdrop, BlurTargetContext, CountUp, Frost, GrowBar, Press, PulseDot, Reveal, Skeleton } from './src/ui';
+import { Backdrop, BlurTargetContext, CountUp, Frost, GrowBar, Press, PulseDot, Reveal, Skeleton, tap } from './src/ui';
 import { Outfit_500Medium, Outfit_600SemiBold } from '@expo-google-fonts/outfit';
-import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
+import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
 import type { Session } from '@supabase/supabase-js';
 import { ApiError, fetchSyncData, supabase, unregisterPushToken } from './src/api';
@@ -45,7 +45,7 @@ export default function App() {
   const system = useColorScheme();
   const [choice, setChoice] = useState<ThemeChoice>('light');
   const [fontsReady, fontError] = useFonts({
-    Outfit_500Medium, Outfit_600SemiBold, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, JetBrainsMono_500Medium,
+    Outfit_500Medium, Outfit_600SemiBold, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, JetBrainsMono_500Medium,
   });
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
@@ -298,62 +298,74 @@ const TABS: { key: Tab; label: string; on: IconName; off: IconName }[] = [
   { key: 'overview', label: 'Home', on: 'home', off: 'home-outline' },
   { key: 'account', label: 'Account', on: 'person', off: 'person-outline' },
 ];
-const CIRCLE = 62;
-const RING = 6;
+const NAV_H = 72;
+const NAV_PAD = 8;
 
-/** Frosted pill with a raised circle that glides (and stretches like liquid) to the open tab. */
+/** Frosted bar with a glass "lens" around the open tab. It glides, stretches as it moves, and follows a finger dragged along the bar. */
 function NavBar({ tab, onTab, badge }: { tab: Tab; onTab: (t: Tab) => void; badge: number }) {
   const p = useTheme();
   const s = useStyles();
   const [width, setWidth] = useState(0);
+  const barRef = useRef<ComponentRef<typeof View>>(null);
+  const barLeft = useRef(0);
   const index = TABS.findIndex((t) => t.key === tab);
   const slide = useRef(new Animated.Value(index)).current;
   const stretch = useRef(new Animated.Value(0)).current;
-  const pop = useRef(new Animated.Value(1)).current;
   const first = useRef(true);
+  const slot = width ? (width - NAV_PAD * 2) / 3 : 0;
   useEffect(() => {
-    Animated.spring(slide, { toValue: index, useNativeDriver: true, speed: 12, bounciness: 8 }).start();
+    Animated.spring(slide, { toValue: index, useNativeDriver: true, speed: 14, bounciness: 7 }).start();
     if (first.current) { first.current = false; return; }
     stretch.setValue(0);
     Animated.sequence([
-      Animated.timing(stretch, { toValue: 1, duration: 130, useNativeDriver: true }),
-      Animated.spring(stretch, { toValue: 0, useNativeDriver: true, speed: 12, bounciness: 12 }),
+      Animated.timing(stretch, { toValue: 1, duration: 120, useNativeDriver: true }),
+      Animated.spring(stretch, { toValue: 0, useNativeDriver: true, speed: 12, bounciness: 10 }),
     ]).start();
-    pop.setValue(0);
-    Animated.spring(pop, { toValue: 1, useNativeDriver: true, speed: 16, bounciness: 14 }).start();
-  }, [index, slide, stretch, pop]);
+  }, [index, slide, stretch]);
 
-  const slot = width ? (width - 28) / 3 : 0;
-  const outer = CIRCLE + RING * 2;
-  const active = TABS[index];
+  // Dragging a finger along the bar moves the lens, like the iPhone tab bar.
+  const live = useRef({ slot, index, onTab });
+  live.current = { slot, index, onTab };
+  const pan = useRef(PanResponder.create({
+    onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy),
+    onPanResponderMove: (_e, g) => {
+      const { slot: w, index: now, onTab: go } = live.current;
+      if (!w) return;
+      const next = Math.max(0, Math.min(2, Math.floor((g.moveX - barLeft.current - NAV_PAD) / w)));
+      if (next !== now) { tap(); go(TABS[next].key); }
+    },
+  })).current;
+
+  const dark = p.name === 'dark';
+  const lensW = Math.max(0, slot - 4);
   return (
-    <View style={s.nav} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
-      <Frost style={[StyleSheet.absoluteFill, { borderRadius: 33, borderColor: p.glassEdge, borderWidth: 1 }]} intensity={80} tint={p.navGlass} />
+    <View ref={barRef} style={s.nav} {...pan.panHandlers}
+      onLayout={(e) => { setWidth(e.nativeEvent.layout.width); barRef.current?.measureInWindow((x) => { barLeft.current = x; }); }}>
+      <Frost style={[StyleSheet.absoluteFill, { borderRadius: NAV_H / 2, borderColor: p.glassEdge, borderWidth: 1 }]} intensity={80} tint={p.navGlass} />
       {slot ? (
         <Animated.View pointerEvents="none" style={{
-          position: 'absolute', top: -14, left: 14 + (slot - outer) / 2, width: outer, height: outer, borderRadius: outer / 2,
-          backgroundColor: p.bg, alignItems: 'center', justifyContent: 'center',
+          position: 'absolute', top: 6, left: NAV_PAD + 2, width: lensW, height: NAV_H - 12, borderRadius: (NAV_H - 12) / 2,
+          backgroundColor: dark ? 'rgba(255,255,255,0.13)' : 'rgba(255,255,255,0.82)',
+          borderWidth: 1.2, borderTopColor: dark ? 'rgba(255,255,255,0.5)' : '#FFFFFF', borderLeftColor: dark ? 'rgba(255,255,255,0.34)' : '#FFFFFF',
+          borderRightColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(40,44,60,0.12)', borderBottomColor: dark ? 'rgba(0,0,0,0.45)' : 'rgba(40,44,60,0.2)',
+          shadowColor: '#000', shadowOpacity: dark ? 0.5 : 0.16, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 6, overflow: 'hidden',
           transform: [
             { translateX: slide.interpolate({ inputRange: [0, 1, 2], outputRange: [0, slot, slot * 2] }) },
-            { scaleX: stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 1.28] }) },
-            { scaleY: stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 0.9] }) },
+            { scaleX: stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 1.14] }) },
+            { scaleY: stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 0.94] }) },
           ],
         }}>
-          <View style={{ width: CIRCLE, height: CIRCLE, borderRadius: CIRCLE / 2, backgroundColor: p.accent, alignItems: 'center', justifyContent: 'center',
-            shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}>
-            <Animated.View style={{ transform: [{ scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }) }, { rotate: pop.interpolate({ inputRange: [0, 1], outputRange: ['-40deg', '0deg'] }) }], opacity: pop }}>
-              <Icon name={active.on} size={28} color={p.onAccent} />
-            </Animated.View>
-          </View>
+          <View style={{ position: 'absolute', top: 2, left: 22, right: 22, height: 10, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.10)' }} />
+          <View style={{ position: 'absolute', bottom: 2, left: 26, right: 26, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.05)' }} />
         </Animated.View>
       ) : null}
       {TABS.map((t) => {
-        const isActive = t.key === tab;
+        const active = t.key === tab;
         return (
-          <Press key={t.key} style={s.navItem} onPress={() => onTab(t.key)} accessibilityLabel={t.label} scaleTo={0.86}>
-            <View style={{ opacity: isActive ? 0 : 1, alignItems: 'center', gap: 2 }}>
-              <Icon name={t.off} size={24} color={p.muted} />
-              <Text style={{ color: p.muted, fontFamily: fonts.bodyMedium, fontSize: 10.5 }}>{t.label}</Text>
+          <Press key={t.key} style={s.navItem} onPress={() => onTab(t.key)} accessibilityLabel={t.label} scaleTo={0.9}>
+            <View style={{ alignItems: 'center', gap: 3 }}>
+              <Icon name={active ? t.on : t.off} size={24} color={active ? p.text : p.muted} />
+              <Text style={{ color: active ? p.text : p.muted, fontFamily: active ? fonts.bodyBold : fonts.bodyMedium, fontSize: 11 }}>{t.label}</Text>
             </View>
             {t.key === 'alerts' && badge ? <View style={s.navBadge}><Text style={s.navBadgeText}>{badge > 9 ? '9+' : badge}</Text></View> : null}
           </Press>
@@ -363,22 +375,61 @@ function NavBar({ tab, onTab, badge }: { tab: Tab; onTab: (t: Tab) => void; badg
   );
 }
 
+// ---------------------------------------------------------------- small shared pieces
+/** A sliding segmented control: the dark knob glides to the chosen option. */
+function Seg<T extends string>({ options, value, onChange }: { options: { key: T; label: string }[]; value: T; onChange: (v: T) => void }) {
+  const p = useTheme();
+  const [width, setWidth] = useState(0);
+  const index = Math.max(0, options.findIndex((o) => o.key === value));
+  const x = useRef(new Animated.Value(index)).current;
+  useEffect(() => { Animated.spring(x, { toValue: index, useNativeDriver: true, speed: 14, bounciness: 9 }).start(); }, [index, x]);
+  const w = width ? (width - 8) / options.length : 0;
+  return (
+    <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      style={{ flexDirection: 'row', padding: 4, borderRadius: 999, backgroundColor: p.field, borderWidth: 1, borderColor: p.line }}>
+      {w ? <Animated.View style={{ position: 'absolute', top: 4, left: 4, width: w, bottom: 4, borderRadius: 999, backgroundColor: p.text,
+        transform: [{ translateX: x.interpolate({ inputRange: options.map((_, i) => i), outputRange: options.map((_, i) => i * w) }) }] }} /> : null}
+      {options.map((o) => (
+        <Press key={o.key} style={{ flex: 1, height: 44, alignItems: 'center', justifyContent: 'center' }} onPress={() => onChange(o.key)} scaleTo={0.96}>
+          <Text style={{ color: o.key === value ? p.bg : p.muted, fontFamily: fonts.bodyBold, fontSize: 15 }}>{o.label}</Text>
+        </Press>
+      ))}
+    </View>
+  );
+}
+
+function IconTile({ name, color, size = 58, round }: { name: IconName; color: string; size?: number; round?: boolean }) {
+  return (
+    <View style={{ width: size, height: size, borderRadius: round ? size / 2 : size * 0.34, alignItems: 'center', justifyContent: 'center', backgroundColor: color + '24' }}>
+      <Icon name={name} size={size * 0.48} color={color} />
+    </View>
+  );
+}
+
 // ---------------------------------------------------------------- overview
 function BarChart({ values }: { values: number[] }) {
   const p = useTheme();
   const s = useStyles();
   const peak = Math.max(1, ...values);
-  const top = values.indexOf(Math.max(...values));
+  const [tip, setTip] = useState<number | null>(null);
+  useEffect(() => { if (tip === null) return; const t = setTimeout(() => setTip(null), 1800); return () => clearTimeout(t); }, [tip]);
   return (
     <View style={s.chartPanel}>
       <View style={s.rowBetween}>
-        <Text style={[s.label, { color: p.mintBar, opacity: 0.7 }]}>ALERTS · LAST 24 HOURS</Text>
-        <Text style={[s.chartLabel, { opacity: 1 }]}>{values.reduce((a, b) => a + b, 0)} total</Text>
+        <Text style={[s.label, { color: p.good, letterSpacing: 1.1 }]}>ALERTS · LAST 24 HOURS</Text>
+        <Text style={[s.label, { color: p.good, letterSpacing: 1.1 }]}>{values.reduce((a, b) => a + b, 0)} TOTAL</Text>
       </View>
       <View style={s.chartRow}>
         {values.map((value, i) => (
-          <GrowBar key={i} height={Math.max(6, (value / peak) * 78)} delay={i * 25} style={{ width: `${86 / values.length}%`, borderRadius: 8,
-            backgroundColor: p.mintBar, opacity: value === 0 ? 0.22 : i === top && value > 0 ? 1 : 0.62 }} />
+          <Press key={i} haptic={false} scaleTo={0.9} onPress={() => setTip(i)} style={{ flex: 1, height: '100%', justifyContent: 'flex-end', alignItems: 'center' }}>
+            {value === 0 ? <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: p.mintBar, opacity: 0.3 }} />
+              : <GrowBar height={18 + (value / peak) * 66} delay={i * 25} style={{ width: 12, borderRadius: 7, backgroundColor: p.mintBar }} />}
+            {tip === i ? (
+              <View style={{ position: 'absolute', top: -6, backgroundColor: p.text, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 4 }}>
+                <Text style={{ color: p.bg, fontFamily: fonts.bodyBold, fontSize: 11.5 }}>{value} {value === 1 ? 'alert' : 'alerts'}</Text>
+              </View>
+            ) : null}
+          </Press>
         ))}
       </View>
       <View style={s.chartAxis}>
@@ -394,6 +445,7 @@ function Overview({ data, now, name, live, refreshing, onRefresh, onAlerts, upda
 }) {
   const p = useTheme();
   const s = useStyles();
+  const [openPc, setOpenPc] = useState<string | null>(null);
   const sum = useMemo(() => totals(data.servers, now), [data.servers, now]);
   const buckets = useMemo(() => alertsByBucket(data.incidents, now), [data.incidents, now]);
   const healthColor = { online: p.good, degraded: p.warn, offline: p.bad } as const;
@@ -403,14 +455,14 @@ function Overview({ data, now, name, live, refreshing, onRefresh, onAlerts, upda
   const hot = useMemo(() => hotspots(data.incidents, now), [data.incidents, now]);
   const guardText = {
     unknown: ['Not protecting yet', 'Connect a school PC to start watching your cameras.'],
-    secure: ['Campus is secure', 'No serious alerts and every camera is reporting.'],
+    secure: ['All clear', 'Every camera and school PC is reporting.'],
     watch: ['Needs a look', 'Some cameras or school PCs are not reporting.'],
     alert: ['Fight alert active', 'A serious alert in the last hour has not been reviewed.'],
   } as const;
   const allUp = sum.onlineKnown && sum.online >= sum.cameras && sum.offlineServers === 0 && sum.cameras > 0;
 
   return (
-    <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={p.lens} />} contentContainerStyle={{ paddingBottom: 0 }}>
+    <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={p.lens} />} showsVerticalScrollIndicator={false}>
       <View style={s.topRow}>
         <View style={{ flexShrink: 1 }}>
           <Text style={s.h1}>{greeting(new Date(now).getHours())}{name ? `,\n${name}` : ''}</Text>
@@ -419,30 +471,26 @@ function Overview({ data, now, name, live, refreshing, onRefresh, onAlerts, upda
             <Text style={s.liveText}>{live ? `Live · updated ${timeAgo(new Date(live).toISOString(), now)}` : 'Offline'}</Text>
           </Frost>
         </View>
-        <View style={s.avatar}>{name ? <Text style={s.avatarText}>{name[0]}</Text> : <LogoMark size={22} color={p.inkText} />}</View>
+        <View style={s.avatar}>{name ? <Text style={s.avatarText}>{name[0].toUpperCase()}</Text> : <LogoMark size={22} color={p.onAccent} />}</View>
       </View>
 
       <View style={s.pad}>
         {update ? (
-          <Reveal index={0}><View style={s.ink}>
-            <View style={s.inkRow}>
-              <View style={s.inkIcon}><Icon name="download-outline" color={p.inkText} /></View>
-              <View style={{ flex: 1 }}>
-                <Text style={s.inkTitle}>Update available</Text>
-                <Text style={s.inkSub}>{progress !== null ? `Downloading… ${Math.round(progress * 100)}%` : updateNote || `v${update.version} · ${update.sizeMb} MB · keeps your sign-in`}</Text>
-              </View>
-              <Press onPress={onInstall} disabled={progress !== null} style={[{ backgroundColor: p.inkText, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9 }, progress !== null && s.disabled]}>
-                <Text style={{ color: p.ink, fontFamily: fonts.bodyBold, fontSize: 14 }}>Update</Text>
-              </Press>
+          <Reveal index={0}><Frost style={[s.card, { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16 }]}>
+            <IconTile name="download-outline" color={p.text} size={46} round />
+            <View style={{ flex: 1 }}>
+              <Text style={s.title}>Update available</Text>
+              <Text style={s.muted}>{progress !== null ? `Downloading… ${Math.round(progress * 100)}%` : updateNote || `v${update.version} · ${update.sizeMb} MB · keeps your sign-in`}</Text>
             </View>
-          </View></Reveal>
+            <Press onPress={onInstall} disabled={progress !== null} style={[{ backgroundColor: p.accent, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10 }, progress !== null && s.disabled]}>
+              <Text style={{ color: p.onAccent, fontFamily: fonts.bodyBold, fontSize: 14 }}>Update</Text>
+            </Press>
+          </Frost></Reveal>
         ) : null}
 
         <Reveal index={1}>
-          <Frost style={[s.card, { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16 }]}>
-            <View style={{ width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: guardColor + '26' }}>
-              <Icon name={guard === 'alert' ? 'warning' : guard === 'watch' ? 'eye-outline' : 'shield-checkmark'} size={26} color={guardColor} />
-            </View>
+          <Frost style={[s.card, { flexDirection: 'row', alignItems: 'center', gap: 16 }]}>
+            <IconTile name={guard === 'alert' ? 'warning-outline' : guard === 'watch' ? 'eye-outline' : 'checkmark'} color={guardColor} />
             <View style={{ flex: 1, gap: 2 }}>
               <Text style={s.title}>{guardText[guard][0]}</Text>
               <Text style={s.muted}>{guardText[guard][1]}</Text>
@@ -451,35 +499,37 @@ function Overview({ data, now, name, live, refreshing, onRefresh, onAlerts, upda
         </Reveal>
 
         {data.servers.length === 0 ? (
-          <Frost style={s.hero}>
+          <Frost style={s.card}>
             <Text style={s.label}>GET STARTED</Text>
             <Text style={[s.h2, { marginTop: 4 }]}>Connect your first school PC</Text>
             <Text style={[s.muted, { marginTop: 6 }]}>Open the CampusGuard desktop app, go to Settings and turn on cloud sync with this same account. Your cameras and alerts will appear here within a minute.</Text>
           </Frost>
         ) : (
-          <Frost style={s.hero}>
-            <Text style={s.label}>CAMERAS ONLINE</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
-              {sum.onlineKnown ? <CountUp value={sum.online} style={[s.heroNumber, !allUp ? { color: p.warn } : null]} /> : <Text style={s.heroNumber}>—</Text>}
-              <Text style={[s.heroOf, { marginBottom: 12 }]}>/ {sum.cameras}</Text>
-            </View>
-            <Text style={s.dim}>
-              {allUp ? 'Every camera is reporting.' : sum.offlineServers ? `${sum.offlineServers} school PC not reporting.` : 'Some cameras are offline.'}
-            </Text>
-            <BarChart values={buckets} />
-          </Frost>
+          <Reveal index={2}>
+            <Frost style={s.card}>
+              <Text style={s.label}>CAMERAS ONLINE</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
+                {sum.onlineKnown ? <CountUp value={sum.online} style={[s.heroNumber, { color: allUp ? p.good : p.warn }]} /> : <Text style={s.heroNumber}>—</Text>}
+                <Text style={s.heroOf}>/ {sum.cameras}</Text>
+              </View>
+              <Text style={[s.dim, { marginBottom: 10 }]}>
+                {allUp ? 'All school PCs reporting.' : sum.offlineServers ? `${sum.offlineServers} school PC${sum.offlineServers > 1 ? 's' : ''} not reporting.` : 'Some cameras are offline.'}
+              </Text>
+              <BarChart values={buckets} />
+            </Frost>
+          </Reveal>
         )}
 
         <View style={s.pillRow}>
           <Press style={{ flex: 1 }} onPress={onAlerts}>
             <Frost style={s.pillAction} blur={false}>
-              <View style={s.pillIcon}><Icon name="notifications-outline" size={20} color={p.inkText} /></View>
+              <Icon name="notifications-outline" size={22} color={p.text} />
               <Text style={s.pillLabel}>{sum.open ? `${sum.open} open` : 'Alerts'}</Text>
             </Frost>
           </Press>
           <Press style={{ flex: 1 }} onPress={onRefresh}>
             <Frost style={s.pillAction} blur={false}>
-              <View style={s.pillIcon}><Icon name="refresh" size={20} color={p.inkText} /></View>
+              <Icon name="refresh" size={22} color={p.text} />
               <Text style={s.pillLabel}>Refresh</Text>
             </Frost>
           </Press>
@@ -487,47 +537,59 @@ function Overview({ data, now, name, live, refreshing, onRefresh, onAlerts, upda
 
         {hot.length ? (
           <Reveal index={3}>
-            <Frost style={[s.card, { gap: 12 }]}>
+            <Frost style={[s.card, { gap: 4 }]}>
               <Text style={s.label}>HOTSPOT CAMERAS · LAST 24 HOURS</Text>
-              {hot.map((h, n) => (
-                <View key={h.camera} style={{ gap: 6 }}>
-                  <View style={s.rowBetween}>
-                    <Text style={s.title} numberOfLines={1}>{n + 1}. {h.camera}</Text>
-                    <Text style={[s.chip, { color: p.severity[h.worst] ?? p.muted, backgroundColor: (p.severity[h.worst] ?? p.muted) + '26' }]}>{h.count} {h.count === 1 ? 'alert' : 'alerts'}</Text>
+              {hot.map((h) => {
+                const color = p.severity[h.worst] ?? p.muted;
+                return (
+                  <View key={h.camera} style={{ marginTop: 14 }}>
+                    <View style={s.rowBetween}>
+                      <Text style={s.title} numberOfLines={1}>{hot.indexOf(h) + 1}. {h.camera}</Text>
+                      <Text style={[s.chip, { color: p.warn, backgroundColor: p.warn + '26' }]}>{h.count} {h.count === 1 ? 'ALERT' : 'ALERTS'}</Text>
+                    </View>
+                    <View style={{ height: 6, borderRadius: 3, backgroundColor: p.line, marginTop: 10, overflow: 'hidden' }}>
+                      <GrowBar height={6} style={{ width: `${Math.max(12, (h.count / hot[0].count) * 100)}%`, borderRadius: 3, backgroundColor: color }} />
+                    </View>
                   </View>
-                  <View style={{ height: 6, borderRadius: 3, backgroundColor: p.field }}>
-                    <GrowBar height={6} style={{ width: `${Math.max(12, (h.count / hot[0].count) * 100)}%`, borderRadius: 3, backgroundColor: p.severity[h.worst] ?? p.muted }} />
-                  </View>
-                </View>
-              ))}
+                );
+              })}
             </Frost>
           </Reveal>
         ) : null}
 
         {data.servers.length ? (
           <>
-            <Text style={[s.h2, { marginTop: 6 }]}>School PCs</Text>
-            <View style={s.ink}>
-              {data.servers.map((server, index) => {
-                const health = serverHealth(server, now);
-                return (
-                  <View key={server.server_id}>
-                    {index ? <View style={s.inkDivider} /> : null}
-                    <View style={s.inkRow}>
-                      <View style={s.inkIcon}><Icon name="videocam-outline" color={p.inkText} /></View>
+            <Text style={s.section}>School PCs</Text>
+            {data.servers.map((server) => {
+              const health = serverHealth(server, now);
+              const open = openPc === server.server_id;
+              return (
+                <Press key={server.server_id} onPress={() => setOpenPc(open ? null : server.server_id)}>
+                  <Frost style={[s.card, { padding: 0, marginBottom: 0 }]} blur={false}>
+                    <View style={[s.inkRow, { padding: 16 }]}>
+                      <IconTile name="videocam-outline" color={p.muted} size={50} />
                       <View style={{ flex: 1, gap: 2 }}>
-                        <Text style={s.inkTitle}>{server.server_name}</Text>
-                        <Text style={[s.inkSub, { color: healthColor[health] }]}>● {healthWord[health]} · {timeAgo(server.last_seen, now)}</Text>
+                        <Text style={s.title}>{server.server_name}</Text>
+                        <Text style={[s.muted, { color: healthColor[health] }]}>● {health === 'online' ? 'Reporting' : `${healthWord[health]} · ${timeAgo(server.last_seen, now)}`}</Text>
                       </View>
-                      <View style={{ alignItems: 'flex-end', gap: 2 }}>
-                        <Text style={s.inkValue}>{server.cameras_online === null ? server.cameras_total : `${server.cameras_online}/${server.cameras_total}`}</Text>
-                        <Text style={s.inkSub}>cameras</Text>
+                      <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={s.title}>{server.cameras_online === null ? server.cameras_total : `${server.cameras_online}/${server.cameras_total}`}</Text>
+                        <Text style={[s.muted, { fontSize: 13 }]}>cameras</Text>
                       </View>
                     </View>
-                  </View>
-                );
-              })}
-            </View>
+                    {open ? (
+                      <View style={{ paddingHorizontal: 18, paddingBottom: 8 }}>
+                        {[['AI watching', `${server.cameras_ai_enabled} cameras`], ['Last seen', timeAgo(server.last_seen, now)], ['Open alerts', String(server.open_incidents)], ['App version', server.app_version ?? '—']].map(([k, v]) => (
+                          <View key={k} style={[s.rowBetween, { paddingVertical: 12, borderTopWidth: 1, borderTopColor: p.line }]}>
+                            <Text style={s.muted}>{k}</Text><Text style={s.dim}>{v}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    ) : null}
+                  </Frost>
+                </Press>
+              );
+            })}
           </>
         ) : null}
         <View style={{ height: 96 }} />
@@ -537,31 +599,80 @@ function Overview({ data, now, name, live, refreshing, onRefresh, onAlerts, upda
 }
 
 // ---------------------------------------------------------------- alerts
+const headline = (i: Incident) => (i.severity === 'MEDIUM' ? 'POSSIBLE FIGHT' : 'FIGHT DETECTED');
+
+function AlertSheet({ incident, now, onClose }: { incident: Incident; now: number; onClose: () => void }) {
+  const p = useTheme();
+  const s = useStyles();
+  const rise = useRef(new Animated.Value(0)).current;
+  useEffect(() => { Animated.spring(rise, { toValue: 1, useNativeDriver: true, speed: 13, bounciness: 8 }).start(); }, [rise]);
+  const color = p.severity[incident.severity] ?? p.muted;
+  const close = () => Animated.timing(rise, { toValue: 0, duration: 200, useNativeDriver: true }).start(onClose);
+  return (
+    <Modal transparent animationType="none" onRequestClose={close} statusBarTranslucent>
+      <Animated.View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', opacity: rise }}>
+        <RNPressable style={{ flex: 1 }} onPress={close} />
+      </Animated.View>
+      <Animated.View style={{ position: 'absolute', left: 10, right: 10, bottom: 10, transform: [{ translateY: rise.interpolate({ inputRange: [0, 1], outputRange: [420, 0] }) }] }}>
+        <Frost style={[s.card, { borderRadius: 38, padding: 22, paddingTop: 14 }]} intensity={90} tint={p.name === 'dark' ? 'rgba(28,28,33,0.96)' : 'rgba(250,251,254,0.97)'}>
+          <View style={{ width: 42, height: 5, borderRadius: 3, backgroundColor: p.line, alignSelf: 'center', marginBottom: 16 }} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+            <IconTile name="warning-outline" color={color} size={54} />
+            <View style={{ flex: 1 }}>
+              <Text style={[s.title, { fontSize: 19 }]}>{incident.camera_name}</Text>
+              <Text style={s.muted}>{headline(incident)} · {timeAgo(incident.happened_at, now)}</Text>
+            </View>
+            <Text style={[s.chip, { color, backgroundColor: color + '26' }]}>{(LEVEL[incident.severity] ?? incident.severity).toUpperCase()}</Text>
+          </View>
+          <View style={{ marginTop: 12 }}>
+            {[['Confidence', `${Math.round(incident.confidence * 100)}% sure`], ['When', new Date(incident.happened_at).toLocaleString()], ['Status', incident.status === 'NEW' ? 'Needs review' : 'Reviewed'],
+              ['Clip', incident.has_footage ? 'Saved on the school PC' : 'No clip saved']].map(([k, v]) => (
+              <View key={k} style={[s.rowBetween, { paddingVertical: 13, borderTopWidth: 1, borderTopColor: p.line }]}>
+                <Text style={s.muted}>{k}</Text><Text style={s.dim}>{v}</Text>
+              </View>
+            ))}
+          </View>
+          <Press style={[s.button, { marginTop: 10 }]} onPress={close}><Text style={s.buttonText}>Done</Text></Press>
+        </Frost>
+      </Animated.View>
+    </Modal>
+  );
+}
+
 function Alerts({ incidents, now, refreshing, onRefresh }: { incidents: Incident[]; now: number; refreshing: boolean; onRefresh: () => void }) {
   const p = useTheme();
   const s = useStyles();
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [sheet, setSheet] = useState<Incident | null>(null);
   const [filter, setFilter] = useState<'all' | 'new' | 'reviewed'>('all');
   const needing = incidents.filter((i) => i.status === 'NEW').length;
   const [query, setQuery] = useState('');
   const shown = incidents.filter((i) => (filter === 'all' || (filter === 'new') === (i.status === 'NEW')) && i.camera_name.toLowerCase().includes(query.trim().toLowerCase()));
+  const tone = needing ? p.warn : p.good;
   return (
+    <>
     <FlatList
       data={shown}
       keyExtractor={(item) => `${item.server_id}:${item.incident_id}`}
       contentContainerStyle={s.pad}
+      showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={p.lens} />}
       ListHeaderComponent={
         <View style={{ gap: 14 }}>
-          <Text style={[s.h1, { marginTop: 10 }]}>Alerts</Text>
-          <View style={s.summary}>
-            <CountUp value={needing} style={s.summaryNumber} duration={700} />
-            <Text style={s.summaryText}>{needing === 0 ? 'Nothing needs attention right now.' : needing === 1 ? 'alert needs attention' : 'alerts need attention'}</Text>
-          </View>
-          <TextInput style={s.input} value={query} onChangeText={setQuery} placeholder="Search by camera" placeholderTextColor={p.muted} autoCorrect={false} />
+          <Text style={[s.h1, { marginTop: 10, marginLeft: 4 }]}>Alerts</Text>
+          <Frost style={[s.card, { padding: 24, backgroundColor: tone + '1F' }]}>
+            <CountUp value={needing} style={[s.bigNumber, { color: tone }]} duration={700} />
+            <Text style={{ color: tone, fontFamily: fonts.body, fontSize: 16 }}>{needing === 0 ? 'Nothing needs attention right now.' : needing === 1 ? '1 alert needs your review.' : `${needing} alerts need your review.`}</Text>
+          </Frost>
+          <Frost style={{ height: 58, borderRadius: 29, borderWidth: 1, borderColor: p.line, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20 }} blur={false} tint={p.field}>
+            <Icon name="search-outline" size={20} color={p.muted} />
+            <TextInput style={{ flex: 1, color: p.text, fontFamily: fonts.body, fontSize: 17, paddingVertical: 0 }} value={query} onChangeText={setQuery}
+              placeholder="Search by camera" placeholderTextColor={p.muted} autoCorrect={false} />
+            {query ? <RNPressable onPress={() => setQuery('')} hitSlop={10}><Icon name="close" size={18} color={p.muted} /></RNPressable> : null}
+          </Frost>
           <View style={s.segRow}>
             {(['all', 'new', 'reviewed'] as const).map((name) => (
               <Press key={name} style={[s.seg, filter === name && s.segOn]} onPress={() => setFilter(name)}>
+                {filter === name ? <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: p.bg }} /> : null}
                 <Text style={[s.segText, filter === name && s.segTextOn]}>{name === 'all' ? 'All' : name === 'new' ? 'New' : 'Reviewed'}</Text>
               </Press>
             ))}
@@ -572,39 +683,29 @@ function Alerts({ incidents, now, refreshing, onRefresh }: { incidents: Incident
         <Frost style={[s.card, { alignItems: 'center', paddingVertical: 34 }]}>
           <Icon name="shield-checkmark-outline" size={38} color={p.good} />
           <Text style={[s.h2, { marginTop: 8 }]}>{incidents.length ? 'Nothing here' : 'All clear'}</Text>
-          <Text style={[s.muted, { textAlign: 'center' }]}>{incidents.length ? 'No alerts match this filter.' : 'When a fight is detected it will appear here and on your phone.'}</Text>
+          <Text style={[s.muted, { textAlign: 'center' }]}>{incidents.length ? 'No alerts match.' : 'When a fight is detected it will appear here and on your phone.'}</Text>
         </Frost>
       }
       ListFooterComponent={<View style={{ height: 96 }} />}
       renderItem={({ item, index }) => {
-        const key = `${item.server_id}:${item.incident_id}`;
         const color = p.severity[item.severity] ?? p.muted;
-        const open = openId === key;
         return (
-          <Reveal index={index}><Press onPress={() => setOpenId(open ? null : key)}><Frost style={s.alertCard} blur={false}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <View style={[s.alertIcon, { backgroundColor: color + '26' }]}><Icon name="warning-outline" color={color} /></View>
+          <Reveal index={index}><Press onPress={() => setSheet(item)}><Frost style={s.alertCard} blur={false}>
+            {item.status === 'NEW' ? <View style={{ position: 'absolute', left: 10, top: 10, width: 9, height: 9, borderRadius: 5, backgroundColor: p.warn }} /> : null}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+              <IconTile name="warning-outline" color={color} size={54} />
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={s.title}>{item.camera_name}</Text>
-                <Text style={s.muted}>{item.event} · {Math.round(item.confidence * 100)}% sure</Text>
-                <Text style={[s.muted, { fontSize: 12.5 }]}>{timeAgo(item.happened_at, now)}</Text>
+                <Text style={[s.muted, { fontSize: 13.5 }]}>{headline(item)} · {Math.round(item.confidence * 100)}% sure{'\n'}{timeAgo(item.happened_at, now)}</Text>
               </View>
-              <View style={{ alignItems: 'flex-end', gap: 6 }}>
-                <Text style={[s.chip, { color, backgroundColor: color + '26' }]}>{(LEVEL[item.severity] ?? item.severity).toUpperCase()}</Text>
-                {item.status === 'NEW' ? <Text style={[s.chip, { color: p.onAccent, backgroundColor: p.accent }]}>NEW</Text> : null}
-              </View>
+              <Text style={[s.chip, { color, backgroundColor: color + '26' }]}>{(LEVEL[item.severity] ?? item.severity).toUpperCase()}</Text>
             </View>
-            {open ? (
-              <View style={s.detail}>
-                <Text style={s.muted}>{new Date(item.happened_at).toLocaleString()}</Text>
-                <Text style={s.muted}>Status: {item.status}</Text>
-                <Text style={s.muted}>{item.has_footage ? 'A video clip was saved on the school PC.' : 'No clip was saved for this alert.'}</Text>
-              </View>
-            ) : null}
           </Frost></Press></Reveal>
         );
       }}
     />
+    {sheet ? <AlertSheet incident={sheet} now={now} onClose={() => setSheet(null)} /> : null}
+    </>
   );
 }
 
@@ -613,19 +714,16 @@ function SettingRow({ icon, title, value, onPress, tint, last }: { icon: IconNam
   const p = useTheme();
   const s = useStyles();
   const body = (
-    <>
-      <View style={s.setRow}>
-        <View style={s.setIcon}><Icon name={icon} size={20} color={tint ?? p.text} /></View>
-        <View style={{ flex: 1, gap: 2 }}>
-          <Text style={s.title}>{title}</Text>
-          {value ? <Text style={[s.muted, tint ? { color: tint } : null]}>{value}</Text> : null}
-        </View>
-        {onPress ? <Icon name="chevron-forward" size={18} color={p.muted} /> : null}
+    <View style={[s.setRow, !last && { borderBottomWidth: 1, borderBottomColor: p.line }]}>
+      <View style={s.setIcon}><Icon name={icon} size={20} color={tint ?? p.muted} /></View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={s.title}>{title}</Text>
+        {value ? <Text style={[s.muted, tint ? { color: tint } : null]}>{value}</Text> : null}
       </View>
-      {last ? null : <View style={s.setDivider} />}
-    </>
+      {onPress ? <Icon name="chevron-forward" size={18} color={p.muted} /> : null}
+    </View>
   );
-  return onPress ? <Press onPress={onPress}>{body}</Press> : <View>{body}</View>;
+  return onPress ? <Press onPress={onPress} scaleTo={0.98}>{body}</Press> : <View>{body}</View>;
 }
 
 function Account({ email, name, alertState, version, update, updateNote, onCheckUpdate, onInstall, progress, choice, onChoice, onSignOut }: {
@@ -636,41 +734,36 @@ function Account({ email, name, alertState, version, update, updateNote, onCheck
   const p = useTheme();
   const s = useStyles();
   return (
-    <ScrollView contentContainerStyle={s.pad}>
-      <Text style={[s.h1, { marginTop: 10 }]}>Account</Text>
-      <View style={[s.ink, { padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }]}>
-        <View style={[s.avatar, { backgroundColor: p.inkText, width: 56, height: 56, borderRadius: 28 }]}>
-          <Text style={[s.avatarText, { color: p.ink, fontSize: 22 }]}>{name ? name[0] : '·'}</Text>
+    <ScrollView contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
+      <Text style={[s.h1, { marginTop: 10, marginLeft: 4 }]}>Account</Text>
+      <Frost style={[s.card, { flexDirection: 'row', alignItems: 'center', gap: 16 }]}>
+        <View style={[s.avatar, { width: 56, height: 56, borderRadius: 28 }]}>
+          <Text style={[s.avatarText, { fontSize: 23 }]}>{name ? name[0].toUpperCase() : '·'}</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={s.inkTitle}>{name || 'Your account'}</Text>
-          <Text style={s.inkSub} numberOfLines={1}>{email}</Text>
+          <Text style={[s.title, { fontSize: 18 }]}>{name || 'Your account'}</Text>
+          <Text style={s.muted} numberOfLines={1}>{email}</Text>
         </View>
-      </View>
+      </Frost>
 
-      <Frost style={s.card}>
+      <Frost style={[s.card, { paddingVertical: 8 }]}>
         <SettingRow icon={alertState.allowed ? 'notifications-outline' : 'notifications-off-outline'} title="Alert notifications" value={alertState.message}
           tint={alertState.allowed ? p.good : p.warn} />
-        <View style={{ paddingVertical: 14, gap: 10 }}>
+        <View style={{ paddingVertical: 16, gap: 10, borderBottomWidth: 1, borderBottomColor: p.line }}>
           <Text style={s.title}>Appearance</Text>
-          <View style={s.segRow}>
-            {(['auto', 'light', 'dark'] as ThemeChoice[]).map((c) => (
-              <Press key={c} style={[s.seg, choice === c && s.segOn]} onPress={() => onChoice(c)}>
-                <Text style={[s.segText, choice === c && s.segTextOn]}>{c === 'auto' ? 'Auto' : c === 'light' ? 'Light' : 'Dark'}</Text>
-              </Press>
-            ))}
-          </View>
+          <Seg options={[{ key: 'auto', label: 'Auto' }, { key: 'light', label: 'Light' }, { key: 'dark', label: 'Dark' }]} value={choice} onChange={onChoice} />
         </View>
-        <View style={s.setDivider} />
         <SettingRow icon="phone-portrait-outline" title={`CampusGuard ${version}`}
           value={progress !== null ? `Downloading… ${Math.round(progress * 100)}%` : update ? `Version ${update.version} is ready to install` : updateNote || 'Tap to check for updates'}
           onPress={update ? onInstall : onCheckUpdate} tint={update ? p.good : undefined} />
         <SettingRow icon="chatbubble-ellipses-outline" title="Help and support" value="Chat with us on WhatsApp" onPress={() => Linking.openURL(SUPPORT_URL)} last />
       </Frost>
 
-      <Press style={[s.button, s.buttonGhost]} onPress={onSignOut}>
-        <Icon name="log-out-outline" size={20} color={p.bad} />
-        <Text style={[s.buttonText, { color: p.bad }]}>Sign out</Text>
+      <Press onPress={onSignOut}>
+        <Frost style={{ height: 64, borderRadius: 32, borderWidth: 1, borderColor: p.glassEdge, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }} blur={false}>
+          <Icon name="log-out-outline" size={20} color={p.bad} />
+          <Text style={{ color: p.bad, fontFamily: fonts.bodyBold, fontSize: 17 }}>Sign out</Text>
+        </Frost>
       </Press>
     </ScrollView>
   );

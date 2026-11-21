@@ -7,27 +7,27 @@ export type Palette = {
   text: string; textDim: string; muted: string;
   accent: string; onAccent: string; good: string; warn: string; bad: string; lens: string;
   /** Dark rounded panels (lists, nav), the mint chart panel and the lavender chip: the look of the design reference. */
-  navGlass: string; glass: string; glassEdge: string; shadow: string;
+  spec: string; navGlass: string; glass: string; glassEdge: string; shadow: string;
   ink: string; inkText: string; inkMuted: string; inkLine: string; mint: string; mintBar: string; lav: string; navDot: string;
   severity: Record<string, string>;
 };
 
 export const DARK: Palette = {
-  name: 'dark', bg: '#0A0A0B', blob: 'rgba(255,255,255,0.045)', surface: '#1B1B1E', field: 'rgba(255,255,255,0.06)',
-  line: 'rgba(255,255,255,0.10)', text: '#F5F5F7', textDim: '#C4C4CB', muted: '#9A9AA2',
-  accent: '#F5F5F7', onAccent: '#0A0A0B', good: '#8FCFA9', warn: '#E3B872', bad: '#E58B76', lens: '#8FA6C8',
-  navGlass: 'rgba(40,40,46,0.78)', glass: 'rgba(38,38,43,0.62)', glassEdge: 'rgba(255,255,255,0.12)', shadow: 'rgba(0,0,0,0.45)',
-  ink: '#26262B', inkText: '#F5F5F7', inkMuted: '#9A9AA2', inkLine: 'rgba(255,255,255,0.08)', mint: '#1F3A2E', mintBar: '#8FCFA9', lav: '#2A3042', navDot: '#F5F5F7',
-  severity: { LOW: '#8DB4A0', MEDIUM: '#C4B085', HIGH: '#C79A7E', CRITICAL: '#C58790' },
+  name: 'dark', bg: '#050507', blob: 'rgba(255,255,255,0.045)', surface: '#16161A', field: 'rgba(255,255,255,0.06)',
+  line: 'rgba(255,255,255,0.09)', text: '#F5F5F7', textDim: 'rgba(235,235,245,0.80)', muted: 'rgba(235,235,245,0.62)',
+  accent: '#F5F5F7', onAccent: '#0B0B0E', good: '#8CC9A9', warn: '#D8BA8A', bad: '#E0998D', lens: '#8FA6C8',
+  spec: 'rgba(255,255,255,0.16)', navGlass: 'rgba(34,34,40,0.55)', glass: 'rgba(255,255,255,0.07)', glassEdge: 'rgba(255,255,255,0.15)', shadow: 'rgba(0,0,0,0.5)',
+  ink: '#26262B', inkText: '#F5F5F7', inkMuted: '#9A9AA2', inkLine: 'rgba(255,255,255,0.08)', mint: 'rgba(90,170,130,0.14)', mintBar: '#9ACDB3', lav: '#2A3042', navDot: '#F5F5F7',
+  severity: { LOW: '#8CC9A9', MEDIUM: '#D8BA8A', HIGH: '#D9A57F', CRITICAL: '#E0998D' },
 };
 
 export const LIGHT: Palette = {
-  name: 'light', bg: '#E4E4E7', blob: 'rgba(0,0,0,0.04)', surface: '#FFFFFF', field: 'rgba(0,0,0,0.05)',
-  line: 'rgba(0,0,0,0.08)', text: '#0B0B0D', textDim: '#3A3A40', muted: '#6B6B73',
-  accent: '#0B0B0D', onAccent: '#FFFFFF', good: '#2F7D57', warn: '#94610F', bad: '#B4412F', lens: '#5B7399',
-  navGlass: 'rgba(255,255,255,0.82)', glass: 'rgba(255,255,255,0.66)', glassEdge: 'rgba(255,255,255,0.95)', shadow: 'rgba(30,40,60,0.16)',
-  ink: '#0B0B0D', inkText: '#F5F5F7', inkMuted: '#9A9AA2', inkLine: 'rgba(255,255,255,0.10)', mint: '#CDE7DB', mintBar: '#0B0B0D', lav: '#DDE2EE', navDot: '#0B0B0D',
-  severity: { LOW: '#3F6B57', MEDIUM: '#75613A', HIGH: '#85553A', CRITICAL: '#8B4048' },
+  name: 'light', bg: '#E8EBF2', blob: 'rgba(0,0,0,0.04)', surface: '#FFFFFF', field: 'rgba(255,255,255,0.6)',
+  line: 'rgba(20,24,40,0.09)', text: '#0C0D12', textDim: 'rgba(40,44,60,0.86)', muted: 'rgba(40,44,60,0.66)',
+  accent: '#0C0D12', onAccent: '#FFFFFF', good: '#2F7A58', warn: '#86672D', bad: '#B24A3E', lens: '#5B7399',
+  spec: 'rgba(255,255,255,0.95)', navGlass: 'rgba(255,255,255,0.62)', glass: 'rgba(255,255,255,0.66)', glassEdge: 'rgba(255,255,255,0.95)', shadow: 'rgba(40,50,90,0.18)',
+  ink: '#0C0D12', inkText: '#F5F5F7', inkMuted: '#9A9AA2', inkLine: 'rgba(255,255,255,0.10)', mint: 'rgba(80,170,130,0.16)', mintBar: '#58A785', lav: '#DDE2EE', navDot: '#0C0D12',
+  severity: { LOW: '#2F7A58', MEDIUM: '#86672D', HIGH: '#9A5A32', CRITICAL: '#B24A3E' },
 };
 
 // Same names as the desktop pop-up.
