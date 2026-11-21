@@ -26,3 +26,22 @@ test('time ago', () => {
   assert.equal(timeAgo(at(180), NOW), '3 h ago');
   assert.equal(timeAgo(at(3000), NOW), '2 d ago');
 });
+
+import { freshIncidents, notificationFor } from '../src/alerts.ts';
+
+const inc = (id: string, minutesAgo: number, over: object = {}) => ({ server_id: 'a', incident_id: id, camera_name: 'Gate',
+  happened_at: at(minutesAgo), event: 'Fight', confidence: 0.9, severity: 'HIGH', status: 'NEW', has_footage: false, ...over }) as any;
+
+test('first load never replays old alerts, later loads only report new fresh ones', () => {
+  const seen = new Set<string>();
+  assert.deepEqual(freshIncidents(seen, [inc('1', 2)], NOW), []);
+  assert.equal(freshIncidents(seen, [inc('1', 2)], NOW).length, 0);
+  const got = freshIncidents(seen, [inc('1', 2), inc('2', 1), inc('3', 60), inc('4', 1, { status: 'REVIEWED' })], NOW);
+  assert.deepEqual(got.map((i) => i.incident_id), ['2']);
+});
+
+test('notification text', () => {
+  assert.equal(notificationFor([]), null);
+  assert.deepEqual(notificationFor([inc('1', 1)]), { title: 'Fight detected', body: 'Gate · 90% sure' });
+  assert.equal(notificationFor([inc('1', 1, { severity: 'MEDIUM' }), inc('2', 1, { severity: 'CRITICAL', camera_name: 'Hall' })])?.body, 'Most serious: Hall · 90% sure');
+});

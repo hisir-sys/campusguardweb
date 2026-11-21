@@ -13,15 +13,23 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export type PushResult = { token: string | null; problem: string | null };
+export type AlertSetup = {
+  /** Notifications may be shown (alerts while the app is open or recently used). */
+  allowed: boolean;
+  /** This phone is registered for alerts that arrive while the app is closed. */
+  token: string | null;
+  /** Plain-words state for the Account tab. */
+  message: string;
+};
 
-/** Ask permission, get this phone's push token and tell the server about it. Never throws. */
-export async function enablePush(): Promise<PushResult> {
+const WHILE_OPEN = 'Alerts appear while the app is open or was used a moment ago. Alerts to a closed app need a one-time server setup.';
+
+/** Ask permission, then try to register for closed-app alerts. Never throws. */
+export async function setupAlerts(): Promise<AlertSetup> {
   try {
-    if (Platform.OS === 'web') return { token: null, problem: 'Alerts to the phone work in the Android and iPhone app.' };
-    if (!Device.isDevice) return { token: null, problem: 'Push alerts need a real phone, not an emulator.' };
+    if (Platform.OS === 'web') return { allowed: false, token: null, message: 'Phone alerts work in the Android and iPhone app.' };
     if (Platform.OS === 'android') {
-      // Android 13+ shows the permission prompt only after a channel exists.
+      // Android 13+ asks for permission only once a channel exists.
       await Notifications.setNotificationChannelAsync('alerts', {
         name: 'Fight alerts',
         importance: Notifications.AndroidImportance.MAX,
@@ -29,15 +37,32 @@ export async function enablePush(): Promise<PushResult> {
       });
     }
     const current = await Notifications.getPermissionsAsync();
-    let granted = current.granted;
-    if (!granted) granted = (await Notifications.requestPermissionsAsync()).granted;
-    if (!granted) return { token: null, problem: 'Notifications are turned off for CampusGuard. Turn them on in the phone settings.' };
+    const granted = current.granted || (await Notifications.requestPermissionsAsync()).granted;
+    if (!granted) return { allowed: false, token: null, message: 'Notifications are off for CampusGuard. Turn them on in the phone settings.' };
+
     const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
-    if (!projectId) return { token: null, problem: 'Push is not set up in this build yet (missing EAS project id).' };
-    const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
-    await registerPushToken(data, Platform.OS);
-    return { token: data, problem: null };
+    if (!Device.isDevice || !projectId) return { allowed: true, token: null, message: WHILE_OPEN };
+    try {
+      const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
+      await registerPushToken(data, Platform.OS);
+      return { allowed: true, token: data, message: 'On. You will be notified of new alerts even when the app is closed.' };
+    } catch {
+      // No Firebase key in this build (or no connection): local alerts still work.
+      return { allowed: true, token: null, message: WHILE_OPEN };
+    }
   } catch (error) {
-    return { token: null, problem: error instanceof Error ? error.message : 'Could not turn on alerts.' };
+    return { allowed: false, token: null, message: error instanceof Error ? error.message : 'Could not turn on alerts.' };
+  }
+}
+
+/** Show a notification on this phone right now. */
+export async function showLocalAlert(title: string, body: string): Promise<void> {
+  try {
+    await Notifications.scheduleNotificationAsync({
+      content: { title, body, sound: 'default', data: { type: 'incident' } },
+      trigger: Platform.OS === 'android' ? { channelId: 'alerts' } as any : null,
+    });
+  } catch {
+    /* a failed local alert must never break the screen */
   }
 }

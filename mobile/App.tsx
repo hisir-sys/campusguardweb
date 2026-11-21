@@ -12,7 +12,9 @@ import { JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
 import type { Session } from '@supabase/supabase-js';
 import { ApiError, fetchSyncData, supabase, unregisterPushToken } from './src/api';
 import { REFRESH_SECONDS } from './src/config';
-import { enablePush } from './src/push';
+import { freshIncidents, notificationFor } from './src/alerts';
+import { demoData } from './src/demo';
+import { setupAlerts, showLocalAlert, type AlertSetup } from './src/push';
 import { secureStorage } from './src/storage';
 import { serverHealth, totals } from './src/status';
 import { makeStyles } from './src/styles';
@@ -37,6 +39,7 @@ export default function App() {
   });
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
+  const [demo, setDemo] = useState(false);
 
   useEffect(() => {
     secureStorage.getItem(THEME_KEY).then((value) => {
@@ -58,7 +61,8 @@ export default function App() {
         <View pointerEvents="none" style={styles.blobA} />
         <View pointerEvents="none" style={styles.blobB} />
         {!(fontsReady || fontError) || !ready ? <Center><ActivityIndicator color={palette.lens} /></Center>
-          : session ? <Home email={session.user.email ?? ''} choice={choice} onChoice={pick} /> : <Login />}
+          : demo ? <Home email="Demo mode (made-up data)" demo choice={choice} onChoice={pick} onExitDemo={() => setDemo(false)} />
+          : session ? <Home email={session.user.email ?? ''} choice={choice} onChoice={pick} /> : <Login onDemo={() => setDemo(true)} />}
       </SafeAreaView>
     </ThemeContext.Provider>
   );
@@ -70,7 +74,7 @@ function Center({ children }: { children: React.ReactNode }) {
 }
 
 // ---------------------------------------------------------------- sign in
-function Login() {
+function Login({ onDemo }: { onDemo: () => void }) {
   const p = useTheme();
   const s = useStyles();
   const [email, setEmail] = useState('');
@@ -99,13 +103,18 @@ function Login() {
         <Pressable style={[s.button, busy && s.disabled]} onPress={submit} disabled={busy}>
           {busy ? <ActivityIndicator color={p.onAccent} /> : <Text style={s.buttonText}>Sign in</Text>}
         </Pressable>
+        <Pressable style={[s.button, s.buttonGhost]} onPress={onDemo}>
+          <Text style={[s.buttonText, s.buttonGhostText]}>Try with demo data</Text>
+        </Pressable>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
 // ---------------------------------------------------------------- signed in
-function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice; onChoice: (c: ThemeChoice) => void }) {
+function Home({ email, choice, onChoice, demo = false, onExitDemo }: {
+  email: string; choice: ThemeChoice; onChoice: (c: ThemeChoice) => void; demo?: boolean; onExitDemo?: () => void;
+}) {
   const p = useTheme();
   const s = useStyles();
   const [tab, setTab] = useState<Tab>('overview');
@@ -114,14 +123,20 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
   const [refreshing, setRefreshing] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
-  const [pushState, setPushState] = useState<{ on: boolean; problem: string | null; token: string | null }>({ on: false, problem: null, token: null });
+  const [alertState, setAlertState] = useState<AlertSetup>({ allowed: false, token: null, message: 'Turning on…' });
   const loading = useRef(false);
+  const seen = useRef(new Set<string>());
+  const tokenRef = useRef<string | null>(null);
 
   const load = useCallback(async () => {
     if (loading.current) return;
     loading.current = true;
     try {
-      setData(await fetchSyncData());
+      const next = demo ? demoData() : await fetchSyncData();
+      setData(next);
+      // New incidents seen while the app is open buzz the phone (the server push covers a closed app).
+      const message = notificationFor(freshIncidents(seen.current, next.incidents));
+      if (message && !tokenRef.current) showLocalAlert(message.title, message.body);
       setUpdatedAt(Date.now());
       setError('');
     } catch (failure) {
@@ -131,7 +146,7 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
       setNow(Date.now());
       loading.current = false;
     }
-  }, []);
+  }, [demo]);
 
   useEffect(() => {
     load();
@@ -140,15 +155,16 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
   }, [load]);
 
   useEffect(() => {
-    enablePush().then((result) => setPushState({ on: !!result.token, problem: result.problem, token: result.token }));
+    setupAlerts().then((result) => { tokenRef.current = demo ? null : result.token; setAlertState(result); });
     // A new alert arriving while the app is open, or a tap on one, refreshes the list at once.
     const received = Notifications.addNotificationReceivedListener(() => load());
     const tapped = Notifications.addNotificationResponseReceivedListener(() => { setTab('alerts'); load(); });
     return () => { received.remove(); tapped.remove(); };
-  }, [load]);
+  }, [load, demo]);
 
   const signOut = async () => {
-    if (pushState.token) await unregisterPushToken(pushState.token).catch(() => undefined);
+    if (demo) { onExitDemo?.(); return; }
+    if (alertState.token) await unregisterPushToken(alertState.token).catch(() => undefined);
     await supabase.auth.signOut();
   };
   const onRefresh = async () => { setRefreshing(true); await load(); setRefreshing(false); };
@@ -169,7 +185,7 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
         {!data ? <Center><ActivityIndicator color={p.lens} /></Center>
           : tab === 'overview' ? <Overview data={data} now={now} refreshing={refreshing} onRefresh={onRefresh} />
           : tab === 'alerts' ? <Alerts incidents={data.incidents} now={now} refreshing={refreshing} onRefresh={onRefresh} />
-          : <Account email={email} push={pushState} choice={choice} onChoice={onChoice} onSignOut={signOut} />}
+          : <Account email={email} alertState={alertState} demo={demo} choice={choice} onChoice={onChoice} onSignOut={signOut} />}
       </View>
       <View style={[s.tabs, Platform.OS === 'android' && { paddingBottom: 12 }]}>
         {(['overview', 'alerts', 'account'] as Tab[]).map((name) => (
@@ -276,8 +292,8 @@ function Alerts({ incidents, now, refreshing, onRefresh }: { incidents: Incident
   );
 }
 
-function Account({ email, push, choice, onChoice, onSignOut }: {
-  email: string; push: { on: boolean; problem: string | null };
+function Account({ email, alertState, demo, choice, onChoice, onSignOut }: {
+  email: string; alertState: AlertSetup; demo: boolean;
   choice: ThemeChoice; onChoice: (c: ThemeChoice) => void; onSignOut: () => void;
 }) {
   const p = useTheme();
@@ -290,7 +306,10 @@ function Account({ email, push, choice, onChoice, onSignOut }: {
       </View>
       <View style={s.card}>
         <Text style={s.label}>ALERT NOTIFICATIONS</Text>
-        <Text style={[s.dim, { color: push.on ? p.good : p.warn }]}>{push.on ? 'On: you will be notified of new alerts.' : push.problem ?? 'Turning on…'}</Text>
+        <Text style={[s.dim, { color: alertState.allowed ? p.good : p.warn }]}>{alertState.message}</Text>
+        <Pressable style={[s.button, s.buttonGhost, { marginTop: 8 }]} onPress={() => showLocalAlert('Fight detected', 'Corridor 2F · 91% sure (test)')}>
+          <Text style={[s.buttonText, s.buttonGhostText]}>Send a test alert</Text>
+        </Pressable>
       </View>
       <View style={s.card}>
         <Text style={s.label}>APPEARANCE</Text>
@@ -303,7 +322,7 @@ function Account({ email, push, choice, onChoice, onSignOut }: {
         </View>
       </View>
       <Pressable style={[s.button, s.buttonGhost]} onPress={onSignOut}>
-        <Text style={[s.buttonText, s.buttonGhostText]}>Sign out</Text>
+        <Text style={[s.buttonText, s.buttonGhostText]}>{demo ? 'Leave demo' : 'Sign out'}</Text>
       </Pressable>
     </ScrollView>
   );
