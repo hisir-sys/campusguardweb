@@ -18,3 +18,4 @@ Alerts to a closed app go through Firebase Cloud Messaging: `mobile/google-servi
 
 ## Not built yet
 Video clips in the app (phase 2: opt-in upload to private storage with auto-delete).
+
