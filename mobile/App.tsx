@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import {
-  ActivityIndicator, AppState, FlatList, KeyboardAvoidingView, Linking, Platform, Pressable as RNPressable, RefreshControl, SafeAreaView,
+  ActivityIndicator, Animated, AppState, FlatList, KeyboardAvoidingView, Linking, Platform, Pressable as RNPressable, RefreshControl, SafeAreaView,
   ScrollView, StatusBar as RNStatusBar, Text, TextInput, View, useColorScheme,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -15,7 +15,7 @@ import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-goog
 import { JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
 import type { Session } from '@supabase/supabase-js';
 import { ApiError, fetchSyncData, supabase, unregisterPushToken } from './src/api';
-import { alertsByBucket, freshIncidents, LEVEL, notificationFor, worstOf } from './src/alerts';
+import { alertsByBucket, freshIncidents, LEVEL, notificationFor, worstOf, guardStatus, hotspots } from './src/alerts';
 import { API_BASE, REFRESH_SECONDS } from './src/config';
 import { FightAlert } from './src/FightAlert';
 import { downloadAndInstall } from './src/install';
@@ -282,26 +282,48 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
         </Reveal>
       </View>
 
-      <View style={s.nav}>
-        <Press style={s.navItem} onPress={() => setTab('alerts')} accessibilityLabel="Alerts">
-          <Icon name={tab === 'alerts' ? 'notifications' : 'notifications-outline'} color={tab === 'alerts' ? p.inkText : p.inkMuted} size={25} />
-          {tab === 'alerts' ? <View style={{ position: 'absolute', bottom: 3, width: 5, height: 5, borderRadius: 3, backgroundColor: p.inkText }} /> : null}
-        {openAlerts ? <View style={s.navBadge}><Text style={s.navBadgeText}>{openAlerts > 9 ? '9+' : openAlerts}</Text></View> : null}
-        </Press>
-        <Press style={s.navHome} onPress={() => setTab('overview')} accessibilityLabel="Overview">
-          <Icon name={tab === 'overview' ? 'home' : 'home-outline'} color={p.ink} size={26} />
-        </Press>
-        <Press style={s.navItem} onPress={() => setTab('account')} accessibilityLabel="Account">
-          <Icon name={tab === 'account' ? 'person' : 'person-outline'} color={tab === 'account' ? p.inkText : p.inkMuted} size={25} />
-          {tab === 'account' ? <View style={{ position: 'absolute', bottom: 3, width: 5, height: 5, borderRadius: 3, backgroundColor: p.inkText }} /> : null}
-        
-        </Press>
-      </View>
+      <NavBar tab={tab} onTab={setTab} badge={openAlerts} />
 
       {alertCard ? (
         <FightAlert incident={alertCard} onReview={() => { setTab('alerts'); setAlertCard(null); }} onDismiss={() => setAlertCard(null)} />
       ) : null}
     </View>
+  );
+}
+
+
+// ---------------------------------------------------------------- bottom navigation
+const TABS: { key: Tab; label: string; on: IconName; off: IconName }[] = [
+  { key: 'alerts', label: 'Alerts', on: 'notifications', off: 'notifications-outline' },
+  { key: 'overview', label: 'Overview', on: 'shield-checkmark', off: 'shield-checkmark-outline' },
+  { key: 'account', label: 'Account', on: 'person', off: 'person-outline' },
+];
+
+/** The glass pill. The raised circle slides to whichever tab is open. */
+function NavBar({ tab, onTab, badge }: { tab: Tab; onTab: (t: Tab) => void; badge: number }) {
+  const p = useTheme();
+  const s = useStyles();
+  const [width, setWidth] = useState(0);
+  const index = TABS.findIndex((t) => t.key === tab);
+  const slide = useRef(new Animated.Value(index)).current;
+  useEffect(() => { Animated.spring(slide, { toValue: index, useNativeDriver: true, speed: 14, bounciness: 9 }).start(); }, [index, slide]);
+  const inner = Math.max(0, width - 28);
+  const slot = inner / 3;
+  return (
+    <Frost style={s.nav} intensity={70} tint={p.navGlass} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+      {slot ? (
+        <Animated.View pointerEvents="none" style={[s.navCircle, { left: 14 + (slot - 64) / 2, transform: [{ translateX: slide.interpolate({ inputRange: [0, 1, 2], outputRange: [0, slot, slot * 2] }) }] }]} />
+      ) : null}
+      {TABS.map((t) => {
+        const active = t.key === tab;
+        return (
+          <Press key={t.key} style={s.navItem} onPress={() => onTab(t.key)} accessibilityLabel={t.label} scaleTo={0.88}>
+            <Icon name={active ? t.on : t.off} size={active ? 27 : 24} color={active ? p.ink : p.inkMuted} />
+            {t.key === 'alerts' && badge ? <View style={s.navBadge}><Text style={s.navBadgeText}>{badge > 9 ? '9+' : badge}</Text></View> : null}
+          </Press>
+        );
+      })}
+    </Frost>
   );
 }
 
@@ -340,6 +362,15 @@ function Overview({ data, now, name, live, refreshing, onRefresh, onAlerts, upda
   const buckets = useMemo(() => alertsByBucket(data.incidents, now), [data.incidents, now]);
   const healthColor = { online: p.good, degraded: p.warn, offline: p.bad } as const;
   const healthWord = { online: 'All working', degraded: 'Some offline', offline: 'Not reporting' } as const;
+  const guard = guardStatus({ servers: data.servers.length, cameras: sum.cameras, online: sum.onlineKnown ? sum.online : null, offlineServers: sum.offlineServers }, data.incidents, now);
+  const guardColor = { unknown: p.muted, secure: p.good, watch: p.warn, alert: p.bad }[guard];
+  const hot = useMemo(() => hotspots(data.incidents, now), [data.incidents, now]);
+  const guardText = {
+    unknown: ['Not protecting yet', 'Connect a school PC to start watching your cameras.'],
+    secure: ['Campus is secure', 'No serious alerts and every camera is reporting.'],
+    watch: ['Needs a look', 'Some cameras or school PCs are not reporting.'],
+    alert: ['Fight alert active', 'A serious alert in the last hour has not been reviewed.'],
+  } as const;
   const allUp = sum.onlineKnown && sum.online >= sum.cameras && sum.offlineServers === 0 && sum.cameras > 0;
 
   return (
@@ -370,6 +401,18 @@ function Overview({ data, now, name, live, refreshing, onRefresh, onAlerts, upda
             </View>
           </View></Reveal>
         ) : null}
+
+        <Reveal index={1}>
+          <Frost style={[s.card, { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16 }]}>
+            <View style={{ width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: guardColor + '26' }}>
+              <Icon name={guard === 'alert' ? 'warning' : guard === 'watch' ? 'eye-outline' : 'shield-checkmark'} size={26} color={guardColor} />
+            </View>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={s.title}>{guardText[guard][0]}</Text>
+              <Text style={s.muted}>{guardText[guard][1]}</Text>
+            </View>
+          </Frost>
+        </Reveal>
 
         {data.servers.length === 0 ? (
           <Frost style={s.hero}>
@@ -405,6 +448,25 @@ function Overview({ data, now, name, live, refreshing, onRefresh, onAlerts, upda
             </Frost>
           </Press>
         </View>
+
+        {hot.length ? (
+          <Reveal index={3}>
+            <Frost style={[s.card, { gap: 12 }]}>
+              <Text style={s.label}>HOTSPOT CAMERAS · LAST 24 HOURS</Text>
+              {hot.map((h, n) => (
+                <View key={h.camera} style={{ gap: 6 }}>
+                  <View style={s.rowBetween}>
+                    <Text style={s.title} numberOfLines={1}>{n + 1}. {h.camera}</Text>
+                    <Text style={[s.chip, { color: p.severity[h.worst] ?? p.muted, backgroundColor: (p.severity[h.worst] ?? p.muted) + '26' }]}>{h.count} {h.count === 1 ? 'alert' : 'alerts'}</Text>
+                  </View>
+                  <View style={{ height: 6, borderRadius: 3, backgroundColor: p.field }}>
+                    <GrowBar height={6} style={{ width: `${Math.max(12, (h.count / hot[0].count) * 100)}%`, borderRadius: 3, backgroundColor: p.severity[h.worst] ?? p.muted }} />
+                  </View>
+                </View>
+              ))}
+            </Frost>
+          </Reveal>
+        ) : null}
 
         {data.servers.length ? (
           <>
@@ -445,7 +507,8 @@ function Alerts({ incidents, now, refreshing, onRefresh }: { incidents: Incident
   const [openId, setOpenId] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'new' | 'reviewed'>('all');
   const needing = incidents.filter((i) => i.status === 'NEW').length;
-  const shown = incidents.filter((i) => filter === 'all' || (filter === 'new') === (i.status === 'NEW'));
+  const [query, setQuery] = useState('');
+  const shown = incidents.filter((i) => (filter === 'all' || (filter === 'new') === (i.status === 'NEW')) && i.camera_name.toLowerCase().includes(query.trim().toLowerCase()));
   return (
     <FlatList
       data={shown}
@@ -459,6 +522,7 @@ function Alerts({ incidents, now, refreshing, onRefresh }: { incidents: Incident
             <CountUp value={needing} style={s.summaryNumber} duration={700} />
             <Text style={s.summaryText}>{needing === 0 ? 'Nothing needs attention right now.' : needing === 1 ? 'alert needs attention' : 'alerts need attention'}</Text>
           </View>
+          <TextInput style={s.input} value={query} onChangeText={setQuery} placeholder="Search by camera" placeholderTextColor={p.muted} autoCorrect={false} />
           <View style={s.segRow}>
             {(['all', 'new', 'reviewed'] as const).map((name) => (
               <Press key={name} style={[s.seg, filter === name && s.segOn]} onPress={() => setFilter(name)}>

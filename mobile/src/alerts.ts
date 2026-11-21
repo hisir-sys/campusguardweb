@@ -49,3 +49,30 @@ export function alertsByBucket(incidents: Incident[], now = Date.now(), buckets 
   }
   return counts;
 }
+
+/** Cameras with the most alerts lately, busiest first. */
+export function hotspots(incidents: Incident[], now = Date.now(), hours = 24, limit = 3): { camera: string; count: number; worst: Incident['severity'] }[] {
+  const since = now - hours * 3600 * 1000;
+  const map = new Map<string, { camera: string; count: number; worst: Incident['severity'] }>();
+  for (const i of incidents) {
+    const at = new Date(i.happened_at).getTime();
+    if (!Number.isFinite(at) || at < since) continue;
+    const entry = map.get(i.camera_name) ?? { camera: i.camera_name, count: 0, worst: i.severity };
+    entry.count += 1;
+    if (RANK.indexOf(i.severity) > RANK.indexOf(entry.worst)) entry.worst = i.severity;
+    map.set(i.camera_name, entry);
+  }
+  return [...map.values()].sort((a, b) => b.count - a.count).slice(0, limit);
+}
+
+export type GuardLevel = 'unknown' | 'secure' | 'watch' | 'alert';
+
+/** One word for how the campus is doing: a serious unreviewed alert in the last hour, trouble with the system, or all calm. */
+export function guardStatus(args: { servers: number; cameras: number; online: number | null; offlineServers: number }, incidents: Incident[], now = Date.now()): GuardLevel {
+  if (!args.servers) return 'unknown';
+  const recent = incidents.some((i) => i.status === 'NEW' && (i.severity === 'HIGH' || i.severity === 'CRITICAL')
+    && now - new Date(i.happened_at).getTime() < 3600 * 1000);
+  if (recent) return 'alert';
+  if (args.offlineServers > 0 || (args.online !== null && args.online < args.cameras)) return 'watch';
+  return 'secure';
+}

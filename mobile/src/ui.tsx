@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type ComponentRef, type RefObject } from 'react';
-import { Animated, Easing, Platform, Pressable, StyleSheet, Text, View, type PressableProps, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { Animated, Easing, Platform, Pressable, StyleSheet, Text, View, type PressableProps, type ViewProps, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from './useTheme';
@@ -16,11 +16,11 @@ export const warn = () => { if (native) Haptics.notificationAsync(Haptics.Notifi
 export const BlurTargetContext = createContext<RefObject<ComponentRef<typeof View> | null> | null>(null);
 
 /** A real frosted-glass layer (iOS, Android 12+, web). Older Android falls back to a translucent tint. */
-export function Frost({ style, intensity = 50, blur = true, tint, children }: { style?: StyleProp<ViewStyle>; intensity?: number; blur?: boolean; tint?: string; children?: React.ReactNode }) {
+export function Frost({ style, intensity = 50, blur = true, tint, onLayout, children }: { style?: StyleProp<ViewStyle>; intensity?: number; blur?: boolean; tint?: string; onLayout?: ViewProps['onLayout']; children?: React.ReactNode }) {
   const p = useTheme();
   const target = useContext(BlurTargetContext);
   return (
-    <View style={[{ overflow: 'hidden' }, style]}>
+    <View style={[{ overflow: 'hidden' }, style]} onLayout={onLayout}>
       {blur ? (
         <BlurView
           style={StyleSheet.absoluteFill}

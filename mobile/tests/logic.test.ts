@@ -79,3 +79,19 @@ test('greeting and first name', () => {
   assert.equal(firstName('soham43@gmail.com'), 'Soham');
   assert.equal(firstName('a1@x.com'), '');
 });
+
+import { guardStatus, hotspots } from '../src/alerts.ts';
+test('hotspots rank cameras by recent alerts', () => {
+  const list = [inc('1', 10, { camera_name: 'Gate' }), inc('2', 20, { camera_name: 'Gate', severity: 'CRITICAL' }), inc('3', 30, { camera_name: 'Canteen' }), inc('4', 3000, { camera_name: 'Old' })] as any[];
+  const top = hotspots(list, NOW);
+  assert.deepEqual(top.map((t) => [t.camera, t.count]), [['Gate', 2], ['Canteen', 1]]);
+  assert.equal(top[0].worst, 'CRITICAL');
+});
+test('guard status', () => {
+  const ok = { servers: 1, cameras: 10, online: 10, offlineServers: 0 };
+  assert.equal(guardStatus({ ...ok, servers: 0 }, [], NOW), 'unknown');
+  assert.equal(guardStatus(ok, [], NOW), 'secure');
+  assert.equal(guardStatus({ ...ok, online: 8 }, [], NOW), 'watch');
+  assert.equal(guardStatus(ok, [inc('1', 5, { severity: 'HIGH', status: 'NEW' })] as any[], NOW), 'alert');
+  assert.equal(guardStatus(ok, [inc('1', 500, { severity: 'HIGH', status: 'NEW' })] as any[], NOW), 'secure');
+});
