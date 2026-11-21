@@ -1,14 +1,12 @@
 name: Android APK
 
-# Push a tag like  mobile-v1.0.0  (or run this by hand) to build the phone app and attach the APK to a GitHub release.
+# Builds the phone app and attaches the APK to a GitHub release named after the version in mobile/app.json.
+# Runs on every change under mobile/ (or by hand from the Actions tab). Bump "version" in mobile/app.json for a new release.
 on:
   push:
-    tags: ['mobile-v*']
+    branches: [main]
+    paths: ['mobile/**', '.github/workflows/android-apk.yml']
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Release tag to create, e.g. mobile-v1.0.1'
-        required: true
 
 permissions:
   contents: write
@@ -45,7 +43,7 @@ jobs:
         run: ./gradlew assembleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx3g"
       - name: Name the file
         run: |
-          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          TAG="mobile-v$(node -p "require('./app.json').expo.version")"
           cp android/app/build/outputs/apk/release/app-release.apk "CampusGuard-${TAG}.apk"
           echo "TAG=${TAG}" >> "$GITHUB_ENV"
       - name: Publish the release
