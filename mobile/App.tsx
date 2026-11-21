@@ -11,8 +11,14 @@ import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-goog
 import { JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
 import type { Session } from '@supabase/supabase-js';
 import { ApiError, fetchSyncData, supabase, unregisterPushToken } from './src/api';
-import { REFRESH_SECONDS } from './src/config';
-import { freshIncidents, notificationFor } from './src/alerts';
+import { API_BASE, REFRESH_SECONDS } from './src/config';
+import Constants from 'expo-constants';
+import { AppState } from 'react-native';
+import { freshIncidents, notificationFor, worstOf } from './src/alerts';
+import { FightAlert } from './src/FightAlert';
+import { downloadAndInstall } from './src/install';
+import { LogoMark, LogoReveal } from './src/Logo';
+import { checkForUpdate, type UpdateInfo } from './src/update';
 import { demoData } from './src/demo';
 import { setupAlerts, showLocalAlert, type AlertSetup } from './src/push';
 import { secureStorage } from './src/storage';
@@ -25,6 +31,7 @@ import type { Incident, SyncData } from './src/types';
 type Tab = 'overview' | 'alerts' | 'account';
 type ThemeChoice = 'auto' | 'dark' | 'light';
 const THEME_KEY = 'campusguard.theme';
+const APP_VERSION: string = Constants.expoConfig?.version ?? '0.0.0';
 
 function useStyles() {
   const p = useTheme();
@@ -40,6 +47,8 @@ export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
   const [demo, setDemo] = useState(false);
+  const [revealDone, setRevealDone] = useState(false);
+  const finishReveal = useCallback(() => setRevealDone(true), []);
 
   useEffect(() => {
     secureStorage.getItem(THEME_KEY).then((value) => {
@@ -60,7 +69,8 @@ export default function App() {
         <StatusBar style={palette.name === 'dark' ? 'light' : 'dark'} />
         <View pointerEvents="none" style={styles.blobA} />
         <View pointerEvents="none" style={styles.blobB} />
-        {!(fontsReady || fontError) || !ready ? <Center><ActivityIndicator color={palette.lens} /></Center>
+        {!(fontsReady || fontError) ? <Center><ActivityIndicator color={palette.lens} /></Center>
+          : !revealDone || !ready ? <LogoReveal onDone={finishReveal} />
           : demo ? <Home email="Demo mode (made-up data)" demo choice={choice} onChoice={pick} onExitDemo={() => setDemo(false)} />
           : session ? <Home email={session.user.email ?? ''} choice={choice} onChoice={pick} /> : <Login onDemo={() => setDemo(true)} />}
       </SafeAreaView>
@@ -74,39 +84,88 @@ function Center({ children }: { children: React.ReactNode }) {
 }
 
 // ---------------------------------------------------------------- sign in
+const ASIDE_FACTS = [
+  'Works with the cameras you already have',
+  'Alerts reach staff on WhatsApp and this app',
+  'Video stays on the school PC or server',
+];
+
 function Login({ onDemo }: { onDemo: () => void }) {
   const p = useTheme();
   const s = useStyles();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [shown, setShown] = useState(false);
+  const [reset, setReset] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState<{ text: string; good: boolean } | null>(null);
 
   const submit = async () => {
-    if (!email.trim() || !password) { setError('Enter your email and password.'); return; }
-    setBusy(true); setError('');
-    const { error: failure } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    if (failure) setError(failure.message === 'Invalid login credentials' ? 'Wrong email or password.' : failure.message);
+    if (!email.trim() || (!reset && !password)) { setMessage({ text: reset ? 'Enter your email address.' : 'Enter your email and password.', good: false }); return; }
+    setBusy(true); setMessage(null);
+    if (reset) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${API_BASE}/reset-password` });
+      setMessage(error ? { text: 'We could not send the link right now. Try again in a minute.', good: false }
+        : { text: 'If that account exists, a secure reset link is on its way.', good: true });
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) setMessage({ text: error.message === 'Invalid login credentials' ? 'Wrong email or password.' : error.message, good: false });
+    }
     setBusy(false);
   };
 
   return (
-    <KeyboardAvoidingView style={s.center} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={s.loginBox}>
-        <Text style={s.brand}>CampusGuard</Text>
-        <Text style={s.tagline}>Sign in with your school account to see your cameras and alerts.</Text>
-        <TextInput style={s.input} placeholder="Email" placeholderTextColor={p.muted} autoCapitalize="none"
-          autoComplete="email" keyboardType="email-address" value={email} onChangeText={setEmail} />
-        <TextInput style={s.input} placeholder="Password" placeholderTextColor={p.muted} secureTextEntry
-          autoComplete="password" value={password} onChangeText={setPassword} onSubmitEditing={submit} />
-        {error ? <Text style={s.error}>{error}</Text> : null}
-        <Pressable style={[s.button, busy && s.disabled]} onPress={submit} disabled={busy}>
-          {busy ? <ActivityIndicator color={p.onAccent} /> : <Text style={s.buttonText}>Sign in</Text>}
-        </Pressable>
-        <Pressable style={[s.button, s.buttonGhost]} onPress={onDemo}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView contentContainerStyle={s.loginScroll} keyboardShouldPersistTaps="handled">
+        <View style={s.loginBrand}>
+          <LogoMark size={34} />
+          <Text style={s.loginWordmark}>CampusGuard</Text>
+        </View>
+        <Text style={s.loginHeadline}>Spot a fight as it starts.</Text>
+        <Text style={s.tagline}>CampusGuard watches your existing CCTV and tells the right person, quickly.</Text>
+        <View style={{ gap: 10, marginBottom: 22 }}>
+          {ASIDE_FACTS.map((fact) => (
+            <View key={fact} style={s.factRow}><View style={s.factDot} /><Text style={s.dim}>{fact}</Text></View>
+          ))}
+        </View>
+
+        <View style={s.card}>
+          <Text style={s.label}>CUSTOMER ACCOUNT</Text>
+          <Text style={s.loginTitle}>{reset ? 'Reset password' : 'Sign in'}</Text>
+          <Text style={[s.muted, { marginBottom: 8 }]}>
+            {reset ? "Enter your account email and we'll send a secure reset link if the account exists."
+              : 'Sign in with the email and password you used when requesting early access.'}
+          </Text>
+          {message ? <Text style={[s.dim, { color: message.good ? p.good : p.bad, marginBottom: 4 }]}>{message.text}</Text> : null}
+          <Text style={s.fieldLabel}>Email address</Text>
+          <TextInput style={s.input} placeholder="you@institution.org" placeholderTextColor={p.muted} autoCapitalize="none"
+            autoComplete="email" keyboardType="email-address" value={email} onChangeText={setEmail} />
+          {!reset ? (
+            <>
+              <Text style={s.fieldLabel}>Password</Text>
+              <View style={s.passwordRow}>
+                <TextInput style={[s.input, { flex: 1 }]} placeholder="Enter your password" placeholderTextColor={p.muted} secureTextEntry={!shown}
+                  autoComplete="password" value={password} onChangeText={setPassword} onSubmitEditing={submit} />
+                <Pressable style={[s.seg, { flex: 0, paddingHorizontal: 12, minWidth: 64 }]} onPress={() => setShown(!shown)}>
+                  <Text style={s.segText}>{shown ? 'Hide' : 'Show'}</Text>
+                </Pressable>
+              </View>
+            </>
+          ) : null}
+          <Pressable style={[s.button, { marginTop: 14 }, busy && s.disabled]} onPress={submit} disabled={busy}>
+            {busy ? <ActivityIndicator color={p.onAccent} /> : <Text style={s.buttonText}>{reset ? 'Send reset link' : 'Log in'}</Text>}
+          </Pressable>
+          <Pressable onPress={() => { setReset(!reset); setMessage(null); }} style={{ paddingVertical: 12, alignItems: 'center' }}>
+            <Text style={[s.dim, { color: p.text }]}>{reset ? 'Back to log in' : 'Forgot password?'}</Text>
+          </Pressable>
+          <Text style={s.muted}>Your email and password are used only to sign you in and check your approval.</Text>
+        </View>
+
+        <Pressable style={[s.button, s.buttonGhost, { marginTop: 14 }]} onPress={onDemo}>
           <Text style={[s.buttonText, s.buttonGhostText]}>Try with demo data</Text>
         </Pressable>
-      </View>
+        <Text style={[s.muted, { textAlign: 'center', marginTop: 16 }]}>Version {APP_VERSION}</Text>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -126,6 +185,10 @@ function Home({ email, choice, onChoice, demo = false, onExitDemo }: {
   const [alertState, setAlertState] = useState<AlertSetup>({ allowed: false, token: null, message: 'Turning on…' });
   const loading = useRef(false);
   const seen = useRef(new Set<string>());
+  const [alertCard, setAlertCard] = useState<Incident | null>(null);
+  const [update, setUpdate] = useState<UpdateInfo | null>(null);
+  const [progress, setProgress] = useState<number | null>(null);
+  const [updateNote, setUpdateNote] = useState('');
   const tokenRef = useRef<string | null>(null);
 
   const load = useCallback(async () => {
@@ -135,8 +198,14 @@ function Home({ email, choice, onChoice, demo = false, onExitDemo }: {
       const next = demo ? demoData() : await fetchSyncData();
       setData(next);
       // New incidents seen while the app is open buzz the phone (the server push covers a closed app).
-      const message = notificationFor(freshIncidents(seen.current, next.incidents));
-      if (message && !tokenRef.current) showLocalAlert(message.title, message.body);
+      const fresh = freshIncidents(seen.current, next.incidents);
+      if (fresh.length) {
+        if (AppState.currentState === 'active') setAlertCard(worstOf(fresh));
+        else if (!tokenRef.current) {
+          const message = notificationFor(fresh);
+          if (message) showLocalAlert(message.title, message.body);
+        }
+      }
       setUpdatedAt(Date.now());
       setError('');
     } catch (failure) {
@@ -153,6 +222,26 @@ function Home({ email, choice, onChoice, demo = false, onExitDemo }: {
     const timer = setInterval(load, REFRESH_SECONDS * 1000);
     return () => clearInterval(timer);
   }, [load]);
+
+  const lookForUpdate = useCallback(async (manual = false) => {
+    const found = await checkForUpdate(APP_VERSION);
+    setUpdate(found);
+    if (manual) setUpdateNote(found ? '' : 'You have the latest version.');
+  }, []);
+
+  useEffect(() => {
+    lookForUpdate();
+    const timer = setInterval(lookForUpdate, 6 * 3600 * 1000);
+    return () => clearInterval(timer);
+  }, [lookForUpdate]);
+
+  const install = async () => {
+    if (!update) return;
+    setUpdateNote(''); setProgress(0);
+    const failure = await downloadAndInstall(update, setProgress);
+    setProgress(null);
+    setUpdateNote(failure ?? 'Installer opened. Tap Install, then open CampusGuard again.');
+  };
 
   useEffect(() => {
     setupAlerts().then((result) => { tokenRef.current = demo ? null : result.token; setAlertState(result); });
@@ -181,11 +270,21 @@ function Home({ email, choice, onChoice, demo = false, onExitDemo }: {
           <Text style={s.liveText}>{error ? 'Offline' : updatedAt ? `Live · updated ${timeAgo(new Date(updatedAt).toISOString(), now)}` : 'Connecting…'}</Text>
         </View>
       </View>
+      {update ? (
+        <View style={[s.card, { marginHorizontal: 18, marginBottom: 10 }]}>
+          <Text style={s.title}>Update available · v{update.version}</Text>
+          <Text style={s.muted}>{progress !== null ? `Downloading… ${Math.round(progress * 100)}%` : updateNote || `${update.sizeMb} MB. Your sign-in and settings stay.`}</Text>
+          <Pressable style={[s.button, { marginTop: 8 }, progress !== null && s.disabled]} onPress={install} disabled={progress !== null}>
+            <Text style={s.buttonText}>Update now</Text>
+          </Pressable>
+        </View>
+      ) : null}
       <View style={s.body}>
         {!data ? <Center><ActivityIndicator color={p.lens} /></Center>
           : tab === 'overview' ? <Overview data={data} now={now} refreshing={refreshing} onRefresh={onRefresh} />
           : tab === 'alerts' ? <Alerts incidents={data.incidents} now={now} refreshing={refreshing} onRefresh={onRefresh} />
-          : <Account email={email} alertState={alertState} demo={demo} choice={choice} onChoice={onChoice} onSignOut={signOut} />}
+          : <Account email={email} alertState={alertState} demo={demo} version={APP_VERSION} updateNote={update ? '' : updateNote} onCheckUpdate={() => lookForUpdate(true)}
+            onPreview={() => setAlertCard(demoPreview())} choice={choice} onChoice={onChoice} onSignOut={signOut} />}
       </View>
       <View style={[s.tabs, Platform.OS === 'android' && { paddingBottom: 12 }]}>
         {(['overview', 'alerts', 'account'] as Tab[]).map((name) => (
@@ -198,6 +297,9 @@ function Home({ email, choice, onChoice, demo = false, onExitDemo }: {
           </Pressable>
         ))}
       </View>
+      {alertCard ? (
+        <FightAlert incident={alertCard} onReview={() => { setTab('alerts'); setAlertCard(null); }} onDismiss={() => setAlertCard(null)} />
+      ) : null}
     </View>
   );
 }
@@ -260,13 +362,24 @@ function Alerts({ incidents, now, refreshing, onRefresh }: { incidents: Incident
   const p = useTheme();
   const s = useStyles();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'all' | 'new' | 'reviewed'>('all');
+  const shown = incidents.filter((i) => filter === 'all' || (filter === 'new') === (i.status === 'NEW'));
   return (
     <FlatList
-      data={incidents}
+      data={shown}
+      ListHeaderComponent={
+        <View style={s.segRow}>
+          {(['all', 'new', 'reviewed'] as const).map((name) => (
+            <Pressable key={name} style={[s.seg, filter === name && s.segOn]} onPress={() => setFilter(name)}>
+              <Text style={[s.segText, filter === name && s.segTextOn]}>{name === 'all' ? 'All' : name === 'new' ? 'New' : 'Reviewed'}</Text>
+            </Pressable>
+          ))}
+        </View>
+      }
       keyExtractor={(item) => `${item.server_id}:${item.incident_id}`}
       contentContainerStyle={s.pad}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={p.lens} />}
-      ListEmptyComponent={<Text style={s.muted}>No alerts yet. When a fight is detected it appears here.</Text>}
+      ListEmptyComponent={<Text style={s.muted}>{incidents.length ? 'Nothing in this filter.' : 'No alerts yet. When a fight is detected it appears here.'}</Text>}
       renderItem={({ item }) => {
         const key = `${item.server_id}:${item.incident_id}`;
         const color = p.severity[item.severity] ?? p.muted;
@@ -292,8 +405,11 @@ function Alerts({ incidents, now, refreshing, onRefresh }: { incidents: Incident
   );
 }
 
-function Account({ email, alertState, demo, choice, onChoice, onSignOut }: {
-  email: string; alertState: AlertSetup; demo: boolean;
+const demoPreview = (): Incident => ({ server_id: 'preview', incident_id: 'preview', camera_name: 'Corridor 2F', happened_at: new Date().toISOString(),
+  event: 'Fight', confidence: 0.91, severity: 'HIGH', status: 'NEW', has_footage: true });
+
+function Account({ email, alertState, demo, version, updateNote, onCheckUpdate, onPreview, choice, onChoice, onSignOut }: {
+  email: string; alertState: AlertSetup; demo: boolean; version: string; updateNote: string; onCheckUpdate: () => void; onPreview: () => void;
   choice: ThemeChoice; onChoice: (c: ThemeChoice) => void; onSignOut: () => void;
 }) {
   const p = useTheme();
@@ -307,8 +423,20 @@ function Account({ email, alertState, demo, choice, onChoice, onSignOut }: {
       <View style={s.card}>
         <Text style={s.label}>ALERT NOTIFICATIONS</Text>
         <Text style={[s.dim, { color: alertState.allowed ? p.good : p.warn }]}>{alertState.message}</Text>
-        <Pressable style={[s.button, s.buttonGhost, { marginTop: 8 }]} onPress={() => showLocalAlert('Fight detected', 'Corridor 2F · 91% sure (test)')}>
-          <Text style={[s.buttonText, s.buttonGhostText]}>Send a test alert</Text>
+        <Pressable style={[s.button, s.buttonGhost, { marginTop: 8 }]} onPress={onPreview}>
+          <Text style={[s.buttonText, s.buttonGhostText]}>Preview the alert card</Text>
+        </Pressable>
+        <Pressable style={[s.button, s.buttonGhost, { marginTop: 8 }]} onPress={() => showLocalAlert('Fight detected', 'Critical alert · Corridor 2F · 91% sure (test)', 5, 'test')}>
+          <Text style={[s.buttonText, s.buttonGhostText]}>Send a test notification (5 s)</Text>
+        </Pressable>
+        <Text style={s.muted}>Tap it, then press Home to see it arrive while the app is in the background.</Text>
+      </View>
+      <View style={s.card}>
+        <Text style={s.label}>APP VERSION</Text>
+        <Text style={s.title}>CampusGuard {version}</Text>
+        {updateNote ? <Text style={s.muted}>{updateNote}</Text> : null}
+        <Pressable style={[s.button, s.buttonGhost, { marginTop: 8 }]} onPress={onCheckUpdate}>
+          <Text style={[s.buttonText, s.buttonGhostText]}>Check for updates</Text>
         </Pressable>
       </View>
       <View style={s.card}>

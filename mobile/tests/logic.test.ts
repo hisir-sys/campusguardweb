@@ -42,6 +42,23 @@ test('first load never replays old alerts, later loads only report new fresh one
 
 test('notification text', () => {
   assert.equal(notificationFor([]), null);
-  assert.deepEqual(notificationFor([inc('1', 1)]), { title: 'Fight detected', body: 'Gate · 90% sure' });
-  assert.equal(notificationFor([inc('1', 1, { severity: 'MEDIUM' }), inc('2', 1, { severity: 'CRITICAL', camera_name: 'Hall' })])?.body, 'Most serious: Hall · 90% sure');
+  assert.deepEqual(notificationFor([inc('1', 1)]), { title: 'Fight detected', body: 'Critical alert · Gate · 90% sure' });
+  assert.equal(notificationFor([inc('1', 1, { severity: 'MEDIUM' }), inc('2', 1, { severity: 'CRITICAL', camera_name: 'Hall' })])?.body, 'Most serious: Danger · Hall · 90% sure');
+});
+
+import { isNewer, parseVersion, pickUpdate } from '../src/update.ts';
+
+test('version compare', () => {
+  assert.deepEqual(parseVersion('mobile-v1.3.0'), [1, 3, 0]);
+  assert.equal(parseVersion('latest'), null);
+  assert.ok(isNewer('1.3.0', '1.2.9') && isNewer('2.0.0', '1.99.99') && isNewer('1.10.0', '1.9.0'));
+  assert.ok(!isNewer('1.2.0', '1.2.0') && !isNewer('1.1.0', '1.2.0') && !isNewer('x', '1.2.0'));
+});
+
+test('pick the newest release that has an apk', () => {
+  const rel = (tag: string, apk = true, over: object = {}) => ({ tag_name: tag, body: 'n', assets: apk ? [{ name: 'a.apk', size: 72e6, browser_download_url: `https://x/${tag}.apk` }] : [], ...over });
+  const got = pickUpdate([rel('mobile-v1.3.0'), rel('mobile-v1.4.0', false), rel('mobile-v1.2.0'), rel('mobile-v1.5.0', true, { draft: true }), rel('v9', true)], '1.2.0');
+  assert.equal(got?.version, '1.3.0');
+  assert.equal(got?.apkUrl, 'https://x/mobile-v1.3.0.apk');
+  assert.equal(pickUpdate([rel('mobile-v1.2.0')], '1.2.0'), null);
 });

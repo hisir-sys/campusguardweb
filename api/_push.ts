@@ -7,16 +7,18 @@ import { createSign } from 'node:crypto'
 
 export type NewIncident = { camera_name: string; severity: string; confidence: number; event: string }
 
-const WORDS: Record<string, string> = { LOW: 'Low alert', MEDIUM: 'Possible fight', HIGH: 'Fight detected', CRITICAL: 'Danger: fight detected' }
+// Same names as the desktop pop-up and the phone app.
+const LEVEL: Record<string, string> = { LOW: 'Low', MEDIUM: 'Alert', HIGH: 'Critical alert', CRITICAL: 'Danger' }
+const HEADLINE: Record<string, string> = { LOW: 'Low alert', MEDIUM: 'Possible fight', HIGH: 'Fight detected', CRITICAL: 'Fight detected' }
 const RANK = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
 
 /** Several new incidents in one sync become one notification, so a busy moment does not flood the phone. */
 export function messageFor(incidents: NewIncident[]): { title: string; body: string } | null {
   if (!incidents.length) return null
   const worst = [...incidents].sort((a, b) => RANK.indexOf(b.severity) - RANK.indexOf(a.severity))[0]
-  const pct = Math.round(worst.confidence * 100)
-  if (incidents.length === 1) return { title: WORDS[worst.severity] ?? 'CampusGuard alert', body: `${worst.camera_name} · ${pct}% sure` }
-  return { title: `${incidents.length} new alerts`, body: `Most serious: ${worst.camera_name} · ${pct}% sure` }
+  const detail = `${LEVEL[worst.severity] ?? worst.severity} · ${worst.camera_name} · ${Math.round(worst.confidence * 100)}% sure`
+  if (incidents.length === 1) return { title: HEADLINE[worst.severity] ?? 'CampusGuard alert', body: detail }
+  return { title: `${incidents.length} new alerts`, body: `Most serious: ${detail}` }
 }
 
 type ServiceAccount = { project_id: string; client_email: string; private_key: string }

@@ -1,15 +1,14 @@
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { registerPushToken } from './api';
 
+// While the app is on screen the in-app alert card shows instead, so a system banner would be a duplicate.
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
+  handleNotification: async (notification) => {
+    const show = AppState.currentState !== 'active' || notification.request.content.data?.type === 'test';
+    return { shouldShowBanner: show, shouldShowList: show, shouldPlaySound: show, shouldSetBadge: false };
+  },
 });
 
 export type AlertSetup = {
@@ -55,12 +54,14 @@ export async function setupAlerts(): Promise<AlertSetup> {
   }
 }
 
-/** Show a notification on this phone right now. */
-export async function showLocalAlert(title: string, body: string): Promise<void> {
+/** Show a notification on this phone, now or after a few seconds (to test it with the app in the background). */
+export async function showLocalAlert(title: string, body: string, afterSeconds = 0, type = 'incident'): Promise<void> {
   try {
     await Notifications.scheduleNotificationAsync({
-      content: { title, body, sound: 'default', data: { type: 'incident' } },
-      trigger: Platform.OS === 'android' ? { channelId: 'alerts' } as any : null,
+      content: { title, body, sound: 'default', data: { type } },
+      trigger: afterSeconds > 0
+        ? { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: afterSeconds, channelId: 'alerts' } as any
+        : Platform.OS === 'android' ? ({ channelId: 'alerts' } as any) : null,
     });
   } catch {
     /* a failed local alert must never break the screen */
