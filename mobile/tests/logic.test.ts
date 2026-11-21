@@ -62,3 +62,20 @@ test('pick the newest release that has an apk', () => {
   assert.equal(got?.apkUrl, 'https://x/mobile-v1.3.0.apk');
   assert.equal(pickUpdate([rel('mobile-v1.2.0')], '1.2.0'), null);
 });
+
+import { alertsByBucket } from '../src/alerts.ts';
+import { firstName, greeting } from '../src/theme.ts';
+
+test('alerts per two-hour bucket', () => {
+  const counts = alertsByBucket([inc('1', 10), inc('2', 30), inc('3', 130), inc('4', 60 * 30)], NOW);
+  assert.equal(counts.length, 12);
+  assert.deepEqual([counts[11], counts[10], counts[0]], [2, 1, 0]);
+  assert.equal(counts.reduce((a, b) => a + b, 0), 3);
+});
+
+test('greeting and first name', () => {
+  assert.deepEqual([greeting(2), greeting(9), greeting(14), greeting(20)], ['Good night', 'Good morning', 'Good afternoon', 'Good evening']);
+  assert.equal(firstName('principal.sharma@bdmi.edu'), 'Principal');
+  assert.equal(firstName('soham43@gmail.com'), 'Soham');
+  assert.equal(firstName('a1@x.com'), '');
+});

@@ -37,3 +37,15 @@ export function notificationFor(incidents: Incident[]): { title: string; body: s
   if (incidents.length === 1) return { title: HEADLINE[worst.severity] ?? 'CampusGuard alert', body: detail };
   return { title: `${incidents.length} new alerts`, body: `Most serious: ${detail}` };
 }
+
+/** How many alerts fell in each recent time bucket, oldest first (for the little bar chart). */
+export function alertsByBucket(incidents: Incident[], now = Date.now(), buckets = 12, hoursPerBucket = 2): number[] {
+  const size = hoursPerBucket * 3600 * 1000;
+  const counts = new Array<number>(buckets).fill(0);
+  for (const incident of incidents) {
+    const age = now - new Date(incident.happened_at).getTime();
+    if (!Number.isFinite(age) || age < 0 || age >= size * buckets) continue;
+    counts[buckets - 1 - Math.floor(age / size)] += 1;
+  }
+  return counts;
+}

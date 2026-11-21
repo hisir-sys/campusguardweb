@@ -7,6 +7,7 @@
     "@expo-google-fonts/jetbrains-mono": "^0.4.1",
     "@expo-google-fonts/outfit": "^0.4.3",
     "@expo/metro-runtime": "~58.0.17",
+    "@expo/vector-icons": "^15.1.1",
     "@supabase/supabase-js": "^2.119.1",
     "expo": "~58.0.26",
     "expo-constants": "~58.0.16",
