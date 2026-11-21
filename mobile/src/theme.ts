@@ -16,7 +16,7 @@ export const DARK: Palette = {
   name: 'dark', bg: '#0A0A0B', blob: 'rgba(255,255,255,0.045)', surface: '#1B1B1E', field: 'rgba(255,255,255,0.06)',
   line: 'rgba(255,255,255,0.10)', text: '#F5F5F7', textDim: '#C4C4CB', muted: '#9A9AA2',
   accent: '#F5F5F7', onAccent: '#0A0A0B', good: '#8FCFA9', warn: '#E3B872', bad: '#E58B76', lens: '#8FA6C8',
-  navGlass: 'rgba(24,24,28,0.80)', glass: 'rgba(38,38,43,0.62)', glassEdge: 'rgba(255,255,255,0.12)', shadow: 'rgba(0,0,0,0.45)',
+  navGlass: 'rgba(40,40,46,0.78)', glass: 'rgba(38,38,43,0.62)', glassEdge: 'rgba(255,255,255,0.12)', shadow: 'rgba(0,0,0,0.45)',
   ink: '#26262B', inkText: '#F5F5F7', inkMuted: '#9A9AA2', inkLine: 'rgba(255,255,255,0.08)', mint: '#1F3A2E', mintBar: '#8FCFA9', lav: '#2A3042', navDot: '#F5F5F7',
   severity: { LOW: '#8DB4A0', MEDIUM: '#C4B085', HIGH: '#C79A7E', CRITICAL: '#C58790' },
 };
@@ -25,7 +25,7 @@ export const LIGHT: Palette = {
   name: 'light', bg: '#E4E4E7', blob: 'rgba(0,0,0,0.04)', surface: '#FFFFFF', field: 'rgba(0,0,0,0.05)',
   line: 'rgba(0,0,0,0.08)', text: '#0B0B0D', textDim: '#3A3A40', muted: '#6B6B73',
   accent: '#0B0B0D', onAccent: '#FFFFFF', good: '#2F7D57', warn: '#94610F', bad: '#B4412F', lens: '#5B7399',
-  navGlass: 'rgba(14,14,17,0.84)', glass: 'rgba(255,255,255,0.66)', glassEdge: 'rgba(255,255,255,0.95)', shadow: 'rgba(30,40,60,0.16)',
+  navGlass: 'rgba(255,255,255,0.82)', glass: 'rgba(255,255,255,0.66)', glassEdge: 'rgba(255,255,255,0.95)', shadow: 'rgba(30,40,60,0.16)',
   ink: '#0B0B0D', inkText: '#F5F5F7', inkMuted: '#9A9AA2', inkLine: 'rgba(255,255,255,0.10)', mint: '#CDE7DB', mintBar: '#0B0B0D', lav: '#DDE2EE', navDot: '#0B0B0D',
   severity: { LOW: '#3F6B57', MEDIUM: '#75613A', HIGH: '#85553A', CRITICAL: '#8B4048' },
 };

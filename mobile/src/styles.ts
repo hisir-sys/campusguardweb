@@ -84,9 +84,8 @@ export const makeStyles = (p: Palette) => StyleSheet.create({
   setIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: p.field, alignItems: 'center', justifyContent: 'center' },
   setDivider: { height: 1, backgroundColor: p.line },
   // floating nav (the pill with a round home button in the middle)
-  nav: { position: 'absolute', left: 18, right: 18, bottom: 18, height: 66, borderRadius: 33, backgroundColor: 'transparent', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, borderColor: p.glassEdge, borderWidth: 1 },
-  navItem: { flex: 1, height: 64, alignItems: 'center', justifyContent: 'center' },
-  navCircle: { position: 'absolute', top: -1, width: 64, height: 64, borderRadius: 32, backgroundColor: p.inkText, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
+  nav: { position: 'absolute', left: 18, right: 18, bottom: 18, height: 66, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 10 },
+  navItem: { flex: 1, height: 66, alignItems: 'center', justifyContent: 'center' },
   navBadge: { position: 'absolute', top: 4, right: 10, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: p.bad, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   navBadgeText: { color: '#fff', fontFamily: fonts.bodyBold, fontSize: 11 },
 });

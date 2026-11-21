@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import {
-  ActivityIndicator, Animated, AppState, FlatList, KeyboardAvoidingView, Linking, Platform, Pressable as RNPressable, RefreshControl, SafeAreaView,
+  ActivityIndicator, Animated, AppState, StyleSheet, FlatList, KeyboardAvoidingView, Linking, Platform, Pressable as RNPressable, RefreshControl, SafeAreaView,
   ScrollView, StatusBar as RNStatusBar, Text, TextInput, View, useColorScheme,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -295,35 +295,71 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
 // ---------------------------------------------------------------- bottom navigation
 const TABS: { key: Tab; label: string; on: IconName; off: IconName }[] = [
   { key: 'alerts', label: 'Alerts', on: 'notifications', off: 'notifications-outline' },
-  { key: 'overview', label: 'Overview', on: 'shield-checkmark', off: 'shield-checkmark-outline' },
+  { key: 'overview', label: 'Home', on: 'home', off: 'home-outline' },
   { key: 'account', label: 'Account', on: 'person', off: 'person-outline' },
 ];
+const CIRCLE = 62;
+const RING = 6;
 
-/** The glass pill. The raised circle slides to whichever tab is open. */
+/** Frosted pill with a raised circle that glides (and stretches like liquid) to the open tab. */
 function NavBar({ tab, onTab, badge }: { tab: Tab; onTab: (t: Tab) => void; badge: number }) {
   const p = useTheme();
   const s = useStyles();
   const [width, setWidth] = useState(0);
   const index = TABS.findIndex((t) => t.key === tab);
   const slide = useRef(new Animated.Value(index)).current;
-  useEffect(() => { Animated.spring(slide, { toValue: index, useNativeDriver: true, speed: 14, bounciness: 9 }).start(); }, [index, slide]);
-  const inner = Math.max(0, width - 28);
-  const slot = inner / 3;
+  const stretch = useRef(new Animated.Value(0)).current;
+  const pop = useRef(new Animated.Value(1)).current;
+  const first = useRef(true);
+  useEffect(() => {
+    Animated.spring(slide, { toValue: index, useNativeDriver: true, speed: 12, bounciness: 8 }).start();
+    if (first.current) { first.current = false; return; }
+    stretch.setValue(0);
+    Animated.sequence([
+      Animated.timing(stretch, { toValue: 1, duration: 130, useNativeDriver: true }),
+      Animated.spring(stretch, { toValue: 0, useNativeDriver: true, speed: 12, bounciness: 12 }),
+    ]).start();
+    pop.setValue(0);
+    Animated.spring(pop, { toValue: 1, useNativeDriver: true, speed: 16, bounciness: 14 }).start();
+  }, [index, slide, stretch, pop]);
+
+  const slot = width ? (width - 28) / 3 : 0;
+  const outer = CIRCLE + RING * 2;
+  const active = TABS[index];
   return (
-    <Frost style={s.nav} intensity={70} tint={p.navGlass} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+    <View style={s.nav} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+      <Frost style={[StyleSheet.absoluteFill, { borderRadius: 33, borderColor: p.glassEdge, borderWidth: 1 }]} intensity={80} tint={p.navGlass} />
       {slot ? (
-        <Animated.View pointerEvents="none" style={[s.navCircle, { left: 14 + (slot - 64) / 2, transform: [{ translateX: slide.interpolate({ inputRange: [0, 1, 2], outputRange: [0, slot, slot * 2] }) }] }]} />
+        <Animated.View pointerEvents="none" style={{
+          position: 'absolute', top: -14, left: 14 + (slot - outer) / 2, width: outer, height: outer, borderRadius: outer / 2,
+          backgroundColor: p.bg, alignItems: 'center', justifyContent: 'center',
+          transform: [
+            { translateX: slide.interpolate({ inputRange: [0, 1, 2], outputRange: [0, slot, slot * 2] }) },
+            { scaleX: stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 1.28] }) },
+            { scaleY: stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 0.9] }) },
+          ],
+        }}>
+          <View style={{ width: CIRCLE, height: CIRCLE, borderRadius: CIRCLE / 2, backgroundColor: p.accent, alignItems: 'center', justifyContent: 'center',
+            shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}>
+            <Animated.View style={{ transform: [{ scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }) }, { rotate: pop.interpolate({ inputRange: [0, 1], outputRange: ['-40deg', '0deg'] }) }], opacity: pop }}>
+              <Icon name={active.on} size={28} color={p.onAccent} />
+            </Animated.View>
+          </View>
+        </Animated.View>
       ) : null}
       {TABS.map((t) => {
-        const active = t.key === tab;
+        const isActive = t.key === tab;
         return (
-          <Press key={t.key} style={s.navItem} onPress={() => onTab(t.key)} accessibilityLabel={t.label} scaleTo={0.88}>
-            <Icon name={active ? t.on : t.off} size={active ? 27 : 24} color={active ? p.ink : p.inkMuted} />
+          <Press key={t.key} style={s.navItem} onPress={() => onTab(t.key)} accessibilityLabel={t.label} scaleTo={0.86}>
+            <View style={{ opacity: isActive ? 0 : 1, alignItems: 'center', gap: 2 }}>
+              <Icon name={t.off} size={24} color={p.muted} />
+              <Text style={{ color: p.muted, fontFamily: fonts.bodyMedium, fontSize: 10.5 }}>{t.label}</Text>
+            </View>
             {t.key === 'alerts' && badge ? <View style={s.navBadge}><Text style={s.navBadgeText}>{badge > 9 ? '9+' : badge}</Text></View> : null}
           </Press>
         );
       })}
-    </Frost>
+    </View>
   );
 }
 
