@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "CampusGuard",
+    "slug": "campusguard",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.campusguard.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.campusguard.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "campusguard",
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "alerts",
+          "color": "#4C8DFF"
+        }
+      ],
+      "expo-secure-store"
+    ]
+  }
+}

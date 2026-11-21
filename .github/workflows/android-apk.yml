@@ -1,0 +1,58 @@
+name: Android APK
+
+# Push a tag like  mobile-v1.0.0  (or run this by hand) to build the phone app and attach the APK to a GitHub release.
+on:
+  push:
+    tags: ['mobile-v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to create, e.g. mobile-v1.0.1'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: https://dvvrhjvpsfsgaptkjowx.supabase.co
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_i4CgKj1R3kaU3Rl2TaEPrw_kXd6BKWH
+      EXPO_PUBLIC_API_BASE: https://campusguardweb.vercel.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm test
+      - name: Create the Android project
+        run: npx expo prebuild --platform android --no-install
+      - name: Build the APK
+        working-directory: mobile/android
+        run: ./gradlew assembleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx3g"
+      - name: Name the file
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          cp android/app/build/outputs/apk/release/app-release.apk "CampusGuard-${TAG}.apk"
+          echo "TAG=${TAG}" >> "$GITHUB_ENV"
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" "CampusGuard-${TAG}.apk" --repo "${{ github.repository }}" \
+            --title "CampusGuard phone app ${TAG#mobile-}" \
+            --notes "Android app. Download the .apk on your phone and open it (allow installs from this source when asked). Sign in with your CampusGuard account." \
+            --target "${{ github.sha }}" || gh release upload "$TAG" "CampusGuard-${TAG}.apk" --clobber --repo "${{ github.repository }}"

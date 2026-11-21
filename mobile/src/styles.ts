@@ -1,0 +1,60 @@
+import { StyleSheet } from 'react-native';
+import type { Palette } from './theme';
+import { fonts } from './useTheme';
+
+export const makeStyles = (p: Palette) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: p.bg },
+  blobA: { position: 'absolute', top: -120, right: -100, width: 320, height: 320, borderRadius: 160, backgroundColor: p.blob },
+  blobB: { position: 'absolute', bottom: 80, left: -140, width: 280, height: 280, borderRadius: 140, backgroundColor: p.blob },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  body: { flex: 1 },
+  pad: { paddingHorizontal: 18, paddingBottom: 24, gap: 12 },
+  header: { paddingHorizontal: 18, paddingTop: 18, paddingBottom: 14, gap: 4 },
+  heading: { color: p.text, fontFamily: fonts.heading, fontSize: 28 },
+  liveRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: p.lens },
+  liveText: { color: p.muted, fontFamily: fonts.bodyMedium, fontSize: 12.5 },
+  // sign in
+  loginBox: { width: '100%', maxWidth: 380, gap: 12 },
+  brand: { color: p.text, fontFamily: fonts.heading, fontSize: 34 },
+  tagline: { color: p.muted, fontFamily: fonts.body, fontSize: 15, lineHeight: 22, marginBottom: 6 },
+  input: { backgroundColor: p.field, borderColor: p.line, borderWidth: 1, borderRadius: 12, color: p.text, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, fontFamily: fonts.body },
+  button: { backgroundColor: p.accent, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  buttonGhost: { backgroundColor: p.field, borderColor: p.line, borderWidth: 1 },
+  buttonText: { color: p.onAccent, fontFamily: fonts.bodyBold, fontSize: 16 },
+  buttonGhostText: { color: p.text },
+  disabled: { opacity: 0.55 },
+  error: { color: p.bad, fontFamily: fonts.body, fontSize: 14 },
+  banner: { backgroundColor: p.field, color: p.bad, fontFamily: fonts.bodyMedium, fontSize: 13, padding: 10, textAlign: 'center', borderBottomColor: p.line, borderBottomWidth: 1 },
+  // text
+  muted: { color: p.muted, fontFamily: fonts.body, fontSize: 14, lineHeight: 20 },
+  dim: { color: p.textDim, fontFamily: fonts.body, fontSize: 14, lineHeight: 20 },
+  title: { color: p.text, fontFamily: fonts.bodyBold, fontSize: 16, flexShrink: 1 },
+  label: { color: p.muted, fontFamily: fonts.bodyMedium, fontSize: 12, letterSpacing: 0.4 },
+  section: { color: p.text, fontFamily: fonts.heading, fontSize: 17, marginTop: 10 },
+  // cards
+  card: { backgroundColor: p.surface, borderRadius: 16, padding: 16, gap: 5, borderColor: p.line, borderWidth: 1 },
+  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
+  chip: { borderRadius: 11, paddingHorizontal: 10, paddingVertical: 3, overflow: 'hidden', fontFamily: fonts.bodyMedium, fontSize: 12 },
+  detail: { marginTop: 8, gap: 4, borderTopColor: p.line, borderTopWidth: 1, paddingTop: 10 },
+  // overview
+  hero: { backgroundColor: p.surface, borderRadius: 20, padding: 20, gap: 4, borderColor: p.line, borderWidth: 1 },
+  heroNumber: { color: p.text, fontFamily: fonts.hero, fontSize: 64, lineHeight: 70 },
+  statRow: { flexDirection: 'row', gap: 10 },
+  stat: { flex: 1, backgroundColor: p.surface, borderRadius: 16, padding: 14, gap: 2, borderColor: p.line, borderWidth: 1 },
+  statValue: { fontFamily: fonts.mono, fontSize: 22 },
+  // tabs
+  tabs: { flexDirection: 'row', borderTopColor: p.line, borderTopWidth: 1, backgroundColor: p.surface },
+  tab: { flex: 1, alignItems: 'center', paddingTop: 12, paddingBottom: 14, gap: 5 },
+  tabText: { color: p.muted, fontFamily: fonts.bodyMedium, fontSize: 13 },
+  tabActive: { color: p.text },
+  tabDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: 'transparent' },
+  tabDotOn: { backgroundColor: p.lens },
+  badge: { backgroundColor: p.bad, color: p.onAccent, fontFamily: fonts.bodyBold, fontSize: 11, borderRadius: 8, paddingHorizontal: 6, overflow: 'hidden' },
+  // account
+  segRow: { flexDirection: 'row', gap: 8, marginTop: 6 },
+  seg: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10, backgroundColor: p.field, borderColor: p.line, borderWidth: 1 },
+  segOn: { backgroundColor: p.accent },
+  segText: { color: p.textDim, fontFamily: fonts.bodyMedium, fontSize: 14 },
+  segTextOn: { color: p.onAccent },
+});
