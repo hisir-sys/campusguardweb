@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import {
-  ActivityIndicator, AppState, FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, RefreshControl, SafeAreaView,
+  ActivityIndicator, AppState, FlatList, KeyboardAvoidingView, Linking, Platform, Pressable as RNPressable, RefreshControl, SafeAreaView,
   ScrollView, StatusBar as RNStatusBar, Text, TextInput, View, useColorScheme,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -8,6 +8,8 @@ import Constants from 'expo-constants';
 import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
+import { BlurTargetView } from 'expo-blur';
+import { Backdrop, BlurTargetContext, CountUp, Frost, GrowBar, Press, PulseDot, Reveal, Skeleton } from './src/ui';
 import { Outfit_500Medium, Outfit_600SemiBold } from '@expo-google-fonts/outfit';
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import { JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
@@ -62,17 +64,21 @@ export default function App() {
   const pick = (next: ThemeChoice) => { setChoice(next); secureStorage.setItem(THEME_KEY, next).catch(() => undefined); };
   const palette: Palette = choice === 'light' || (choice === 'auto' && system === 'light') ? LIGHT : DARK;
   const styles = useMemo(() => makeStyles(palette), [palette]);
+  const blurTarget = useRef<ComponentRef<typeof View>>(null);
 
   return (
     <ThemeContext.Provider value={palette}>
+     <BlurTargetContext.Provider value={blurTarget}>
       <SafeAreaView style={[styles.root, Platform.OS === 'android' && { paddingTop: RNStatusBar.currentHeight ?? 24 }]}>
         <StatusBar style={palette.name === 'dark' ? 'light' : 'dark'} />
-        <View pointerEvents="none" style={styles.blobA} />
-        <View pointerEvents="none" style={styles.blobB} />
+        <BlurTargetView ref={blurTarget} pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <Backdrop />
+        </BlurTargetView>
         {!(fontsReady || fontError) ? <View style={styles.center}><ActivityIndicator color={palette.lens} /></View>
           : !revealDone || !ready ? <LogoReveal onDone={finishReveal} />
           : session ? <Home email={session.user.email ?? ''} choice={choice} onChoice={pick} /> : <Login />}
       </SafeAreaView>
+     </BlurTargetContext.Provider>
     </ThemeContext.Provider>
   );
 }
@@ -128,7 +134,7 @@ function Login() {
           ))}
         </View>
 
-        <View style={s.card}>
+        <Frost style={s.card}>
           <Text style={s.label}>CUSTOMER ACCOUNT</Text>
           <Text style={s.loginTitle}>{reset ? 'Reset password' : 'Sign in'}</Text>
           <Text style={[s.muted, { marginBottom: 4 }]}>
@@ -145,24 +151,24 @@ function Login() {
               <View>
                 <TextInput style={[s.input, { paddingRight: 52 }]} placeholder="Enter your password" placeholderTextColor={p.muted} secureTextEntry={!shown}
                   autoComplete="password" value={password} onChangeText={setPassword} onSubmitEditing={submit} />
-                <Pressable onPress={() => setShown(!shown)} hitSlop={10} style={{ position: 'absolute', right: 16, top: 0, bottom: 0, justifyContent: 'center' }}>
+                <RNPressable onPress={() => setShown(!shown)} hitSlop={10} style={{ position: 'absolute', right: 16, top: 0, bottom: 0, justifyContent: 'center' }}>
                   <Icon name={shown ? 'eye-off-outline' : 'eye-outline'} color={p.muted} />
-                </Pressable>
+                </RNPressable>
               </View>
             </>
           ) : null}
-          <Pressable style={[s.button, { marginTop: 16 }, busy && s.disabled]} onPress={submit} disabled={busy}>
+          <Press style={[s.button, { marginTop: 16 }, busy && s.disabled]} onPress={submit} disabled={busy}>
             {busy ? <ActivityIndicator color={p.onAccent} /> : <Text style={s.buttonText}>{reset ? 'Send reset link' : 'Log in'}</Text>}
-          </Pressable>
-          <Pressable onPress={() => { setReset(!reset); setMessage(null); }} style={{ paddingVertical: 14, alignItems: 'center' }}>
+          </Press>
+          <Press onPress={() => { setReset(!reset); setMessage(null); }} style={{ paddingVertical: 14, alignItems: 'center' }}>
             <Text style={[s.dim, { color: p.text, fontFamily: fonts.bodyMedium }]}>{reset ? 'Back to log in' : 'Forgot password?'}</Text>
-          </Pressable>
+          </Press>
           <Text style={s.muted}>Your email and password are used only to sign you in and check your approval.</Text>
-        </View>
+        </Frost>
 
-        <Pressable onPress={() => Linking.openURL(API_BASE)} style={{ paddingVertical: 20, alignItems: 'center' }}>
+        <Press onPress={() => Linking.openURL(API_BASE)} style={{ paddingVertical: 20, alignItems: 'center' }}>
           <Text style={s.dim}>No account yet? <Text style={{ color: p.text, fontFamily: fonts.bodyBold }}>Request access</Text></Text>
-        </Pressable>
+        </Press>
         <Text style={[s.muted, { textAlign: 'center' }]}>Version {APP_VERSION}</Text>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -260,26 +266,36 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
     <View style={s.root}>
       {error ? <Text style={s.banner}>{error}</Text> : null}
       <View style={s.body}>
-        {!data ? <View style={s.center}><ActivityIndicator color={p.lens} /></View>
+        <Reveal key={tab} style={{ flex: 1 }}>
+        {!data ? (
+          <View style={[s.pad, { gap: 14, paddingTop: 30 }]}>
+            <Skeleton style={{ height: 70, width: '60%' }} /><Skeleton style={{ height: 250 }} />
+            <View style={{ flexDirection: 'row', gap: 10 }}><Skeleton style={{ flex: 1, height: 54, borderRadius: 27 }} /><Skeleton style={{ flex: 1, height: 54, borderRadius: 27 }} /></View>
+            <Skeleton style={{ height: 120 }} />
+          </View>)
           : tab === 'overview' ? (
             <Overview data={data} now={now} name={name} live={!error ? updatedAt : null} refreshing={refreshing} onRefresh={onRefresh}
               onAlerts={() => setTab('alerts')} update={update} progress={progress} updateNote={updateNote} onInstall={install} />
           ) : tab === 'alerts' ? <Alerts incidents={data.incidents} now={now} refreshing={refreshing} onRefresh={onRefresh} />
           : <Account email={email} name={name} alertState={alertState} version={APP_VERSION} update={update} updateNote={updateNote}
               onCheckUpdate={() => lookForUpdate(true)} onInstall={install} progress={progress} choice={choice} onChoice={onChoice} onSignOut={signOut} />}
+        </Reveal>
       </View>
 
       <View style={s.nav}>
-        <Pressable style={s.navItem} onPress={() => setTab('alerts')} accessibilityLabel="Alerts">
+        <Press style={s.navItem} onPress={() => setTab('alerts')} accessibilityLabel="Alerts">
           <Icon name={tab === 'alerts' ? 'notifications' : 'notifications-outline'} color={tab === 'alerts' ? p.inkText : p.inkMuted} size={25} />
-          {openAlerts ? <View style={s.navBadge}><Text style={s.navBadgeText}>{openAlerts > 9 ? '9+' : openAlerts}</Text></View> : null}
-        </Pressable>
-        <Pressable style={s.navHome} onPress={() => setTab('overview')} accessibilityLabel="Overview">
+          {tab === 'alerts' ? <View style={{ position: 'absolute', bottom: 3, width: 5, height: 5, borderRadius: 3, backgroundColor: p.inkText }} /> : null}
+        {openAlerts ? <View style={s.navBadge}><Text style={s.navBadgeText}>{openAlerts > 9 ? '9+' : openAlerts}</Text></View> : null}
+        </Press>
+        <Press style={s.navHome} onPress={() => setTab('overview')} accessibilityLabel="Overview">
           <Icon name={tab === 'overview' ? 'home' : 'home-outline'} color={p.ink} size={26} />
-        </Pressable>
-        <Pressable style={s.navItem} onPress={() => setTab('account')} accessibilityLabel="Account">
+        </Press>
+        <Press style={s.navItem} onPress={() => setTab('account')} accessibilityLabel="Account">
           <Icon name={tab === 'account' ? 'person' : 'person-outline'} color={tab === 'account' ? p.inkText : p.inkMuted} size={25} />
-        </Pressable>
+          {tab === 'account' ? <View style={{ position: 'absolute', bottom: 3, width: 5, height: 5, borderRadius: 3, backgroundColor: p.inkText }} /> : null}
+        
+        </Press>
       </View>
 
       {alertCard ? (
@@ -303,7 +319,7 @@ function BarChart({ values }: { values: number[] }) {
       </View>
       <View style={s.chartRow}>
         {values.map((value, i) => (
-          <View key={i} style={{ width: `${86 / values.length}%`, height: Math.max(6, (value / peak) * 78), borderRadius: 8,
+          <GrowBar key={i} height={Math.max(6, (value / peak) * 78)} delay={i * 25} style={{ width: `${86 / values.length}%`, borderRadius: 8,
             backgroundColor: p.mintBar, opacity: value === 0 ? 0.22 : i === top && value > 0 ? 1 : 0.62 }} />
         ))}
       </View>
@@ -331,59 +347,63 @@ function Overview({ data, now, name, live, refreshing, onRefresh, onAlerts, upda
       <View style={s.topRow}>
         <View style={{ flexShrink: 1 }}>
           <Text style={s.h1}>{greeting(new Date(now).getHours())}{name ? `,\n${name}` : ''}</Text>
-          <View style={s.livePill}>
-            <View style={[s.liveDot, !live && { backgroundColor: p.bad }]} />
+          <Frost style={s.livePill} blur={false}>
+            <PulseDot color={live ? p.good : p.bad} />
             <Text style={s.liveText}>{live ? `Live · updated ${timeAgo(new Date(live).toISOString(), now)}` : 'Offline'}</Text>
-          </View>
+          </Frost>
         </View>
         <View style={s.avatar}>{name ? <Text style={s.avatarText}>{name[0]}</Text> : <LogoMark size={22} color={p.inkText} />}</View>
       </View>
 
       <View style={s.pad}>
         {update ? (
-          <View style={s.ink}>
+          <Reveal index={0}><View style={s.ink}>
             <View style={s.inkRow}>
               <View style={s.inkIcon}><Icon name="download-outline" color={p.inkText} /></View>
               <View style={{ flex: 1 }}>
                 <Text style={s.inkTitle}>Update available</Text>
                 <Text style={s.inkSub}>{progress !== null ? `Downloading… ${Math.round(progress * 100)}%` : updateNote || `v${update.version} · ${update.sizeMb} MB · keeps your sign-in`}</Text>
               </View>
-              <Pressable onPress={onInstall} disabled={progress !== null} style={[{ backgroundColor: p.inkText, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9 }, progress !== null && s.disabled]}>
+              <Press onPress={onInstall} disabled={progress !== null} style={[{ backgroundColor: p.inkText, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9 }, progress !== null && s.disabled]}>
                 <Text style={{ color: p.ink, fontFamily: fonts.bodyBold, fontSize: 14 }}>Update</Text>
-              </Pressable>
+              </Press>
             </View>
-          </View>
+          </View></Reveal>
         ) : null}
 
         {data.servers.length === 0 ? (
-          <View style={s.hero}>
+          <Frost style={s.hero}>
             <Text style={s.label}>GET STARTED</Text>
             <Text style={[s.h2, { marginTop: 4 }]}>Connect your first school PC</Text>
             <Text style={[s.muted, { marginTop: 6 }]}>Open the CampusGuard desktop app, go to Settings and turn on cloud sync with this same account. Your cameras and alerts will appear here within a minute.</Text>
-          </View>
+          </Frost>
         ) : (
-          <View style={s.hero}>
+          <Frost style={s.hero}>
             <Text style={s.label}>CAMERAS ONLINE</Text>
             <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
-              <Text style={[s.heroNumber, sum.onlineKnown && !allUp ? { color: p.warn } : null]}>{sum.onlineKnown ? sum.online : '—'}</Text>
+              {sum.onlineKnown ? <CountUp value={sum.online} style={[s.heroNumber, !allUp ? { color: p.warn } : null]} /> : <Text style={s.heroNumber}>—</Text>}
               <Text style={[s.heroOf, { marginBottom: 12 }]}>/ {sum.cameras}</Text>
             </View>
             <Text style={s.dim}>
               {allUp ? 'Every camera is reporting.' : sum.offlineServers ? `${sum.offlineServers} school PC not reporting.` : 'Some cameras are offline.'}
             </Text>
             <BarChart values={buckets} />
-          </View>
+          </Frost>
         )}
 
         <View style={s.pillRow}>
-          <Pressable style={s.pillAction} onPress={onAlerts}>
-            <View style={s.pillIcon}><Icon name="notifications-outline" size={20} color={p.inkText} /></View>
-            <Text style={s.pillLabel}>{sum.open ? `${sum.open} open` : 'Alerts'}</Text>
-          </Pressable>
-          <Pressable style={s.pillAction} onPress={onRefresh}>
-            <View style={s.pillIcon}><Icon name="refresh" size={20} color={p.inkText} /></View>
-            <Text style={s.pillLabel}>Refresh</Text>
-          </Pressable>
+          <Press style={{ flex: 1 }} onPress={onAlerts}>
+            <Frost style={s.pillAction} blur={false}>
+              <View style={s.pillIcon}><Icon name="notifications-outline" size={20} color={p.inkText} /></View>
+              <Text style={s.pillLabel}>{sum.open ? `${sum.open} open` : 'Alerts'}</Text>
+            </Frost>
+          </Press>
+          <Press style={{ flex: 1 }} onPress={onRefresh}>
+            <Frost style={s.pillAction} blur={false}>
+              <View style={s.pillIcon}><Icon name="refresh" size={20} color={p.inkText} /></View>
+              <Text style={s.pillLabel}>Refresh</Text>
+            </Frost>
+          </Press>
         </View>
 
         {data.servers.length ? (
@@ -436,32 +456,32 @@ function Alerts({ incidents, now, refreshing, onRefresh }: { incidents: Incident
         <View style={{ gap: 14 }}>
           <Text style={[s.h1, { marginTop: 10 }]}>Alerts</Text>
           <View style={s.summary}>
-            <Text style={s.summaryNumber}>{needing}</Text>
+            <CountUp value={needing} style={s.summaryNumber} duration={700} />
             <Text style={s.summaryText}>{needing === 0 ? 'Nothing needs attention right now.' : needing === 1 ? 'alert needs attention' : 'alerts need attention'}</Text>
           </View>
           <View style={s.segRow}>
             {(['all', 'new', 'reviewed'] as const).map((name) => (
-              <Pressable key={name} style={[s.seg, filter === name && s.segOn]} onPress={() => setFilter(name)}>
+              <Press key={name} style={[s.seg, filter === name && s.segOn]} onPress={() => setFilter(name)}>
                 <Text style={[s.segText, filter === name && s.segTextOn]}>{name === 'all' ? 'All' : name === 'new' ? 'New' : 'Reviewed'}</Text>
-              </Pressable>
+              </Press>
             ))}
           </View>
         </View>
       }
       ListEmptyComponent={
-        <View style={[s.card, { alignItems: 'center', paddingVertical: 34 }]}>
+        <Frost style={[s.card, { alignItems: 'center', paddingVertical: 34 }]}>
           <Icon name="shield-checkmark-outline" size={38} color={p.good} />
           <Text style={[s.h2, { marginTop: 8 }]}>{incidents.length ? 'Nothing here' : 'All clear'}</Text>
           <Text style={[s.muted, { textAlign: 'center' }]}>{incidents.length ? 'No alerts match this filter.' : 'When a fight is detected it will appear here and on your phone.'}</Text>
-        </View>
+        </Frost>
       }
       ListFooterComponent={<View style={{ height: 96 }} />}
-      renderItem={({ item }) => {
+      renderItem={({ item, index }) => {
         const key = `${item.server_id}:${item.incident_id}`;
         const color = p.severity[item.severity] ?? p.muted;
         const open = openId === key;
         return (
-          <Pressable style={s.alertCard} onPress={() => setOpenId(open ? null : key)}>
+          <Reveal index={index}><Press onPress={() => setOpenId(open ? null : key)}><Frost style={s.alertCard} blur={false}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               <View style={[s.alertIcon, { backgroundColor: color + '26' }]}><Icon name="warning-outline" color={color} /></View>
               <View style={{ flex: 1, gap: 2 }}>
@@ -481,7 +501,7 @@ function Alerts({ incidents, now, refreshing, onRefresh }: { incidents: Incident
                 <Text style={s.muted}>{item.has_footage ? 'A video clip was saved on the school PC.' : 'No clip was saved for this alert.'}</Text>
               </View>
             ) : null}
-          </Pressable>
+          </Frost></Press></Reveal>
         );
       }}
     />
@@ -505,7 +525,7 @@ function SettingRow({ icon, title, value, onPress, tint, last }: { icon: IconNam
       {last ? null : <View style={s.setDivider} />}
     </>
   );
-  return onPress ? <Pressable onPress={onPress}>{body}</Pressable> : <View>{body}</View>;
+  return onPress ? <Press onPress={onPress}>{body}</Press> : <View>{body}</View>;
 }
 
 function Account({ email, name, alertState, version, update, updateNote, onCheckUpdate, onInstall, progress, choice, onChoice, onSignOut }: {
@@ -528,16 +548,16 @@ function Account({ email, name, alertState, version, update, updateNote, onCheck
         </View>
       </View>
 
-      <View style={s.card}>
+      <Frost style={s.card}>
         <SettingRow icon={alertState.allowed ? 'notifications-outline' : 'notifications-off-outline'} title="Alert notifications" value={alertState.message}
           tint={alertState.allowed ? p.good : p.warn} />
         <View style={{ paddingVertical: 14, gap: 10 }}>
           <Text style={s.title}>Appearance</Text>
           <View style={s.segRow}>
             {(['auto', 'light', 'dark'] as ThemeChoice[]).map((c) => (
-              <Pressable key={c} style={[s.seg, choice === c && s.segOn]} onPress={() => onChoice(c)}>
+              <Press key={c} style={[s.seg, choice === c && s.segOn]} onPress={() => onChoice(c)}>
                 <Text style={[s.segText, choice === c && s.segTextOn]}>{c === 'auto' ? 'Auto' : c === 'light' ? 'Light' : 'Dark'}</Text>
-              </Pressable>
+              </Press>
             ))}
           </View>
         </View>
@@ -546,12 +566,12 @@ function Account({ email, name, alertState, version, update, updateNote, onCheck
           value={progress !== null ? `Downloading… ${Math.round(progress * 100)}%` : update ? `Version ${update.version} is ready to install` : updateNote || 'Tap to check for updates'}
           onPress={update ? onInstall : onCheckUpdate} tint={update ? p.good : undefined} />
         <SettingRow icon="chatbubble-ellipses-outline" title="Help and support" value="Chat with us on WhatsApp" onPress={() => Linking.openURL(SUPPORT_URL)} last />
-      </View>
+      </Frost>
 
-      <Pressable style={[s.button, s.buttonGhost]} onPress={onSignOut}>
+      <Press style={[s.button, s.buttonGhost]} onPress={onSignOut}>
         <Icon name="log-out-outline" size={20} color={p.bad} />
         <Text style={[s.buttonText, { color: p.bad }]}>Sign out</Text>
-      </Pressable>
+      </Press>
     </ScrollView>
   );
 }

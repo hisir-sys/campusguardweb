@@ -27,7 +27,7 @@ export const makeStyles = (p: Palette) => StyleSheet.create({
   liveText: { color: p.textDim, fontFamily: fonts.bodyMedium, fontSize: 12 },
   banner: { backgroundColor: p.ink, color: p.inkText, fontFamily: fonts.bodyMedium, fontSize: 13, paddingVertical: 9, paddingHorizontal: 14, textAlign: 'center' },
   // cards and panels
-  card: { backgroundColor: p.surface, borderRadius: 28, padding: 18, gap: 6, borderColor: p.line, borderWidth: 1 },
+  card: { backgroundColor: 'transparent', borderRadius: 28, padding: 18, gap: 6, borderColor: p.glassEdge, borderWidth: 1 },
   ink: { backgroundColor: p.ink, borderRadius: 28, padding: 8 },
   inkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 12 },
   inkDivider: { height: 1, backgroundColor: p.inkLine, marginHorizontal: 12 },
@@ -38,7 +38,7 @@ export const makeStyles = (p: Palette) => StyleSheet.create({
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
   chip: { borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4, overflow: 'hidden', fontFamily: fonts.bodyBold, fontSize: 11.5, letterSpacing: 0.3 },
   // overview hero
-  hero: { backgroundColor: p.surface, borderRadius: 32, padding: 22, gap: 4, borderColor: p.line, borderWidth: 1 },
+  hero: { backgroundColor: 'transparent', borderRadius: 32, padding: 22, gap: 4, borderColor: p.glassEdge, borderWidth: 1 },
   heroNumber: { color: p.text, fontFamily: fonts.hero, fontSize: 68, lineHeight: 74 },
   heroOf: { color: p.muted, fontFamily: fonts.hero, fontSize: 24 },
   chartPanel: { backgroundColor: p.mint, borderRadius: 24, padding: 16, marginTop: 14, gap: 10 },
@@ -71,7 +71,7 @@ export const makeStyles = (p: Palette) => StyleSheet.create({
   summary: { backgroundColor: p.mint, borderRadius: 28, padding: 20, gap: 2 },
   summaryNumber: { color: p.mintBar, fontFamily: fonts.hero, fontSize: 54, lineHeight: 60 },
   summaryText: { color: p.mintBar, fontFamily: fonts.bodyMedium, fontSize: 14, opacity: 0.8 },
-  alertCard: { backgroundColor: p.surface, borderRadius: 24, padding: 16, gap: 4, borderColor: p.line, borderWidth: 1 },
+  alertCard: { backgroundColor: 'transparent', borderRadius: 24, padding: 16, gap: 4, borderColor: p.glassEdge, borderWidth: 1 },
   alertIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   detail: { marginTop: 10, gap: 4, borderTopColor: p.line, borderTopWidth: 1, paddingTop: 10 },
   seg: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 999, backgroundColor: p.surface, borderColor: p.line, borderWidth: 1 },
@@ -84,7 +84,7 @@ export const makeStyles = (p: Palette) => StyleSheet.create({
   setIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: p.field, alignItems: 'center', justifyContent: 'center' },
   setDivider: { height: 1, backgroundColor: p.line },
   // floating nav (the pill with a round home button in the middle)
-  nav: { position: 'absolute', left: 18, right: 18, bottom: 18, height: 66, borderRadius: 33, backgroundColor: p.ink, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 14 },
+  nav: { position: 'absolute', left: 18, right: 18, bottom: 18, height: 66, borderRadius: 33, backgroundColor: p.ink, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 14, shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 10 },
   navItem: { width: 64, height: 54, alignItems: 'center', justifyContent: 'center' },
   navHome: { width: 64, height: 64, borderRadius: 32, backgroundColor: p.inkText, alignItems: 'center', justifyContent: 'center', marginTop: -16, borderColor: p.bg, borderWidth: 5 },
   navBadge: { position: 'absolute', top: 4, right: 10, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: p.bad, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
