@@ -44,6 +44,9 @@ export default async function handler(req: any, res: any) {
     }, { onConflict: 'user_id,server_id' })
     if (serverError) { console.error('Server upsert failed:', serverError.message); return res.status(500).json({ error: 'Could not save sync data.' }) }
 
+    // Incidents the school PC held back (silent test mode, or a camera's relaxed hours) are saved
+    // for review but must never buzz a phone.
+    const heldBack = new Set(incidents.filter(item => item?.suppressed === 'silent' || item?.suppressed === 'relaxed').map(item => text(item?.incident_id, 40)))
     const rows = incidents.flatMap(item => {
       const incidentId = text(item?.incident_id, 40)
       const happened = new Date(String(item?.happened_at ?? ''))
@@ -64,7 +67,7 @@ export default async function handler(req: any, res: any) {
       const { data: known } = await db.from('account_incidents').select('incident_id').eq('user_id', auth.user.id).eq('server_id', serverId).in('incident_id', rows.map(r => r.incident_id))
       const seen = new Set((known ?? []).map((r: any) => r.incident_id))
       const cutoff = Date.now() - 15 * 60 * 1000   // an old backlog synced later must not buzz the phone
-      fresh = rows.filter(r => !seen.has(r.incident_id) && r.status === 'NEW' && new Date(r.happened_at).getTime() > cutoff)
+      fresh = rows.filter(r => !seen.has(r.incident_id) && !heldBack.has(r.incident_id) && r.status === 'NEW' && new Date(r.happened_at).getTime() > cutoff)
       const { error } = await db.from('account_incidents').upsert(rows, { onConflict: 'user_id,server_id,incident_id' })
       if (error) { console.error('Incident upsert failed:', error.message); return res.status(500).json({ error: 'Could not save incidents.' }) }
     }
