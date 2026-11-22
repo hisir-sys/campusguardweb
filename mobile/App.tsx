@@ -186,6 +186,8 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
   const tokenRef = useRef<string | null>(null);
   const [alertCard, setAlertCard] = useState<Incident | null>(null);
   const homeTarget = useRef<ComponentRef<typeof View>>(null);
+  const [targetReady, setTargetReady] = useState(false);
+  useEffect(() => { setTargetReady(true); }, []);
   const [toast, setToast] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const [notifyOn, setNotifyOn] = useState(true);
@@ -306,7 +308,7 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
       </View>
       </BlurTargetView>
 
-      <BlurTargetContext.Provider value={homeTarget}>
+      <BlurTargetContext.Provider value={targetReady ? homeTarget : null}>
       <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 54, opacity: topbar }}>
         <Frost blur glow={false} intensity={70} tint={p.navGlass} style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: p.line }}>
           <Text style={{ color: p.text, fontFamily: fonts.bodyBold, fontSize: 17 }}>{tab === 'overview' ? 'CampusGuard' : tab === 'alerts' ? 'Alerts' : 'Account'}</Text>
