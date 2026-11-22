@@ -16,7 +16,7 @@ export const warn = () => { if (native) Haptics.notificationAsync(Haptics.Notifi
 export const BlurTargetContext = createContext<RefObject<ComponentRef<typeof View> | null> | null>(null);
 
 /** A real frosted-glass layer (iOS, Android 12+, web). Older Android falls back to a translucent tint. */
-export function Frost({ style, intensity = 50, blur = true, tint, onLayout, glow = true, children }: { style?: StyleProp<ViewStyle>; intensity?: number; blur?: boolean; tint?: string; onLayout?: ViewProps['onLayout']; glow?: boolean; children?: React.ReactNode }) {
+export function Frost({ style, intensity = 50, blur = false, tint, onLayout, glow = true, children }: { style?: StyleProp<ViewStyle>; intensity?: number; blur?: boolean; tint?: string; onLayout?: ViewProps['onLayout']; glow?: boolean; children?: React.ReactNode }) {
   const p = useTheme();
   const target = useContext(BlurTargetContext);
   const spot = useRef(new Animated.Value(0)).current;
@@ -155,7 +155,7 @@ export function PulseDot({ color, size = 7 }: { color: string; size?: number }) 
 // ------------------------------------------------------------------ ambient background
 /** One soft glowing orb: stacked discs fade out towards the edge, which fakes the blur a web page gets for free. */
 function Orb({ size, color, opacity, style }: { size: number; color: string; opacity: number; style?: any }) {
-  const layers = [1, 0.82, 0.64, 0.46, 0.3];
+  const layers = Array.from({ length: 20 }, (_, i) => 1 - i * 0.045);
   return (
     <Animated.View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, alignItems: 'center', justifyContent: 'center' }, style]}>
       {layers.map((k) => (
@@ -184,9 +184,9 @@ export function Backdrop() {
   const move = (v: Animated.Value, x: number, y: number) => ({ transform: [{ translateX: v.interpolate({ inputRange: [0, 1], outputRange: [0, x] }) }, { translateY: v.interpolate({ inputRange: [0, 1], outputRange: [0, y] }) }] });
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Orb size={420} color="#34A873" opacity={dark ? 0.5 : 0.55} style={[{ top: 40, right: -170 }, move(a, -50, 70)]} />
-      <Orb size={380} color={dark ? "#D6A046" : "#FABE64"} opacity={dark ? 0.34 : 0.5} style={[{ top: 430, left: -190 }, move(b, 60, -50)]} />
-      <Orb size={440} color={dark ? "#4C4CD2" : "#828CFF"} opacity={dark ? 0.36 : 0.45} style={[{ bottom: -190, right: -140 }, move(c, -60, -40)]} />
+      <Orb size={420} color="#34A873" opacity={dark ? 0.55 : 0.55} style={[{ top: 40, right: -170 }, move(a, -50, 70)]} />
+      <Orb size={380} color={dark ? "#D6A046" : "#FABE64"} opacity={dark ? 0.4 : 0.5} style={[{ top: 430, left: -190 }, move(b, 60, -50)]} />
+      <Orb size={440} color={dark ? "#4C4CD2" : "#828CFF"} opacity={dark ? 0.42 : 0.45} style={[{ bottom: -190, right: -140 }, move(c, -60, -40)]} />
     </View>
   );
 }
@@ -204,7 +204,7 @@ export function Toast({ message }: { message: string }) {
   return (
     <Animated.View pointerEvents="none" style={{ position: 'absolute', bottom: 118, left: 0, right: 0, alignItems: 'center', opacity: t,
       transform: [{ translateY: t.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }, { scale: t.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }) }] }}>
-      <Frost glow={false} intensity={80} style={{ borderRadius: 999, paddingHorizontal: 22, paddingVertical: 14, borderWidth: 1, borderColor: p.glassEdge }} tint={p.navGlass}>
+      <Frost blur glow={false} intensity={80} style={{ borderRadius: 999, paddingHorizontal: 22, paddingVertical: 14, borderWidth: 1, borderColor: p.glassEdge }} tint={p.navGlass}>
         <Text style={{ color: p.text, fontFamily: 'Inter_600SemiBold', fontSize: 15 }}>{text}</Text>
       </Frost>
     </Animated.View>

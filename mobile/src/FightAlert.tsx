@@ -44,7 +44,7 @@ export function FightAlert({ incident, onReview, onDismiss }: { incident: Incide
   return (
     <View style={s.scrim}>
       <Animated.View style={{ opacity: pop.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: 'clamp' }), transform: [{ scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.86, 1] }) }, { translateY: pop.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }) }] }}>
-      <Frost style={s.card} intensity={80} tint={p.name === 'dark' ? 'rgba(30,30,34,0.97)' : 'rgba(255,255,255,0.97)'}>
+      <Frost blur style={s.card} intensity={80} tint={p.name === 'dark' ? 'rgba(30,30,34,0.97)' : 'rgba(255,255,255,0.97)'}>
         <Text style={s.pill}>{(LEVEL[incident.severity] ?? incident.severity).toUpperCase()}</Text>
         <Text style={s.title}>{headline}</Text>
         <Text style={s.meta}>{incident.camera_name}{'\n'}{Math.round(incident.confidence * 100)}% sure · {timeAgo(incident.happened_at)}</Text>

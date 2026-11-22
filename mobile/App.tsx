@@ -65,21 +65,15 @@ export default function App() {
   const pick = (next: ThemeChoice) => { setChoice(next); secureStorage.setItem(THEME_KEY, next).catch(() => undefined); };
   const palette: Palette = choice === 'light' || (choice === 'auto' && system === 'light') ? LIGHT : DARK;
   const styles = useMemo(() => makeStyles(palette), [palette]);
-  const blurTarget = useRef<ComponentRef<typeof View>>(null);
-
   return (
     <ThemeContext.Provider value={palette}>
-     <BlurTargetContext.Provider value={blurTarget}>
       <SafeAreaView style={[styles.root, Platform.OS === 'android' && { paddingTop: RNStatusBar.currentHeight ?? 24 }]}>
         <StatusBar style={palette.name === 'dark' ? 'light' : 'dark'} />
-        <BlurTargetView ref={blurTarget} pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-          <Backdrop />
-        </BlurTargetView>
+        {!session ? <Backdrop /> : null}
         {!(fontsReady || fontError) ? <View style={styles.center}><ActivityIndicator color={palette.lens} /></View>
           : !revealDone || !ready ? <LogoReveal onDone={finishReveal} />
           : session ? <Home email={session.user.email ?? ''} choice={choice} onChoice={pick} /> : <Login />}
       </SafeAreaView>
-     </BlurTargetContext.Provider>
     </ThemeContext.Provider>
   );
 }
@@ -191,6 +185,7 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
   const seen = useRef(new Set<string>());
   const tokenRef = useRef<string | null>(null);
   const [alertCard, setAlertCard] = useState<Incident | null>(null);
+  const homeTarget = useRef<ComponentRef<typeof View>>(null);
   const [toast, setToast] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const [notifyOn, setNotifyOn] = useState(true);
@@ -289,7 +284,9 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
   const name = firstName(email);
 
   return (
-    <View style={s.root}>
+    <View style={{ flex: 1 }}>
+      <BlurTargetView ref={homeTarget} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+      <Backdrop />
       {error ? <Text style={s.banner}>{error}</Text> : null}
       <View style={s.body}>
         <Reveal key={tab} style={{ flex: 1 }}>
@@ -307,9 +304,11 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
               onScroll={onScroll} notifyOn={notifyOn} onNotify={onNotify} onCheckUpdate={() => { lookForUpdate(true).then(() => showToast('CampusGuard is up to date')); }} onInstall={install} progress={progress} choice={choice} onChoice={onChoice} onSignOut={signOut} />}
         </Reveal>
       </View>
+      </BlurTargetView>
 
+      <BlurTargetContext.Provider value={homeTarget}>
       <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 54, opacity: topbar }}>
-        <Frost glow={false} intensity={70} tint={p.navGlass} style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: p.line }}>
+        <Frost blur glow={false} intensity={70} tint={p.navGlass} style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: p.line }}>
           <Text style={{ color: p.text, fontFamily: fonts.bodyBold, fontSize: 17 }}>{tab === 'overview' ? 'CampusGuard' : tab === 'alerts' ? 'Alerts' : 'Account'}</Text>
         </Frost>
       </Animated.View>
@@ -320,6 +319,7 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
       {alertCard ? (
         <FightAlert incident={alertCard} onReview={() => { setTab('alerts'); setAlertCard(null); }} onDismiss={() => setAlertCard(null)} />
       ) : null}
+      </BlurTargetContext.Provider>
     </View>
   );
 }
@@ -374,7 +374,7 @@ function NavBar({ tab, onTab, badge }: { tab: Tab; onTab: (t: Tab) => void; badg
   return (
     <View ref={barRef} style={s.nav} {...pan.panHandlers}
       onLayout={(e) => { setWidth(e.nativeEvent.layout.width); barRef.current?.measureInWindow((x) => { barLeft.current = x; }); }}>
-      <Frost style={[StyleSheet.absoluteFill, { borderRadius: NAV_H / 2, borderColor: p.glassEdge, borderWidth: 1 }]} intensity={80} tint={p.navGlass} />
+      <Frost blur style={[StyleSheet.absoluteFill, { borderRadius: NAV_H / 2, borderColor: p.glassEdge, borderWidth: 1 }]} intensity={60} tint={p.navGlass} />
       {slot ? (
         <Animated.View pointerEvents="none" style={{
           position: 'absolute', top: 6, left: NAV_PAD + 2, width: lensW, height: NAV_H - 12, borderRadius: (NAV_H - 12) / 2,
@@ -648,7 +648,7 @@ function AlertSheet({ incident, now, onClose }: { incident: Incident; now: numbe
         <RNPressable style={{ flex: 1 }} onPress={close} />
       </Animated.View>
       <Animated.View style={{ position: 'absolute', left: 10, right: 10, bottom: 10, transform: [{ translateY: rise.interpolate({ inputRange: [0, 1], outputRange: [420, 0] }) }] }}>
-        <Frost style={[s.card, { borderRadius: 38, padding: 22, paddingTop: 14 }]} intensity={90} tint={p.name === 'dark' ? 'rgba(28,28,33,0.96)' : 'rgba(250,251,254,0.97)'}>
+        <Frost style={[s.card, { borderRadius: 38, padding: 22, paddingTop: 14 }]} blur={false} tint={p.name === 'dark' ? 'rgba(28,28,33,0.96)' : 'rgba(250,251,254,0.97)'}>
           <View style={{ width: 42, height: 5, borderRadius: 3, backgroundColor: p.line, alignSelf: 'center', marginBottom: 16 }} />
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
             <IconTile name="warning-outline" color={color} size={54} />
