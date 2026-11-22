@@ -14,7 +14,7 @@ import { Outfit_500Medium, Outfit_600SemiBold } from '@expo-google-fonts/outfit'
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
 import type { Session } from '@supabase/supabase-js';
-import { ApiError, fetchSyncData, supabase, unregisterPushToken } from './src/api';
+import { ApiError, fetchProfile, fetchSyncData, saveProfile, supabase, unregisterPushToken } from './src/api';
 import { alertsByBucket, freshIncidents, LEVEL, notificationFor, worstOf, guardStatus, hotspots } from './src/alerts';
 import { API_BASE, REFRESH_SECONDS } from './src/config';
 import { FightAlert } from './src/FightAlert';
@@ -27,7 +27,7 @@ import { makeStyles } from './src/styles';
 import { DARK, LIGHT, firstName, greeting, timeAgo, type Palette } from './src/theme';
 import { checkForUpdate, type UpdateInfo } from './src/update';
 import { ThemeContext, fonts, useTheme } from './src/useTheme';
-import type { Incident, SyncData } from './src/types';
+import type { Incident, Profile, SyncData } from './src/types';
 
 type Tab = 'overview' | 'alerts' | 'account';
 type ThemeChoice = 'auto' | 'dark' | 'light';
@@ -189,6 +189,8 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
   const [targetReady, setTargetReady] = useState(false);
   useEffect(() => { setTargetReady(true); }, []);
   const [toast, setToast] = useState('');
+  const [profile, setProfile] = useState<Profile | null>(null);
+  useEffect(() => { fetchProfile().then(setProfile).catch(() => undefined); }, []);
   const [scrolled, setScrolled] = useState(false);
   const [notifyOn, setNotifyOn] = useState(true);
   const showToast = useCallback((message: string) => { setToast(message); setTimeout(() => setToast(''), 2300); }, []);
@@ -283,7 +285,7 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
     }
   };
   const openAlerts = data?.incidents.filter((i) => i.status === 'NEW').length ?? 0;
-  const name = firstName(email);
+  const name = profile?.full_name ? profile.full_name.split(' ')[0] : firstName(email);
 
   return (
     <View style={{ flex: 1 }}>
@@ -303,7 +305,7 @@ function Home({ email, choice, onChoice }: { email: string; choice: ThemeChoice;
               onAlerts={() => setTab('alerts')} update={update} progress={progress} updateNote={updateNote} onInstall={install} />
           ) : tab === 'alerts' ? <Alerts incidents={data.incidents} now={now} refreshing={refreshing} onRefresh={onRefresh} onScroll={onScroll} />
           : <Account email={email} name={name} alertState={alertState} version={APP_VERSION} update={update} updateNote={updateNote}
-              onScroll={onScroll} notifyOn={notifyOn} onNotify={onNotify} onCheckUpdate={() => { lookForUpdate(true).then(() => showToast('CampusGuard is up to date')); }} onInstall={install} progress={progress} choice={choice} onChoice={onChoice} onSignOut={signOut} />}
+              onScroll={onScroll} notifyOn={notifyOn} onNotify={onNotify} onCheckUpdate={() => { lookForUpdate(true).then(() => showToast('CampusGuard is up to date')); }} onInstall={install} progress={progress} choice={choice} onChoice={onChoice} onSignOut={signOut} profile={profile} onProfile={(next) => { setProfile(next); showToast('Details saved'); }} />}
         </Reveal>
       </View>
       </BlurTargetView>
@@ -763,7 +765,8 @@ function SettingRow({ icon, title, value, onPress, tint, last, right }: { icon: 
   return onPress ? <Press onPress={onPress} scaleTo={0.98}>{body}</Press> : <View>{body}</View>;
 }
 
-function Account({ email, name, alertState, version, update, updateNote, onCheckUpdate, onInstall, progress, choice, onChoice, onSignOut, onScroll, notifyOn, onNotify }: {
+function Account({ email, name, alertState, version, update, updateNote, onCheckUpdate, onInstall, progress, choice, onChoice, onSignOut, onScroll, notifyOn, onNotify, profile, onProfile }: {
+  profile: Profile | null; onProfile: (p: Profile) => void;
   onScroll: (e: any) => void; notifyOn: boolean; onNotify: (on: boolean) => void;
   email: string; name: string; alertState: AlertSetup; version: string; update: UpdateInfo | null; updateNote: string;
   onCheckUpdate: () => void; onInstall: () => void; progress: number | null;
@@ -771,20 +774,33 @@ function Account({ email, name, alertState, version, update, updateNote, onCheck
 }) {
   const p = useTheme();
   const s = useStyles();
+  const [editing, setEditing] = useState(false);
+  const [confirmOut, setConfirmOut] = useState(false);
+  const shownName = profile?.full_name || name || 'Your account';
+  const numbers = profile?.alert_phones ?? [];
   return (
+    <>
     <ScrollView contentContainerStyle={s.pad} onScroll={onScroll} scrollEventThrottle={32} showsVerticalScrollIndicator={false}>
       <Text style={[s.h1, { marginTop: 10, marginLeft: 4 }]}>Account</Text>
-      <Frost style={[s.card, { flexDirection: 'row', alignItems: 'center', gap: 16 }]}>
-        <View style={[s.avatar, { width: 56, height: 56, borderRadius: 28 }]}>
-          <Text style={[s.avatarText, { fontSize: 23 }]}>{name ? name[0].toUpperCase() : '·'}</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={[s.title, { fontSize: 18 }]}>{name || 'Your account'}</Text>
-          <Text style={s.muted} numberOfLines={1}>{email}</Text>
-        </View>
-      </Frost>
+      <Press onPress={() => setEditing(true)}>
+        <Frost style={[s.card, { flexDirection: 'row', alignItems: 'center', gap: 16 }]}>
+          <View style={[s.avatar, { width: 56, height: 56, borderRadius: 28 }]}>
+            <Text style={[s.avatarText, { fontSize: 23 }]}>{shownName[0].toUpperCase()}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[s.title, { fontSize: 18 }]}>{shownName}</Text>
+            {profile?.school_name ? <Text style={[s.dim, { fontSize: 14 }]} numberOfLines={1}>{profile.school_name}</Text> : null}
+            <Text style={s.muted} numberOfLines={1}>{email}</Text>
+          </View>
+          <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: p.line, alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="create-outline" size={19} color={p.text} />
+          </View>
+        </Frost>
+      </Press>
 
       <Frost style={[s.card, { paddingVertical: 8 }]}>
+        <SettingRow icon="call-outline" title="Alert phone numbers" onPress={() => setEditing(true)}
+          value={numbers.length ? numbers.join('  ·  ') : 'Add the numbers that should get alerts'} />
         <SettingRow icon={alertState.allowed ? 'notifications-outline' : 'notifications-off-outline'} title="Alert notifications" value={alertState.message}
           tint={alertState.allowed ? p.good : p.warn} right={<Toggle on={notifyOn} onChange={onNotify} />} />
         <View style={{ paddingVertical: 16, gap: 10, borderBottomWidth: 1, borderBottomColor: p.line }}>
@@ -797,12 +813,136 @@ function Account({ email, name, alertState, version, update, updateNote, onCheck
         <SettingRow icon="chatbubble-ellipses-outline" title="Help and support" value="Chat with us on WhatsApp" onPress={() => Linking.openURL(SUPPORT_URL)} last />
       </Frost>
 
-      <Press onPress={onSignOut}>
+      <Press onPress={() => setConfirmOut(true)}>
         <Frost style={{ height: 64, borderRadius: 32, borderWidth: 1, borderColor: p.glassEdge, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }} blur={false}>
           <Icon name="log-out-outline" size={20} color={p.bad} />
           <Text style={{ color: p.bad, fontFamily: fonts.bodyBold, fontSize: 17 }}>Sign out</Text>
         </Frost>
       </Press>
     </ScrollView>
+    {editing ? <ProfileSheet profile={profile} email={email} onClose={() => setEditing(false)} onSaved={onProfile} /> : null}
+    {confirmOut ? <SignOutSheet onCancel={() => setConfirmOut(false)} onConfirm={() => { setConfirmOut(false); onSignOut(); }} /> : null}
+    </>
+  );
+}
+
+/** A glass sheet that rises from the bottom over a dimmed page. */
+function Sheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  const p = useTheme();
+  const s = useStyles();
+  const rise = useRef(new Animated.Value(0)).current;
+  useEffect(() => { Animated.spring(rise, { toValue: 1, useNativeDriver: true, speed: 13, bounciness: 8 }).start(); }, [rise]);
+  const close = () => Animated.timing(rise, { toValue: 0, duration: 200, useNativeDriver: true }).start(onClose);
+  return (
+    <Modal transparent animationType="none" onRequestClose={close} statusBarTranslucent>
+      <KeyboardAvoidingView style={{ flex: 1, justifyContent: 'flex-end' }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <Animated.View style={{ ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.5)', opacity: rise }}>
+          <RNPressable style={{ flex: 1 }} onPress={close} />
+        </Animated.View>
+        <Animated.View style={{ margin: 10, transform: [{ translateY: rise.interpolate({ inputRange: [0, 1], outputRange: [460, 0] }) }] }}>
+          <Frost style={[s.card, { borderRadius: 38, padding: 22, paddingTop: 14, maxHeight: 640 }]} tint={p.name === 'dark' ? 'rgba(28,28,33,0.97)' : 'rgba(250,251,254,0.97)'}>
+            <View style={{ width: 42, height: 5, borderRadius: 3, backgroundColor: p.line, alignSelf: 'center', marginBottom: 14 }} />
+            {children}
+          </Frost>
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
+function SignOutSheet({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
+  const p = useTheme();
+  const s = useStyles();
+  return (
+    <Sheet onClose={onCancel}>
+      <View style={{ alignItems: 'center', gap: 6, paddingVertical: 6 }}>
+        <IconTile name="log-out-outline" color={p.bad} size={58} round />
+        <Text style={[s.h2, { fontSize: 22, marginTop: 8 }]}>Sign out?</Text>
+        <Text style={[s.muted, { textAlign: 'center' }]}>You will stop receiving alerts on this device until you sign in again.</Text>
+      </View>
+      <View style={{ flexDirection: 'row', gap: 10, marginTop: 18 }}>
+        <Press scaleTo={0.95} style={{ flex: 1 }} onPress={onCancel}>
+          <View style={{ height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: p.field, borderWidth: 1, borderColor: p.line }}>
+            <Text style={{ color: p.text, fontFamily: fonts.bodyBold, fontSize: 16 }}>Cancel</Text>
+          </View>
+        </Press>
+        <Press scaleTo={0.95} style={{ flex: 1 }} onPress={onConfirm}>
+          <View style={{ height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: p.bad }}>
+            <Text style={{ color: '#fff', fontFamily: fonts.bodyBold, fontSize: 16 }}>Sign out</Text>
+          </View>
+        </Press>
+      </View>
+    </Sheet>
+  );
+}
+
+function ProfileSheet({ profile, email, onClose, onSaved }: { profile: Profile | null; email: string; onClose: () => void; onSaved: (p: Profile) => void }) {
+  const p = useTheme();
+  const s = useStyles();
+  const [fullName, setFullName] = useState(profile?.full_name ?? '');
+  const [school, setSchool] = useState(profile?.school_name ?? '');
+  const [phone, setPhone] = useState(profile?.phone ?? '');
+  const [alerts, setAlerts] = useState<string[]>(profile?.alert_phones?.length ? profile.alert_phones : ['']);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const input = { color: p.text, fontFamily: fonts.body, fontSize: 16, height: 50, borderRadius: 25, paddingHorizontal: 18, backgroundColor: p.field, borderWidth: 1, borderColor: p.line } as const;
+  const label = (text: string) => <Text style={[s.label, { marginTop: 12, marginBottom: 6, marginLeft: 6 }]}>{text}</Text>;
+  const save = async () => {
+    setBusy(true); setError('');
+    try {
+      const next = await saveProfile({ full_name: fullName, school_name: school, phone, alert_phones: alerts.filter((n) => n.trim()) });
+      onSaved(next); onClose();
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : 'Could not save your details.');
+    } finally { setBusy(false); }
+  };
+  return (
+    <Sheet onClose={onClose}>
+      <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <Text style={[s.h2, { fontSize: 22 }]}>Edit account</Text>
+        {label('YOUR NAME')}
+        <TextInput style={input} value={fullName} onChangeText={setFullName} placeholder="Full name" placeholderTextColor={p.muted} maxLength={80} />
+        {label('SCHOOL OR COLLEGE')}
+        <TextInput style={input} value={school} onChangeText={setSchool} placeholder="School name" placeholderTextColor={p.muted} maxLength={120} />
+        {label('EMAIL (SIGN-IN, CANNOT BE CHANGED HERE)')}
+        <Text style={[input, { textAlignVertical: 'center', lineHeight: 50, color: p.muted }]} numberOfLines={1}>{email}</Text>
+        {label('YOUR PHONE NUMBER')}
+        <TextInput style={input} value={phone} onChangeText={setPhone} placeholder="+91 70000 00000" placeholderTextColor={p.muted} keyboardType="phone-pad" maxLength={20} />
+        {label('PHONE NUMBERS THAT GET ALERTS (UP TO 5)')}
+        {alerts.map((number, index) => (
+          <View key={index} style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+            <TextInput style={[input, { flex: 1 }]} value={number} placeholder="+91 70000 00000" placeholderTextColor={p.muted} keyboardType="phone-pad" maxLength={20}
+              onChangeText={(text) => setAlerts(alerts.map((n, i) => (i === index ? text : n)))} />
+            {alerts.length > 1 ? (
+              <Press scaleTo={0.9} onPress={() => setAlerts(alerts.filter((_, i) => i !== index))}>
+                <View style={{ width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', backgroundColor: p.field, borderWidth: 1, borderColor: p.line }}>
+                  <Icon name="close" size={20} color={p.muted} />
+                </View>
+              </Press>
+            ) : null}
+          </View>
+        ))}
+        {alerts.length < 5 ? (
+          <Press scaleTo={0.96} onPress={() => setAlerts([...alerts, ''])} style={{ alignSelf: 'flex-start' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 6 }}>
+              <Icon name="add-circle-outline" size={20} color={p.text} /><Text style={{ color: p.text, fontFamily: fonts.bodyBold, fontSize: 15 }}>Add another number</Text>
+            </View>
+          </Press>
+        ) : null}
+        {error ? <Text style={{ color: p.bad, fontFamily: fonts.bodyMedium, fontSize: 14, marginTop: 8 }}>{error}</Text> : null}
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
+          <Press scaleTo={0.95} style={{ flex: 1 }} onPress={onClose}>
+            <View style={{ height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: p.field, borderWidth: 1, borderColor: p.line }}>
+              <Text style={{ color: p.text, fontFamily: fonts.bodyBold, fontSize: 16 }}>Cancel</Text>
+            </View>
+          </Press>
+          <Press scaleTo={0.95} style={{ flex: 1 }} onPress={save} disabled={busy}>
+            <View style={{ height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: p.accent, opacity: busy ? 0.6 : 1 }}>
+              <Text style={{ color: p.onAccent, fontFamily: fonts.bodyBold, fontSize: 16 }}>{busy ? 'Saving…' : 'Save'}</Text>
+            </View>
+          </Press>
+        </View>
+      </ScrollView>
+    </Sheet>
   );
 }

@@ -22,3 +22,12 @@ export type Incident = {
 };
 
 export type SyncData = { servers: Server[]; incidents: Incident[] };
+
+export type Profile = {
+  email: string;
+  full_name: string;
+  school_name: string;
+  phone: string;
+  alert_phones: string[];
+  updated_at: string | null;
+};

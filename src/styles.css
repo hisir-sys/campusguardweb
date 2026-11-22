@@ -3660,3 +3660,12 @@ main[data-site-theme="dark"] .customer-download-section .customer-download-card 
 main[data-site-theme="dark"] .customer-download-section .customer-download-card b { color: #f3f4f5 !important; }
 main[data-site-theme="dark"] .customer-download-section .customer-download-card span { color: #9ba7ba !important; }
 main[data-site-theme="dark"] .customer-download-section .customer-download-card small { color: #c9d1de !important; }
+
+/* account details form */
+.account-form{display:grid;gap:16px;max-width:560px;margin-top:18px}
+.account-form label,.account-form legend{display:grid;gap:6px;font:11px var(--mono);letter-spacing:.6px;text-transform:uppercase;color:#4e5057}
+.account-form input{font:15px var(--sans,inherit);letter-spacing:0;text-transform:none;padding:12px 14px;border:1px solid #d5d6d9;background:#fff;color:#111;border-radius:10px;width:100%}
+.account-form input:focus{outline:2px solid #97a7c4;outline-offset:1px}
+.account-form fieldset{border:0;padding:0;margin:0;display:grid;gap:10px}
+.account-alert-row{display:flex;gap:10px;align-items:center}
+.account-note{font-size:13px;color:#6a6c73;margin:0}

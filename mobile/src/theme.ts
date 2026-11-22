@@ -16,7 +16,7 @@ export const DARK: Palette = {
   name: 'dark', bg: '#050507', blob: 'rgba(255,255,255,0.045)', surface: '#16161A', field: 'rgba(255,255,255,0.06)',
   line: 'rgba(255,255,255,0.09)', text: '#F5F5F7', textDim: 'rgba(235,235,245,0.80)', muted: 'rgba(235,235,245,0.62)',
   accent: '#F5F5F7', onAccent: '#0B0B0E', good: '#86E0AE', warn: '#F2C47E', bad: '#FF8C7C', lens: '#8FA6C8',
-  spec: 'rgba(255,255,255,0.16)', navGlass: 'rgba(34,34,40,0.42)', glass: 'rgba(255,255,255,0.07)', glassEdge: 'rgba(255,255,255,0.15)', shadow: 'rgba(0,0,0,0.5)',
+  spec: 'rgba(255,255,255,0.16)', navGlass: 'rgba(12,12,16,0.38)', glass: 'rgba(255,255,255,0.07)', glassEdge: 'rgba(255,255,255,0.15)', shadow: 'rgba(0,0,0,0.5)',
   ink: '#26262B', inkText: '#F5F5F7', inkMuted: '#9A9AA2', inkLine: 'rgba(255,255,255,0.08)', mint: 'rgba(60,170,115,0.17)', mintBar: '#9FE6C0', lav: '#2A3042', navDot: '#F5F5F7',
   severity: { LOW: '#86E0AE', MEDIUM: '#F2C47E', HIGH: '#F2C47E', CRITICAL: '#FF8C7C' },
 };

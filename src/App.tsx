@@ -747,6 +747,57 @@ function SyncedIncidents({ incidents, servers, limit }: { incidents: SyncInciden
   </tbody></table></div>
 }
 
+type AccountProfile = { email: string; full_name: string; school_name: string; phone: string; alert_phones: string[] }
+
+function AccountDetails() {
+  const [profile, setProfile] = useState<AccountProfile | null>(null)
+  const [alerts, setAlerts] = useState<string[]>([''])
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const call = async (init?: RequestInit) => {
+    const { data } = await supabase.auth.getSession()
+    const token = data.session?.access_token
+    if (!token) throw new Error('Please sign in again.')
+    const response = await fetch('/api/profile', { ...init, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, cache: 'no-store' })
+    const result = await response.json().catch(() => ({}))
+    if (!response.ok) throw new Error(result.error || 'Something went wrong.')
+    return result as AccountProfile
+  }
+  useEffect(() => {
+    call().then(p => { setProfile(p); setAlerts(p.alert_phones.length ? p.alert_phones : ['']) }).catch(e => setError(e instanceof Error ? e.message : 'Could not load your details.'))
+  }, [])
+  if (!profile) return <div className="workspace-content"><article className="workspace-panel workspace-full-panel"><div className="workspace-empty"><b>{error || 'Loading your details…'}</b></div></article></div>
+  const set = (key: 'full_name' | 'school_name' | 'phone', value: string) => setProfile({ ...profile, [key]: value })
+  const save = async (event: React.FormEvent) => {
+    event.preventDefault(); setBusy(true); setError(''); setMessage('')
+    try {
+      const next = await call({ method: 'PUT', body: JSON.stringify({ full_name: profile.full_name, school_name: profile.school_name, phone: profile.phone, alert_phones: alerts.filter(n => n.trim()) }) })
+      setProfile(next); setAlerts(next.alert_phones.length ? next.alert_phones : ['']); setMessage('Saved. The phone app and desktop app will show the same details.')
+    } catch (e) { setError(e instanceof Error ? e.message : 'Could not save your details.') }
+    finally { setBusy(false) }
+  }
+  return <div className="workspace-content"><article className="workspace-panel workspace-full-panel">
+    <div className="workspace-panel-head"><div><span className="eyebrow">Your account</span><h2>Account details</h2></div><span className="workspace-chip">{profile.email}</span></div>
+    <form className="account-form" onSubmit={save}>
+      <label>Your name<input value={profile.full_name} maxLength={80} onChange={e => set('full_name', e.target.value)} placeholder="Full name" /></label>
+      <label>School or college<input value={profile.school_name} maxLength={120} onChange={e => set('school_name', e.target.value)} placeholder="School name" /></label>
+      <label>Your phone number<input value={profile.phone} maxLength={20} inputMode="tel" onChange={e => set('phone', e.target.value)} placeholder="+91 70000 00000" /></label>
+      <fieldset><legend>Phone numbers that get alerts (up to 5)</legend>
+        {alerts.map((number, index) => <div className="account-alert-row" key={index}>
+          <input value={number} maxLength={20} inputMode="tel" placeholder="+91 70000 00000" aria-label={`Alert number ${index + 1}`} onChange={e => setAlerts(alerts.map((n, i) => i === index ? e.target.value : n))} />
+          {alerts.length > 1 && <button type="button" className="workspace-text-button" onClick={() => setAlerts(alerts.filter((_, i) => i !== index))}>Remove</button>}
+        </div>)}
+        {alerts.length < 5 && <button type="button" className="workspace-text-button" onClick={() => setAlerts([...alerts, ''])}>+ Add another number</button>}
+      </fieldset>
+      <p className="account-note">Your sign-in email cannot be changed here. These details are shared with the CampusGuard phone and desktop apps.</p>
+      {error && <p className="form-note" role="alert">{error}</p>}
+      {message && <p className="form-note" role="status">{message}</p>}
+      <button className="button button-lime" disabled={busy}>{busy ? 'Saving…' : 'Save details'}</button>
+    </form>
+  </article></div>
+}
+
 function CustomerWorkspace() {
   const sync = useSyncData()
   const servers = sync.data?.servers ?? []
@@ -757,7 +808,7 @@ function CustomerWorkspace() {
   const camerasOnline = knownOnline.reduce((sum, server) => sum + (server.cameras_online ?? 0), 0)
   const openIncidents = servers.reduce((sum, server) => sum + server.open_incidents, 0)
   const lastUpdate = hasSync ? timeAgo(servers.map(server => server.last_seen).sort().slice(-1)[0]) : ''
-  const [activeTab, setActiveTab] = useState<'overview' | 'cameras' | 'notifications'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'cameras' | 'notifications' | 'account'>('overview')
   return <section className="customer-workspace" aria-labelledby="workspace-title">
     <div className="workspace-shell">
       <div className="workspace-heading">
@@ -768,7 +819,9 @@ function CustomerWorkspace() {
         <button className={activeTab === 'overview' ? 'workspace-tab active' : 'workspace-tab'} onClick={() => setActiveTab('overview')}><Activity size={15} /> Overview</button>
         <button className={activeTab === 'cameras' ? 'workspace-tab active' : 'workspace-tab'} onClick={() => setActiveTab('cameras')}><Monitor size={15} /> Cameras</button>
         <button className={activeTab === 'notifications' ? 'workspace-tab active' : 'workspace-tab'} onClick={() => setActiveTab('notifications')}><BellRing size={15} /> Alerts &amp; notifications</button>
+        <button className={activeTab === 'account' ? 'workspace-tab active' : 'workspace-tab'} onClick={() => setActiveTab('account')}><LockKeyhole size={15} /> Account</button>
       </nav>
+      {activeTab === 'account' && <AccountDetails />}
       {activeTab === 'overview' && <div className="workspace-content">
         <div className="workspace-stat-grid">
           <article className="workspace-stat"><span>CAMERAS REGISTERED</span><strong>{hasSync ? camerasTotal : '—'}</strong><small>{hasSync ? `${servers.length} server${servers.length === 1 ? '' : 's'} · updated ${lastUpdate}` : sync.error || (sync.loaded ? 'Waiting for the desktop app to sync' : 'Loading…')}</small><Monitor size={18} /></article>

@@ -34,7 +34,7 @@ export function Frost({ style, intensity = 50, blur = false, tint, onLayout, glo
         <BlurView
           style={StyleSheet.absoluteFill}
           intensity={intensity}
-          tint={Platform.OS === 'android' ? 'default' : p.name === 'dark' ? 'dark' : 'light'}
+          tint={p.name === 'dark' ? 'dark' : Platform.OS === 'android' ? 'default' : 'light'}
           blurTarget={target ?? undefined}
           blurMethod={target ? 'dimezisBlurView' : 'none'}
         />

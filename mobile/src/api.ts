@@ -2,7 +2,7 @@ import { AppState } from 'react-native';
 import { createClient } from '@supabase/supabase-js';
 import { API_BASE, SUPABASE_KEY, SUPABASE_URL } from './config';
 import { secureStorage } from './storage';
-import type { SyncData } from './types';
+import type { Profile, SyncData } from './types';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { storage: secureStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: false },
@@ -43,3 +43,8 @@ export const registerPushToken = (token: string, platform: string) =>
 
 export const unregisterPushToken = (token: string) =>
   call('/api/push-register', { method: 'DELETE', body: JSON.stringify({ token }) });
+
+export const fetchProfile = (): Promise<Profile> => call('/api/profile');
+
+export const saveProfile = (details: Pick<Profile, 'full_name' | 'school_name' | 'phone' | 'alert_phones'>): Promise<Profile> =>
+  call('/api/profile', { method: 'PUT', body: JSON.stringify(details) });
