@@ -1,84 +1,43 @@
 # CampusGuard Website
 
-React + TypeScript + Vite website and customer portal for CampusGuard, with Supabase authentication, owner-reviewed access applications, and a private Windows installer.
+**The front door to CampusGuard: where a school signs up, manages its account and sees how its cameras are doing.**
 
-## Access approval workflow
+CampusGuard watches a school's existing CCTV for fights and alerts staff within seconds. The [desktop app](https://github.com/hisir-sys/campusguard) does the watching. This website and the phone app are how people get access and stay informed.
 
-- A user submits **one early-access application** and creates one account.
-- The owner reviews that application with two independent decisions: **Login approval** and **Payment approval**.
-- The user can sign in, use the customer portal, sync desktop metadata, and download the installer only after **both** decisions are approved.
-- The installer is served through a short-lived signed URL from the private `campusguard-downloads` storage bucket.
-- The admin console keeps the existing visual design and presents both approval controls on the same application card. There is no second user-facing download application.
+## The problem
 
-## Privacy and data protection
+Schools need to trust a safety product before they install it on their cameras. They want to know who is behind it, how their data is handled, and that only approved schools get in. Once it is running, the head of school also needs to see, from anywhere, whether the cameras are healthy and whether anything has happened, without sitting at the office PC.
 
-- The public, standalone privacy notice is available at `/privacy` and linked in the website footer and both data-submission forms.
-- Access applications and pilot inquiries require an affirmative privacy-notice checkbox. The accepted notice version and timestamp are recorded in Supabase.
-- The policy itemizes the data fields currently visible in this website repository, their purposes, the named service providers, browser session storage, rights/request contact and the current manual deletion process.
-- The notice does not claim that all data is stored in India, that footage is uploaded, or that CampusGuard is DPDP-certified.
-- See [DPDP-IMPLEMENTATION.md](./DPDP-IMPLEMENTATION.md) for the engineering inventory, phased commencement note and remaining operational/legal launch tasks.
-- The policy is based on this repository's implementation. Provider-side telemetry, actual data regions and retention settings must be verified in the live provider accounts.
+## What it does
 
-## Supabase database setup
+- **Explains the product** to schools and answers privacy questions in plain language, with a public privacy notice.
+- **Controlled early access.** A school applies once and the owner approves login and payment separately, so only approved schools can sign in or download the installer.
+- **One account everywhere.** Schools set their name, contact number and the phone numbers that receive alerts, and the same details appear in the website, the phone app and the desktop app.
+- **A summary of what is happening.** Cameras online, recent alerts and incident counts from each school PC. Only summaries and incident details are synced. Video never leaves the school.
+- **A private installer download.** Approved accounts get a short-lived link to the desktop installer.
 
-**Recommended: run one combined script.**
+## The phone app
 
-1. Open the correct project at [Supabase](https://supabase.com/dashboard).
-2. In the left sidebar, open **SQL Editor**.
-3. Choose **New query**.
-4. Open `supabase/setup-campusguard.sql` in this repository and copy the complete contents.
-5. Paste the SQL into the editor and click **Run**.
-6. Confirm the query completes without errors.
+![CampusGuard phone app](docs/app-overview.png)
 
-The combined script is safe to re-run for its column and index additions. It performs the existing migration from legacy download approvals, so run it against the CampusGuard project that already contains `access_applications` and `download_requests`. Do not run it against an unrelated or empty Supabase project.
+*Demo data.*
 
-Alternatively, run the two individual migrations in this order:
+An Android app (`mobile/`) for the head of school and staff. It shows how many cameras are online, the last day of alerts and which areas are busiest, and sends a push to a closed phone when a serious alert fires. It signs in with the same account as the website and reads only through the website's API. It is installed from an APK, not an app store.
 
-1. `supabase/single-application-approvals.sql`
-2. `supabase/privacy-consent.sql`
+## Why it is built this way
 
-The approval migration adds independent login/payment decisions and reviewer timestamps to the single application record. Existing approved/rejected login decisions are carried forward. A legacy payment decision is carried forward as approved only when the latest download request was approved and `payment_confirmed = true`; other payment decisions remain pending unless the latest request was rejected.
+- **Privacy first.** Footage stays on the school's PC. The website holds account details and summaries, nothing more, and every read goes through server-side checks.
+- **Approval before access.** Login and payment are separate decisions, so a school can be let in for a pilot before paying.
+- **One account, one place to change details.** No separate phone-number lists to keep in step.
 
-The privacy migration adds `privacy_notice_version` and `privacy_consent_at` to both `access_applications` and `pilot_inquiries`.
+## Status
 
-## Supabase Storage and environment
+Live for early access. Real push delivery, real WhatsApp alerts and clips in the app are still to be tested or built. See the [desktop README](https://github.com/hisir-sys/campusguard#readme) for the full picture.
 
-Keep `campusguard-downloads` as a **private** Storage bucket and upload the installer as `CampusGuard.exe`.
+Questions or a pilot: WhatsApp +91 70032 76998.
 
-Required server environment variables:
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `ADMIN_EMAIL`
+## More
 
-Frontend environment variables:
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
-
-The service-role key must never be exposed to the browser.
-
-## Local development
-
-```bash
-npm install
-npm run dev
-```
-
-Production build:
-
-```bash
-npm run build
-```
-
-## Security boundaries
-
-- Approval is checked server-side for sign-in status, desktop metadata sync, and installer downloads.
-- Website sync stores summary and incident metadata only; video and footage remain in the local desktop/server workflow.
-- The Supabase service role is used only in serverless API routes.
-- Owner actions require a verified Supabase session whose email matches `ADMIN_EMAIL`.
-
-## Typography
-
-- Manrope — display headings and brand
-- DM Sans — body copy and controls
-- Instrument Serif — editorial italic accents
-- DM Mono — technical labels and timestamps
+- [Setup and operations](docs/SETUP.md): database, storage, environment, security
+- [Privacy implementation notes](DPDP-IMPLEMENTATION.md)
+- [Phone app developer notes](mobile/README.md)

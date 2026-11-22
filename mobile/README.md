@@ -1,21 +1,19 @@
-# CampusGuard mobile (Android + iOS)
+# CampusGuard phone app
 
-One Expo / React Native app. Signs in with the same account as the website and shows school PCs, camera health and alerts.
-It reads only through the website's `/api/sync-data` (nothing in the database is opened up).
+**Know your school's cameras are healthy, and get told the moment something happens.**
 
-## Try it
-    npm install
-    npm test                      # status/time logic
-    npx expo start --web          # quick look in a browser (login, overview, alerts)
+The head of school can't watch screens all day. The phone app shows, in one glance, how many cameras are online, what alerted in the last 24 hours and which areas are busiest, and it pushes a notification to a locked phone when a serious alert fires. It signs in with the same account as the website, shows your name and school, and lets you edit them and the phone numbers that receive alerts.
 
-## Phone alerts (Firebase)
-Alerts to a closed app go through Firebase Cloud Messaging: `mobile/google-services.json` is built into the app and the website needs the `FIREBASE_SERVICE_ACCOUNT` env var (service-account JSON) in Vercel. Older notes below about Expo/EAS no longer apply.
-1. Run `supabase/push_devices.sql` (website repo, branch `mobile-push`) in the Supabase SQL Editor, then deploy that branch.
-2. `npm i -g eas-cli && eas login && eas init` (writes the project id into app.json), then
-   `eas build --profile development --platform android` and install the APK on your phone.
-   Expo Go cannot receive remote push on Android, so a development build is required.
-3. Android push also needs a Firebase (FCM) key uploaded with `eas credentials`. iOS later needs an Apple Developer account ($99/yr).
+Android only, installed from an APK on the [releases page](https://github.com/hisir-sys/campusguardweb/releases). It is not published to app stores. It reads only through the website's `/api/sync-data` and `/api/profile`.
 
-## Not built yet
-Video clips in the app (phase 2: opt-in upload to private storage with auto-delete).
+Not built yet: video clips in the app (a later phase: opt-in upload to private storage with auto-delete).
 
+## For developers
+
+```
+npm install
+npm test                  # status and alert logic
+npx expo start --web      # quick look in a browser
+```
+
+Alerts to a closed app use Firebase Cloud Messaging: `google-services.json` is built into the app and the website needs the `FIREBASE_SERVICE_ACCOUNT` environment variable in Vercel. Releases are built by GitHub Actions when `mobile/**` changes on main and are tagged `mobile-v<version>`.
