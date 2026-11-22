@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 /**
  * Sends phone notifications straight through Firebase Cloud Messaging (HTTP v1).
  * Needs the env var FIREBASE_SERVICE_ACCOUNT (the service-account JSON). Never throws:

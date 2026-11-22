@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 import { useEffect, useId, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, ArrowUpRight, Check, LockKeyhole } from 'lucide-react'
 

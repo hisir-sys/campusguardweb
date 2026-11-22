@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 // Update check against the GitHub releases of this project. No React Native imports, so it can be tested with Node.
 
 export const RELEASES_URL = 'https://api.github.com/repos/hisir-sys/campusguardweb/releases?per_page=10';

@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 import { forwardRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 

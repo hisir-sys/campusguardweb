@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 import { createClient } from '@supabase/supabase-js'
 
 export default async function handler(req: any, res: any) {

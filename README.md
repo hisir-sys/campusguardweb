@@ -41,3 +41,7 @@ Questions or a pilot: WhatsApp +91 70032 76998.
 - [Setup and operations](docs/SETUP.md): database, storage, environment, security
 - [Privacy implementation notes](DPDP-IMPLEMENTATION.md)
 - [Phone app developer notes](mobile/README.md)
+
+## Licence
+
+Copyright (c) 2026 CampusGuard. All rights reserved. This is proprietary software, not open source. Seeing it here does not give anyone the right to use, copy or share it. See [LICENSE](LICENSE).

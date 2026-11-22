@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 // The desktop app's look (graphite glass, quiet colours, one soft blue "lens" for live status).
 // No React Native imports here, so the plain logic below can be tested with Node.
 

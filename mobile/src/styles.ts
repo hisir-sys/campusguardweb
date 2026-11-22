@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 import { StyleSheet } from 'react-native';
 import type { Palette } from './theme';
 import { fonts } from './useTheme';

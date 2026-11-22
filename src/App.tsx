@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import StoryScroll from './StoryScroll'

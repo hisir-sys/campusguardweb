@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import {
   ActivityIndicator, Animated, AppState, Easing, StyleSheet, FlatList, KeyboardAvoidingView, LayoutAnimation, Linking, Modal, PanResponder, Platform, Pressable as RNPressable, RefreshControl, SafeAreaView,

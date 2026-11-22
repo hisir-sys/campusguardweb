@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 import { useEffect, useRef } from 'react'
 
 type Dot = { x: number; y: number; vx: number; vy: number; r: number }

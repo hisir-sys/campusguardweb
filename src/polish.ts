@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 // Small interaction polish: a reading-progress bar, a header that settles on scroll, and a soft spotlight that
 // follows the pointer over cards. Everything is skipped for reduced motion and touch screens.
 const CARDS = '.feature-card, .pricing-card, .public-challenge-card, .public-workflow-step, .workspace-stat, .workspace-panel, .workspace-learning-card, .customer-pilot-grid article, .faq-item, .how-steps > article'

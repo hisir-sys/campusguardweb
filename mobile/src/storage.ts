@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 

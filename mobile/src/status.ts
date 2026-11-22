@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 import type { Server } from './types';
 
 /** A school PC that has not reported for this long is shown as offline. */

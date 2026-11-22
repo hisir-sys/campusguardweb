@@ -37,5 +37,6 @@
     "web": "expo start --web",
     "test": "node --experimental-strip-types --test tests/logic.test.ts"
   },
-  "private": true
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE"
 }

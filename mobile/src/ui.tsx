@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 import { createContext, useContext, useEffect, useRef, useState, type ComponentRef, type RefObject } from 'react';
 import { Animated, Easing, Platform, Pressable, StyleSheet, Text, View, type PressableProps, type ViewProps, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { BlurView } from 'expo-blur';

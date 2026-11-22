@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 const updated = '15 November 2026'
 
 export default function PrivacyPolicy() {

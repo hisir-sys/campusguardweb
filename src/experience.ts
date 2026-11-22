@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 /**
  * Page-level experience layer for the public site: hero entrance, scroll-linked hero exit,
  * header that follows the section colour and tucks away while reading, a section rail,

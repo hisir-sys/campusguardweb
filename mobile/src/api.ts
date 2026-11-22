@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 import { AppState } from 'react-native';
 import { createClient } from '@supabase/supabase-js';
 import { API_BASE, SUPABASE_KEY, SUPABASE_URL } from './config';

@@ -1,3 +1,4 @@
+// Copyright (c) 2026 CampusGuard. All rights reserved. Proprietary and confidential; see LICENSE.
 import { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, Platform, Text, View } from 'react-native';
 import { fonts, useTheme } from './useTheme';
